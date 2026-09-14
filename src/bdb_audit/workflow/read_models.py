@@ -212,17 +212,19 @@ class VerifiedCampaignReadModel:
             raise ValidationError("CAMPAIGN_CONCLUSION_PROJECTION_INVALID", str(termination_state))
 
         # 5. Determine current_stage rigorously:
-        # If there are prepared stages, current_stage is the first prepared stage that is NOT completed.
-        # If all prepared stages are completed and campaign is still OPEN, advance to next incomplete baseline stage.
+        # - Before any StageSpec has been accepted, the campaign is still GENESIS.
+        # - With prepared stages, current_stage is the first prepared stage not completed.
+        # - Once at least one prepared stage is completed, advance to the next baseline
+        #   stage without inventing an accepted StageSpec for it.
         current_stage = "GENESIS"
         for st in stages_prepared:
             if st not in completed_by_stage:
                 current_stage = st
                 break
         else:
-            if termination_state == "OPEN":
+            if termination_state == "OPEN" and stages_prepared:
                 next_stage = next((s for s in ("E1", "E2", "E3", "E4", "E5") if s not in completed_by_stage), None)
-                current_stage = next_stage or (stages_prepared[-1] if stages_prepared else "GENESIS")
+                current_stage = next_stage or stages_prepared[-1]
             elif stages_prepared:
                 current_stage = stages_prepared[-1]
 
