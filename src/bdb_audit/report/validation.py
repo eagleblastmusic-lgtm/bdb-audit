@@ -15,6 +15,9 @@ def validate_report(report: Mapping[str, object]) -> dict:
     missing = [key for key in _REQUIRED_TOP_LEVEL if key not in report]
     if missing:
         raise ValidationError("REPORT_REQUIRED_FIELD_MISSING", ",".join(missing))
+    version = str(report.get("report_version", "1"))
+    if version >= "2" and "root_causes" not in report:
+        raise ValidationError("REPORT_REQUIRED_FIELD_MISSING", "root_causes")
     if report.get("report_status") not in {"FINAL", "PARTIAL_BOUNDED", "PARTIAL/BOUNDED"}:
         raise ValidationError("REPORT_STATUS_INVALID")
     if report.get("report_status") == "FINAL" and not report.get("campaign_completed"):
@@ -26,7 +29,10 @@ def validate_report(report: Mapping[str, object]) -> dict:
     if not isinstance(source, Mapping) or not source:
         raise ValidationError("REPORT_SOURCE_IDENTITY_REQUIRED")
 
-    for key in ("findings", "coverage", "evidence_index", "contradictions", "stop_evaluations", "unknowns"):
+    section_keys = ["findings", "coverage", "evidence_index", "contradictions", "stop_evaluations", "unknowns"]
+    if version >= "2":
+        section_keys.append("root_causes")
+    for key in section_keys:
         if not isinstance(report.get(key), (list, tuple)):
             raise ValidationError("REPORT_SECTION_INVALID", key)
 
@@ -45,13 +51,21 @@ def validate_report(report: Mapping[str, object]) -> dict:
             material_without_evidence.append(str(token))
     if material_without_evidence:
         raise ValidationError("REPORT_MATERIAL_CLAIM_EVIDENCE_REQUIRED", ",".join(sorted(material_without_evidence)))
-    return {"status": "PASS", "report_status": report.get("report_status"), "finding_count": len(report.get("findings", ())), "unknown_count": len(report.get("unknowns", ())) }
+    return {
+        "status": "PASS",
+        "report_status": report.get("report_status"),
+        "report_version": version,
+        "finding_count": len(report.get("findings", ())),
+        "root_cause_count": len(report.get("root_causes", ())) if isinstance(report.get("root_causes", ()), (list, tuple)) else 0,
+        "unknown_count": len(report.get("unknowns", ())),
+    }
 
 
 def section_completeness(report: Mapping[str, object], feature_matrix: Mapping[str, object] | None = None, remediation_plan: Mapping[str, object] | None = None) -> tuple[dict, ...]:
     sections = [
         ("SOURCE_IDENTITY", bool(report.get("source_identity"))),
         ("FINDINGS", bool(report.get("findings"))),
+        ("ROOT_CAUSES", bool(report.get("root_causes"))),
         ("COVERAGE_MATRIX", bool(report.get("coverage"))),
         ("EVIDENCE_INDEX", bool(report.get("evidence_index"))),
         ("CONTRADICTIONS", bool(report.get("contradictions"))),
