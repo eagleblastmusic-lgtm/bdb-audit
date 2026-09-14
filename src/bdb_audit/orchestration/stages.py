@@ -140,7 +140,15 @@ class StageSpecRegistry:
         return tuple(sorted(selected, key=lambda s: (s.stage_ordinal, s.stage_key)))
 
     def recognize_all_stage_keys(self):
-        return tuple(sorted(_STAGES))
+        """Return only stage keys represented by this immutable registry snapshot.
+
+        ``StageSpec`` supports E6, but the foundation registry returned by
+        :func:`initial_stage_specs` intentionally contains only E1-E5.  E6 is
+        materialized later by the adaptive/continuation workflow and must not
+        retroactively change the identity or observable contract of the
+        foundation registry.
+        """
+        return tuple(sorted({stage_key for stage_key, _revision in self._by_key}))
 
 
 def initial_stage_specs():
