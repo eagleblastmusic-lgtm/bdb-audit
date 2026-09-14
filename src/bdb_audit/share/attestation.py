@@ -26,6 +26,12 @@ class RecipientBundle:
     signature_profile: str = "HMAC-SHA256-SHARED-SECRET"
 
 
+def _removed_fields_digest(removed: tuple[str, ...]) -> str:
+    """Bind the redaction set without disclosing sensitive field/path names."""
+    material = json.dumps(list(removed), ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(material).hexdigest()
+
+
 def build_recipient_bundle(
     document: Mapping[str, object],
     *,
@@ -44,7 +50,8 @@ def build_recipient_bundle(
         "history_cut_digest": history_cut_digest,
         "key_id": key_id,
         "signature_profile": "HMAC-SHA256-SHARED-SECRET",
-        "removed_private_fields": list(removed),
+        "removed_private_field_count": len(removed),
+        "removed_private_fields_sha256": _removed_fields_digest(removed),
     }
     payload = json.dumps(envelope, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     digest = hashlib.sha256(payload).hexdigest()
