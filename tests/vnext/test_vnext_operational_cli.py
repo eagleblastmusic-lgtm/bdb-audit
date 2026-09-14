@@ -100,7 +100,7 @@ def test_cli_opportunity_review_and_successor_validation(tmp_path, capsys):
     assert '"status": "PASS"' in capsys.readouterr().out
 
 
-def test_cli_feature_matrix_and_trend_scope_are_explicit(tmp_path, capsys):
+def test_cli_feature_matrix_requires_declared_denominator_and_trend_scope_is_explicit(tmp_path, capsys):
     matrix = {
         "features": [{
             "feature_id": "f", "revision": "1", "source_identity": "src", "user_task": "do thing",
@@ -110,10 +110,20 @@ def test_cli_feature_matrix_and_trend_scope_are_explicit(tmp_path, capsys):
             "behavior_id": "f:happy", "source_identity": "src", "status": "PASS", "executed": True,
             "oracle_status": "QUALIFIED", "run_receipt_digest": "r" * 64,
         }],
+        "required_behavior_ids": {"f": ["f:happy"]},
     }
     path = _write(tmp_path, "matrix.json", matrix)
     assert run_cli(["features", "matrix", "--file", path]) == 0
-    assert "VERIFIED" in capsys.readouterr().out
+    output = capsys.readouterr().out
+    assert "VERIFIED" in output
+    assert '"denominator_declared": true' in output
+
+    matrix.pop("required_behavior_ids")
+    path = _write(tmp_path, "matrix-no-denominator.json", matrix)
+    assert run_cli(["features", "matrix", "--file", path]) == 0
+    output = capsys.readouterr().out
+    assert "VERIFIED" not in output
+    assert '"denominator_declared": false' in output
 
     trends = {"snapshots": [
         {"source_identity": "s1", "scope_digest": "scope", "policy_digest": "policy", "qualified": 8, "denominator": 10},
