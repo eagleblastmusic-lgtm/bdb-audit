@@ -14,9 +14,13 @@ def _assessment(
     *,
     executed: bool = True,
     oracle_status: str = "QUALIFIED",
-    run_receipt_digest: str | None = "r" * 64,
+    run_receipt_digest: str | None = "a" * 64,
+    reason_codes: tuple[str, ...] = (),
 ) -> BehaviorAssessment:
-    return BehaviorAssessment(behavior_id, source, status, executed, oracle_status, run_receipt_digest, ())
+    return BehaviorAssessment(
+        behavior_id, source, status, executed, oracle_status,
+        run_receipt_digest, reason_codes,
+    )
 
 
 def test_ru11_matrix_cannot_verify_when_required_behavior_is_omitted():
@@ -70,10 +74,37 @@ def test_ru11_matrix_rejects_unexecuted_or_unqualified_pass_dto():
     assert missing_receipt["features"][0]["status"] == "INSUFFICIENT"
 
 
+def test_ru11_matrix_rejects_malformed_digest_reasoned_pass_and_duplicate_assessment():
+    malformed = feature_status_matrix(
+        (_feature(),),
+        (_assessment("feature_x:happy", run_receipt_digest="not-a-sha"),),
+        {"feature_x": ("feature_x:happy",)},
+    )
+    assert malformed["features"][0]["status"] == "INSUFFICIENT"
+    assert malformed["features"][0]["invalid_pass_behavior_ids"] == ["feature_x:happy"]
+
+    reasoned = feature_status_matrix(
+        (_feature(),),
+        (_assessment("feature_x:happy", reason_codes=("UNRESOLVED",)),),
+        {"feature_x": ("feature_x:happy",)},
+    )
+    assert reasoned["features"][0]["status"] == "INSUFFICIENT"
+
+    duplicate = feature_status_matrix(
+        (_feature(),),
+        (_assessment("feature_x:happy"), _assessment("feature_x:happy", run_receipt_digest="b" * 64)),
+        {"feature_x": ("feature_x:happy",)},
+    )
+    row = duplicate["features"][0]
+    assert row["status"] == "INSUFFICIENT"
+    assert row["duplicate_behavior_ids"] == ["feature_x:happy"]
+    assert row["evidence"] == []
+
+
 def test_ru11_matrix_verifies_only_complete_current_required_set():
     result = feature_status_matrix(
         (_feature(),),
-        (_assessment("feature_x:happy"), _assessment("feature_x:negative")),
+        (_assessment("feature_x:happy"), _assessment("feature_x:negative", run_receipt_digest="b" * 64)),
         {"feature_x": ("feature_x:happy", "feature_x:negative")},
     )
     row = result["features"][0]
@@ -81,6 +112,7 @@ def test_ru11_matrix_verifies_only_complete_current_required_set():
     assert row["behavior_denominator"] == 2
     assert row["denominator_declared"] is True
     assert row["missing_behavior_ids"] == []
+    assert row["duplicate_behavior_ids"] == []
     assert len(row["evidence"]) == 2
 
 
