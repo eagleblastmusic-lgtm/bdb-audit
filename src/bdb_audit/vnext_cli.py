@@ -368,9 +368,18 @@ def run_cli(argv: list[str] | None = None) -> int:
             assessment_values = data.get("assessments")
             if not isinstance(feature_values, list) or not isinstance(assessment_values, list):
                 raise ValueError("features and assessments must be arrays")
+            required_value = data.get("required_behavior_ids")
+            required_behavior_ids: dict[str, tuple[str, ...]] | None = None
+            if required_value is not None:
+                required_raw = _object(required_value, "required_behavior_ids")
+                required_behavior_ids = {
+                    str(feature_id): _str_tuple(behavior_ids)
+                    for feature_id, behavior_ids in required_raw.items()
+                }
             feature_matrix_result = feature_status_matrix(
                 tuple(_feature_revision(item) for item in feature_values),
                 tuple(_behavior_assessment(item) for item in assessment_values),
+                required_behavior_ids,
             )
             _json(feature_matrix_result)
             return 0
