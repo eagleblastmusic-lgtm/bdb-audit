@@ -1,6 +1,6 @@
 """Recipient-verifiable shared-secret export attestation.
 
-This is intentionally labelled HMAC shared-secret verification.  It is not a
+This is intentionally labelled HMAC shared-secret verification. It is not a
 public-key signature and does not claim non-repudiation.
 """
 from __future__ import annotations
@@ -70,7 +70,38 @@ def verify_recipient_bundle(bundle: RecipientBundle, *, signing_key: bytes, expe
     expected = hmac.new(signing_key, bundle.payload, hashlib.sha256).hexdigest()
     if not hmac.compare_digest(expected, bundle.signature_hex):
         reasons.append("SIGNATURE_MISMATCH")
-    return {"status": "PASS" if not reasons else "FAIL", "reason_codes": reasons, "key_id": bundle.key_id, "source_identity": bundle.source_identity, "history_cut_digest": bundle.history_cut_digest}
+
+    envelope: dict[str, object] | None = None
+    try:
+        decoded = json.loads(bundle.payload.decode("utf-8"))
+        if isinstance(decoded, dict):
+            envelope = decoded
+        else:
+            reasons.append("PAYLOAD_ENVELOPE_INVALID")
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        reasons.append("PAYLOAD_JSON_INVALID")
+
+    if envelope is not None:
+        if envelope.get("key_id") != bundle.key_id:
+            reasons.append("KEY_ID_BINDING_MISMATCH")
+        if envelope.get("source_identity") != bundle.source_identity:
+            reasons.append("SOURCE_IDENTITY_BINDING_MISMATCH")
+        if envelope.get("history_cut_digest") != bundle.history_cut_digest:
+            reasons.append("HISTORY_CUT_BINDING_MISMATCH")
+        if envelope.get("signature_profile") != bundle.signature_profile:
+            reasons.append("SIGNATURE_PROFILE_BINDING_MISMATCH")
+        if envelope.get("removed_private_field_count") != len(bundle.removed_private_fields):
+            reasons.append("REDACTION_COUNT_BINDING_MISMATCH")
+        if envelope.get("removed_private_fields_sha256") != _removed_fields_digest(bundle.removed_private_fields):
+            reasons.append("REDACTION_SET_BINDING_MISMATCH")
+
+    return {
+        "status": "PASS" if not reasons else "FAIL",
+        "reason_codes": sorted(set(reasons)),
+        "key_id": bundle.key_id,
+        "source_identity": bundle.source_identity,
+        "history_cut_digest": bundle.history_cut_digest,
+    }
 
 
 __all__ = ["RecipientBundle", "build_recipient_bundle", "verify_recipient_bundle"]
