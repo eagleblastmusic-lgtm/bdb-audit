@@ -1,7 +1,9 @@
 """Recipient-verifiable shared-secret export attestation.
 
 This is intentionally labelled HMAC shared-secret verification. It is not a
-public-key signature and does not claim non-repudiation.
+public-key signature and does not claim non-repudiation. Redacted field names
+remain local diagnostics; recipient exports contain only a signed count and an
+opaque digest of the redaction set.
 """
 from __future__ import annotations
 
@@ -22,14 +24,17 @@ class RecipientBundle:
     key_id: str
     source_identity: str
     history_cut_digest: str
-    removed_private_fields: tuple[str, ...]
+    removed_private_fields: tuple[str, ...] = ()
     signature_profile: str = "HMAC-SHA256-SHARED-SECRET"
 
 
 def _removed_fields_digest(removed: tuple[str, ...]) -> str:
-    """Bind the redaction set without disclosing sensitive field/path names."""
     material = json.dumps(list(removed), ensure_ascii=False, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(material).hexdigest()
+
+
+def _is_sha256(value: object) -> bool:
+    return isinstance(value, str) and len(value) == 64 and all(ch in "0123456789abcdef" for ch in value)
 
 
 def build_recipient_bundle(
@@ -59,6 +64,32 @@ def build_recipient_bundle(
     return RecipientBundle(payload, digest, signature, key_id, source_identity, history_cut_digest, removed)
 
 
+def recipient_bundle_to_dict(bundle: RecipientBundle) -> dict[str, object]:
+    """Serialize only recipient-safe fields; local redaction paths never leave."""
+    return {
+        "payload": bundle.payload.decode("utf-8"),
+        "payload_sha256": bundle.payload_sha256,
+        "signature_hex": bundle.signature_hex,
+        "key_id": bundle.key_id,
+        "source_identity": bundle.source_identity,
+        "history_cut_digest": bundle.history_cut_digest,
+        "signature_profile": bundle.signature_profile,
+    }
+
+
+def recipient_bundle_from_dict(value: Mapping[str, object]) -> RecipientBundle:
+    return RecipientBundle(
+        str(value["payload"]).encode("utf-8"),
+        str(value["payload_sha256"]),
+        str(value["signature_hex"]),
+        str(value["key_id"]),
+        str(value["source_identity"]),
+        str(value["history_cut_digest"]),
+        (),
+        str(value.get("signature_profile", "HMAC-SHA256-SHARED-SECRET")),
+    )
+
+
 def verify_recipient_bundle(bundle: RecipientBundle, *, signing_key: bytes, expected_key_id: str | None = None) -> dict:
     reasons: list[str] = []
     if bundle.signature_profile != "HMAC-SHA256-SHARED-SECRET":
@@ -75,12 +106,13 @@ def verify_recipient_bundle(bundle: RecipientBundle, *, signing_key: bytes, expe
     try:
         decoded = json.loads(bundle.payload.decode("utf-8"))
         if isinstance(decoded, dict):
-            envelope = decoded
+            envelope = {str(key): item for key, item in decoded.items()}
         else:
             reasons.append("PAYLOAD_ENVELOPE_INVALID")
     except (UnicodeDecodeError, json.JSONDecodeError):
         reasons.append("PAYLOAD_JSON_INVALID")
 
+    redaction_count: int | None = None
     if envelope is not None:
         if envelope.get("key_id") != bundle.key_id:
             reasons.append("KEY_ID_BINDING_MISMATCH")
@@ -90,10 +122,14 @@ def verify_recipient_bundle(bundle: RecipientBundle, *, signing_key: bytes, expe
             reasons.append("HISTORY_CUT_BINDING_MISMATCH")
         if envelope.get("signature_profile") != bundle.signature_profile:
             reasons.append("SIGNATURE_PROFILE_BINDING_MISMATCH")
-        if envelope.get("removed_private_field_count") != len(bundle.removed_private_fields):
-            reasons.append("REDACTION_COUNT_BINDING_MISMATCH")
-        if envelope.get("removed_private_fields_sha256") != _removed_fields_digest(bundle.removed_private_fields):
-            reasons.append("REDACTION_SET_BINDING_MISMATCH")
+        count_value = envelope.get("removed_private_field_count")
+        digest_value = envelope.get("removed_private_fields_sha256")
+        if not isinstance(count_value, int) or isinstance(count_value, bool) or count_value < 0:
+            reasons.append("REDACTION_COUNT_INVALID")
+        else:
+            redaction_count = count_value
+        if not _is_sha256(digest_value):
+            reasons.append("REDACTION_DIGEST_INVALID")
 
     return {
         "status": "PASS" if not reasons else "FAIL",
@@ -101,7 +137,11 @@ def verify_recipient_bundle(bundle: RecipientBundle, *, signing_key: bytes, expe
         "key_id": bundle.key_id,
         "source_identity": bundle.source_identity,
         "history_cut_digest": bundle.history_cut_digest,
+        "redacted_private_field_count": redaction_count,
     }
 
 
-__all__ = ["RecipientBundle", "build_recipient_bundle", "verify_recipient_bundle"]
+__all__ = [
+    "RecipientBundle", "build_recipient_bundle", "recipient_bundle_from_dict",
+    "recipient_bundle_to_dict", "verify_recipient_bundle",
+]
