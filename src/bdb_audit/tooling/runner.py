@@ -84,7 +84,12 @@ def _kill_process_tree(proc: subprocess.Popen[bytes]) -> None:
                 check=False,
             )
         else:
-            os.killpg(proc.pid, signal.SIGKILL)
+            killpg = getattr(os, "killpg", None)
+            sigkill = getattr(signal, "SIGKILL", 9)
+            if callable(killpg):
+                killpg(proc.pid, sigkill)
+            else:
+                proc.kill()
     except Exception:
         try:
             proc.kill()
@@ -116,27 +121,33 @@ class ToolRunner:
             cwd = Path(spec.cwd).resolve() if spec.cwd else Path(sandbox)
             if not cwd.exists() or not cwd.is_dir():
                 return self._blocked("CWD_NOT_AVAILABLE")
-            env = {"PATH": os.environ.get("PATH", ""), "PYTHONUTF8": "1"}
+            env: dict[str, str] = {"PATH": os.environ.get("PATH", ""), "PYTHONUTF8": "1"}
             if spec.env:
                 env.update({str(k): str(v) for k, v in spec.env.items()})
-            creationflags = 0
-            popen_kwargs: dict[str, object] = {}
-            if os.name == "nt":
-                creationflags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
-            else:
-                popen_kwargs["start_new_session"] = True
             try:
-                proc = subprocess.Popen(
-                    list(spec.argv),
-                    cwd=str(cwd),
-                    stdin=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    env=env,
-                    shell=False,
-                    creationflags=creationflags,
-                    **popen_kwargs,
-                )
+                if os.name == "nt":
+                    creationflags = int(getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0))
+                    proc = subprocess.Popen(
+                        list(spec.argv),
+                        cwd=str(cwd),
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        env=env,
+                        shell=False,
+                        creationflags=creationflags,
+                    )
+                else:
+                    proc = subprocess.Popen(
+                        list(spec.argv),
+                        cwd=str(cwd),
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        env=env,
+                        shell=False,
+                        start_new_session=True,
+                    )
                 try:
                     stdout, stderr = proc.communicate(spec.stdin_text.encode("utf-8"), timeout=timeout)
                 except subprocess.TimeoutExpired:

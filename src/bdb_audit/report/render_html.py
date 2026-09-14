@@ -5,14 +5,22 @@ import json
 from typing import Mapping
 
 
+def _mapping(value: object) -> Mapping[str, object]:
+    return value if isinstance(value, Mapping) else {}
+
+
+def _items(value: object) -> tuple[object, ...]:
+    return tuple(value) if isinstance(value, (list, tuple)) else ()
+
+
 def render_html(report: Mapping[str, object]) -> str:
     def esc(value: object) -> str:
         return html.escape(str(value), quote=True)
 
-    source = report.get("source_identity") if isinstance(report.get("source_identity"), Mapping) else {}
-    cut = report.get("history_cut") if isinstance(report.get("history_cut"), Mapping) else {}
-    findings = report.get("findings") if isinstance(report.get("findings"), (list, tuple)) else ()
-    unknowns = report.get("unknowns") if isinstance(report.get("unknowns"), (list, tuple)) else ()
+    source = _mapping(report.get("source_identity"))
+    cut = _mapping(report.get("history_cut"))
+    findings = _items(report.get("findings"))
+    unknowns = _items(report.get("unknowns"))
     chunks = [
         "<!doctype html><html><head><meta charset=\"utf-8\"><title>BDB Audit report</title></head><body>",
         "<h1>BDB Audit — exact-cut report</h1>",

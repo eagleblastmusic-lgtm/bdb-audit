@@ -72,6 +72,14 @@ except Exception as exc:
 '''
 
 
+def _timeout_output(value: bytes | str | None) -> bytes:
+    if value is None:
+        return b""
+    if isinstance(value, bytes):
+        return value
+    return value.encode("utf-8", errors="replace")
+
+
 class SmallTargetCorpusRunner:
     def __init__(self, timeout_seconds: float = 5.0):
         self.timeout_seconds = timeout_seconds
@@ -111,7 +119,7 @@ class SmallTargetCorpusRunner:
                     passed = 0
                     failed = 0
             except subprocess.TimeoutExpired as exc:
-                raw = ((exc.stdout or "") + "\n" + (exc.stderr or "")).encode("utf-8", errors="replace")
+                raw = _timeout_output(exc.stdout) + b"\n" + _timeout_output(exc.stderr)
                 proc = None
                 label = "BLOCKED"
                 status = "BLOCKED"

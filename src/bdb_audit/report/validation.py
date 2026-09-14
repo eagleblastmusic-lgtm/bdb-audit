@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Mapping, Sequence
+from typing import Mapping
 
 from ..core.errors import ValidationError
 
@@ -9,6 +9,12 @@ _REQUIRED_TOP_LEVEL = (
     "termination_state", "campaign_completed", "findings", "coverage", "evidence_index",
     "contradictions", "stop_evaluations", "unknowns",
 )
+
+
+def _items(value: object) -> tuple[object, ...]:
+    if isinstance(value, (list, tuple)):
+        return tuple(value)
+    return ()
 
 
 def validate_report(report: Mapping[str, object]) -> dict:
@@ -36,8 +42,9 @@ def validate_report(report: Mapping[str, object]) -> dict:
         if not isinstance(report.get(key), (list, tuple)):
             raise ValidationError("REPORT_SECTION_INVALID", key)
 
+    findings = _items(report.get("findings"))
     material_without_evidence: list[str] = []
-    for finding in report.get("findings", ()):  # type: ignore[union-attr]
+    for finding in findings:
         if not isinstance(finding, Mapping):
             raise ValidationError("REPORT_FINDING_INVALID")
         statement = str(finding.get("statement", "")).strip()
@@ -51,13 +58,15 @@ def validate_report(report: Mapping[str, object]) -> dict:
             material_without_evidence.append(str(token))
     if material_without_evidence:
         raise ValidationError("REPORT_MATERIAL_CLAIM_EVIDENCE_REQUIRED", ",".join(sorted(material_without_evidence)))
+    root_causes = _items(report.get("root_causes"))
+    unknowns = _items(report.get("unknowns"))
     return {
         "status": "PASS",
         "report_status": report.get("report_status"),
         "report_version": version,
-        "finding_count": len(report.get("findings", ())),
-        "root_cause_count": len(report.get("root_causes", ())) if isinstance(report.get("root_causes", ()), (list, tuple)) else 0,
-        "unknown_count": len(report.get("unknowns", ())),
+        "finding_count": len(findings),
+        "root_cause_count": len(root_causes),
+        "unknown_count": len(unknowns),
     }
 
 

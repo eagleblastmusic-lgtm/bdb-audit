@@ -11,9 +11,17 @@ def _escape(value: object) -> str:
     return text.replace("\r", " ").replace("\n", " ")
 
 
+def _mapping(value: object) -> Mapping[str, object]:
+    return value if isinstance(value, Mapping) else {}
+
+
+def _items(value: object) -> tuple[object, ...]:
+    return tuple(value) if isinstance(value, (list, tuple)) else ()
+
+
 def render_markdown(report: Mapping[str, object]) -> str:
-    source = report.get("source_identity") if isinstance(report.get("source_identity"), Mapping) else {}
-    cut = report.get("history_cut") if isinstance(report.get("history_cut"), Mapping) else {}
+    source = _mapping(report.get("source_identity"))
+    cut = _mapping(report.get("history_cut"))
     lines = [
         "# BDB Audit — exact-cut report",
         "",
@@ -25,7 +33,7 @@ def render_markdown(report: Mapping[str, object]) -> str:
         "",
         "## Findings",
     ]
-    findings = report.get("findings") if isinstance(report.get("findings"), (list, tuple)) else ()
+    findings = _items(report.get("findings"))
     if not findings:
         lines.append("NOT_ASSESSED / no accepted finding claim is present at this cut. This is not a defect-free assertion.")
     else:
@@ -38,8 +46,8 @@ def render_markdown(report: Mapping[str, object]) -> str:
                 _escape(finding.get("statement", "")),
                 f"Lifecycle: `{_escape(finding.get('lifecycle_status', 'UNADJUDICATED'))}`",
             ])
-            evidence = finding.get("evidence_qualification_refs")
-            if isinstance(evidence, (list, tuple)) and evidence:
+            evidence = _items(finding.get("evidence_qualification_refs"))
+            if evidence:
                 lines.append("Evidence refs:")
                 for ref in evidence:
                     if isinstance(ref, Mapping):
@@ -56,8 +64,8 @@ def render_markdown(report: Mapping[str, object]) -> str:
     )
     for title, key in sections:
         lines.extend(["", f"## {title}"])
-        value = report.get(key)
-        if not isinstance(value, (list, tuple)) or not value:
+        value = _items(report.get(key))
+        if not value:
             lines.append("NOT_ASSESSED / no represented rows at this exact cut.")
         else:
             for item in value:

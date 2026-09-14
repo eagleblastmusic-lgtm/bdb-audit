@@ -105,8 +105,8 @@ class ReportBuilder:
             axes: dict[str, Any] = {}
             evidence_refs: list[dict[str, Any]] = []
             for axis in _AXES:
-                row = axis_rows.get(axis)
-                if row is None:
+                axis_row = axis_rows.get(axis)
+                if axis_row is None:
                     axes[axis] = {"status": "NOT_ASSESSED"}
                     unknowns.append({
                         "type": "FINDING_AXIS_NOT_ASSESSED",
@@ -114,11 +114,11 @@ class ReportBuilder:
                         "axis": axis,
                     })
                     continue
-                axis_body = row["body"]
+                axis_body = axis_row["body"]
                 axes[axis] = {
                     "status": axis_body.get("epistemic_outcome", "UNKNOWN"),
                     "method": axis_body.get("method"),
-                    "assessment_ref": dict(row["ref"]),
+                    "assessment_ref": dict(axis_row["ref"]),
                 }
                 evidence_refs.extend(_safe_refs(axis_body.get("evidence_qualification_refs")))
                 if axis_body.get("epistemic_outcome") in {"INCONCLUSIVE", "BLOCKED"}:
