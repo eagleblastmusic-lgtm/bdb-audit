@@ -293,6 +293,13 @@ def evaluate_continuous_holdout(
     if not holdout.manifests:
         qualification_reasons.append("HOLDOUT_EMPTY")
 
+    all_receipt_ids = [run.receipt.receipt_id for run in holdout_runs] + [
+        receipt.receipt_id for receipt in anti_bypass_receipts
+    ]
+    for receipt_id in sorted(set(all_receipt_ids)):
+        if all_receipt_ids.count(receipt_id) > 1:
+            qualification_reasons.append(f"RUN_RECEIPT_ID_REUSED_ACROSS_GATE:{receipt_id}")
+
     observed, holdout_failures = _validate_holdout_runs(holdout, holdout_runs)
     qualification_reasons.extend(holdout_failures)
     metrics, metric_gate = _score(holdout, observed)
