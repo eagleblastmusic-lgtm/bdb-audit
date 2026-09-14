@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 
+from bdb_audit.qualification.continuous import FrozenHoldout
+from bdb_audit.qualification.receipts import BenchmarkManifest
 from bdb_audit.vnext_cli import create_parser, run_cli
 
 
@@ -9,6 +11,39 @@ def _write(tmp_path, name: str, value: object) -> str:
     path = tmp_path / name
     path.write_text(json.dumps(value), encoding="utf-8")
     return str(path)
+
+
+def _receipt(
+    benchmark_id: str,
+    target_id: str,
+    observed_label: str | None = None,
+    *,
+    receipt_id: str | None = None,
+    status: str = "PASS",
+    exit_code: int = 0,
+    passed: int = 1,
+    failed: int = 0,
+) -> dict[str, object]:
+    details: dict[str, str] = {}
+    if observed_label is not None:
+        details["observed_label"] = observed_label
+    return {
+        "receipt_id": receipt_id or f"receipt-{target_id}",
+        "benchmark_id": benchmark_id,
+        "target_id": target_id,
+        "checker_id": "cli-contract-checker",
+        "execution_timestamp": "2026-09-15T00:00:00Z",
+        "exit_code": exit_code,
+        "status": status,
+        "raw_output_digest": "d" * 64,
+        "evaluated_cases_count": 1,
+        "passed_cases_count": passed,
+        "failed_cases_count": failed,
+        "unsupported_cases_count": 0,
+        "unknown_cases_count": 0,
+        "execution_duration_ms": 1,
+        "details": details,
+    }
 
 
 def test_vnext_cli_exposes_operational_vnext_surfaces():
@@ -24,24 +59,73 @@ def test_vnext_cli_exposes_operational_vnext_surfaces():
     assert parser.parse_args(["share", "verify", "--file", "x", "--key-hex", "00"]).command == "share"
 
 
-def test_cli_continuous_qualification_is_fail_closed_and_machine_readable(tmp_path, capsys):
+def test_cli_continuous_qualification_is_receipt_bound_fail_closed_and_machine_readable(tmp_path, capsys):
+    holdout_rows = [
+        {"benchmark_id": "b1", "target_id": "clean", "target_sha": "a" * 40, "expected_label": "CLEAN", "split_membership": "HOLDOUT"},
+        {"benchmark_id": "b2", "target_id": "bad", "target_sha": "b" * 40, "expected_label": "DEFECTIVE", "split_membership": "HOLDOUT"},
+    ]
+    frozen = FrozenHoldout.freeze(tuple(
+        BenchmarkManifest(
+            str(row["benchmark_id"]),
+            str(row["target_id"]),
+            str(row["target_sha"]),
+            str(row["expected_label"]),
+            split_membership="HOLDOUT",
+        )
+        for row in holdout_rows
+    ))
     base = {
-        "holdout": [
-            {"benchmark_id": "b1", "target_id": "clean", "target_sha": "a" * 40, "expected_label": "CLEAN", "split_membership": "HOLDOUT"},
-            {"benchmark_id": "b2", "target_id": "bad", "target_sha": "b" * 40, "expected_label": "DEFECTIVE", "split_membership": "HOLDOUT"},
+        "holdout": holdout_rows,
+        "expected_commitment_sha256": frozen.commitment_sha256,
+        "holdout_runs": [
+            {
+                "manifest": holdout_rows[0],
+                "observed_label": "CLEAN",
+                "receipt": _receipt("b1", "clean", "CLEAN"),
+            },
+            {
+                "manifest": holdout_rows[1],
+                "observed_label": "DEFECTIVE",
+                "receipt": _receipt("b2", "bad", "DEFECTIVE"),
+            },
         ],
+        "required_anti_bypass_ids": ["validator_disabled"],
+        "anti_bypass_receipts": [
+            _receipt("anti-bypass:validator_disabled", "validator_disabled", receipt_id="anti-validator-disabled")
+        ],
+    }
+    path = _write(tmp_path, "qualification.json", base)
+    assert run_cli(["qualification", "continuous", "--file", path]) == 0
+    output = capsys.readouterr().out
+    assert '"qualified": true' in output
+    assert '"verified_run_receipt_digests"' in output
+
+    base["anti_bypass_receipts"] = [
+        _receipt(
+            "anti-bypass:validator_disabled",
+            "validator_disabled",
+            receipt_id="anti-validator-disabled-fail",
+            status="FAIL",
+            exit_code=1,
+            passed=0,
+            failed=1,
+        )
+    ]
+    path = _write(tmp_path, "qualification-fail.json", base)
+    assert run_cli(["qualification", "continuous", "--file", path]) == 3
+    assert "ANTI_BYPASS_FAILED:validator_disabled" in capsys.readouterr().out
+
+    legacy = {
+        "holdout": holdout_rows,
         "observed": {"clean": "CLEAN", "bad": "DEFECTIVE"},
         "required_anti_bypass_ids": ["validator_disabled"],
         "anti_bypass_results": {"validator_disabled": True},
     }
-    path = _write(tmp_path, "qualification.json", base)
-    assert run_cli(["qualification", "continuous", "--file", path]) == 0
-    assert '"qualified": true' in capsys.readouterr().out
-
-    base["anti_bypass_results"] = {"validator_disabled": False}
-    path = _write(tmp_path, "qualification-fail.json", base)
-    assert run_cli(["qualification", "continuous", "--file", path]) == 3
-    assert "ANTI_BYPASS_FAILED" in capsys.readouterr().out
+    path = _write(tmp_path, "qualification-legacy-declarative.json", legacy)
+    assert run_cli(["qualification", "continuous", "--file", path]) == 1
+    output = capsys.readouterr().out
+    assert "holdout_runs must be an array" in output
+    assert '"qualified": true' not in output
 
 
 def test_cli_strategy_benchmark_requires_measured_unique_gain(tmp_path, capsys):
