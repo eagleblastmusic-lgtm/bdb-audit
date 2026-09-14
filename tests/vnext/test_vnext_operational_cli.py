@@ -108,7 +108,7 @@ def test_cli_feature_matrix_requires_declared_denominator_and_trend_scope_is_exp
         }],
         "assessments": [{
             "behavior_id": "f:happy", "source_identity": "src", "status": "PASS", "executed": True,
-            "oracle_status": "QUALIFIED", "run_receipt_digest": "r" * 64,
+            "oracle_status": "QUALIFIED", "run_receipt_digest": "d" * 64,
         }],
         "required_behavior_ids": {"f": ["f:happy"]},
     }
