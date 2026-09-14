@@ -102,7 +102,7 @@ def _receipt_shape_failures(
     reasons: list[str] = []
     if not _is_sha256(receipt.raw_output_digest):
         reasons.append(f"HOLDOUT_RECEIPT_RAW_DIGEST_INVALID:{target_id}")
-    if not receipt.execution_timestamp:
+    if not receipt.execution_timestamp.strip():
         reasons.append(f"HOLDOUT_RECEIPT_TIMESTAMP_MISSING:{target_id}")
     if receipt.execution_duration_ms <= 0:
         reasons.append(f"HOLDOUT_RECEIPT_DURATION_MISSING:{target_id}")
@@ -213,11 +213,15 @@ def _anti_bypass_receipt_failures(
     receipt: ActualRunReceipt,
 ) -> list[str]:
     reasons: list[str] = []
+    if not control_id.strip():
+        reasons.append("ANTI_BYPASS_CONTROL_ID_MISSING")
+    if not receipt.benchmark_id.strip():
+        reasons.append(f"ANTI_BYPASS_BENCHMARK_ID_MISSING:{control_id}")
     if receipt.target_id != control_id:
         reasons.append(f"ANTI_BYPASS_TARGET_MISMATCH:{control_id}")
     if not _is_sha256(receipt.raw_output_digest):
         reasons.append(f"ANTI_BYPASS_RAW_DIGEST_INVALID:{control_id}")
-    if not receipt.execution_timestamp:
+    if not receipt.execution_timestamp.strip():
         reasons.append(f"ANTI_BYPASS_TIMESTAMP_MISSING:{control_id}")
     if receipt.execution_duration_ms <= 0:
         reasons.append(f"ANTI_BYPASS_DURATION_MISSING:{control_id}")
@@ -243,6 +247,9 @@ def _validate_anti_bypass_receipts(
     supplied_receipt_ids = [receipt.receipt_id for receipt in receipts]
     required_list = list(required_ids)
 
+    for control_id in required_list:
+        if not control_id.strip():
+            reasons.append("ANTI_BYPASS_REQUIRED_ID_MISSING")
     for control_id in sorted(set(required_list)):
         if required_list.count(control_id) > 1:
             reasons.append(f"ANTI_BYPASS_REQUIRED_ID_DUPLICATE:{control_id}")
@@ -257,7 +264,7 @@ def _validate_anti_bypass_receipts(
     denominator = required if required else tuple(sorted(set(supplied_targets)))
     denominator_set = set(denominator)
     supplied_set = set(supplied_targets)
-    if not denominator:
+    if not denominator or all(not control_id.strip() for control_id in denominator):
         reasons.append("ANTI_BYPASS_SET_EMPTY")
     for control_id in sorted(denominator_set - supplied_set):
         reasons.append(f"ANTI_BYPASS_MISSING:{control_id}")
