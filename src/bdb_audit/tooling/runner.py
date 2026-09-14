@@ -24,7 +24,6 @@ class CapabilityPolicy:
     max_seconds: float = 30.0
     max_output_bytes: int = 1_000_000
     network_isolation: str = "UNAVAILABLE"
-    external_network_guard: bool = False
 
     def permits(self, executable: str) -> bool:
         name = Path(executable).name.lower()
@@ -78,7 +77,12 @@ def _kill_process_tree(proc: subprocess.Popen[bytes]) -> None:
         return
     try:
         if os.name == "nt":
-            subprocess.run(["taskkill", "/PID", str(proc.pid), "/T", "/F"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+            subprocess.run(
+                ["taskkill", "/PID", str(proc.pid), "/T", "/F"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=False,
+            )
         else:
             os.killpg(proc.pid, signal.SIGKILL)
     except Exception:
@@ -96,7 +100,7 @@ class ToolRunner:
         executable = shutil.which(spec.argv[0]) or spec.argv[0]
         if not self.policy.permits(executable):
             return self._blocked("EXECUTABLE_NOT_ALLOWED")
-        if spec.require_no_network and not (self.policy.network_isolation == "EXTERNAL_ENFORCED" and self.policy.external_network_guard):
+        if spec.require_no_network:
             return self._blocked("NETWORK_ISOLATION_NOT_ENFORCED")
 
         timeout = min(spec.timeout_seconds or self.policy.max_seconds, self.policy.max_seconds)
@@ -122,7 +126,17 @@ class ToolRunner:
             else:
                 popen_kwargs["start_new_session"] = True
             try:
-                proc = subprocess.Popen(list(spec.argv), cwd=str(cwd), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, shell=False, creationflags=creationflags, **popen_kwargs)
+                proc = subprocess.Popen(
+                    list(spec.argv),
+                    cwd=str(cwd),
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    env=env,
+                    shell=False,
+                    creationflags=creationflags,
+                    **popen_kwargs,
+                )
                 try:
                     stdout, stderr = proc.communicate(spec.stdin_text.encode("utf-8"), timeout=timeout)
                 except subprocess.TimeoutExpired:
@@ -155,7 +169,19 @@ class ToolRunner:
             status = "BLOCKED"
         else:
             status = "PASS"
-        return ToolRunReceipt(status, code, timed_out, stdout_text, stderr_text, hashlib.sha256(stdout).hexdigest(), hashlib.sha256(stderr).hexdigest(), max(1, int((time.monotonic() - started) * 1000)), cleanup, "ENFORCED" if spec.require_no_network else "NOT_REQUESTED", tuple(sorted(set(reasons))))
+        return ToolRunReceipt(
+            status,
+            code,
+            timed_out,
+            stdout_text,
+            stderr_text,
+            hashlib.sha256(stdout).hexdigest(),
+            hashlib.sha256(stderr).hexdigest(),
+            max(1, int((time.monotonic() - started) * 1000)),
+            cleanup,
+            "NOT_REQUESTED",
+            tuple(sorted(set(reasons))),
+        )
 
     @staticmethod
     def _blocked(reason: str) -> ToolRunReceipt:
