@@ -6,6 +6,7 @@ participate in storage paths; identity is the RawDigest of exact bytes.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 import os
 from pathlib import Path
 import tempfile
@@ -154,6 +155,26 @@ class RawArtifactVault:
         if raw_digest(raw).value != digest:
             raise ValidationError("RAW_VAULT_READBACK_FAILED")
         return raw
+
+    def read_metadata(self, digest: str) -> dict:
+        """Return verified vault metadata without exposing raw content bytes."""
+        blob_path, metadata_path = self._paths(digest)
+        if not blob_path.is_file() or not metadata_path.is_file():
+            raise ValidationError("RAW_ARTIFACT_NOT_FOUND", digest)
+        raw = self.read_bytes(digest)
+        try:
+            body = json.loads(metadata_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            raise ValidationError("RAW_VAULT_METADATA_INVALID", digest) from exc
+        expected = {
+            "raw_digest": digest,
+            "byte_length": len(raw),
+            "media_type": body.get("media_type"),
+            "digest_profile": "SHA-256",
+        }
+        if body != expected or not isinstance(body.get("media_type"), str) or not body["media_type"].strip():
+            raise ValidationError("RAW_VAULT_METADATA_CONFLICT", digest)
+        return body
 
 
 __all__ = ["RawArtifactVault", "RawVaultReceipt"]
