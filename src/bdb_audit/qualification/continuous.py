@@ -322,7 +322,7 @@ def evaluate_continuous_holdout(
         and anti_passed == anti_total
         and not anti_failures
     )
-    verified_receipts = ()
+    verified_receipts: tuple[str, ...] = ()
     if qualified:
         verified_receipts = tuple(
             sorted(
