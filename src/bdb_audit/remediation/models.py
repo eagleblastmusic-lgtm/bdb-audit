@@ -60,7 +60,7 @@ class RemediationPlan:
     source_identity: Mapping[str, Any] = field(default_factory=dict)
     repair_units: Sequence[RepairUnit] = field(default_factory=tuple)
     unresolved_inputs: Sequence[Mapping[str, Any]] = field(default_factory=tuple)
-    plan_version: str = "2"
+    plan_version: str = "1"
     status: str = "PROPOSED"
 
     def as_dict(self) -> dict[str, Any]:
