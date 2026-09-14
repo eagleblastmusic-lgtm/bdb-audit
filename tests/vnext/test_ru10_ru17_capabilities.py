@@ -14,18 +14,18 @@ from bdb_audit.tooling import CapabilityPolicy, ToolRunSpec, ToolRunner
 
 
 def _runner() -> ToolRunner:
-    return ToolRunner(CapabilityPolicy(allowed_executables=(sys.executable,), network_isolation="EXTERNAL_ENFORCED", external_network_guard=True, max_seconds=2))
+    return ToolRunner(CapabilityPolicy(allowed_executables=(sys.executable,), max_seconds=2))
 
 
 def test_ru10_runner_pass_timeout_and_fail_closed_network():
     runner = _runner()
-    ok = runner.run(ToolRunSpec((sys.executable, "-c", "print('ok')")))
+    ok = runner.run(ToolRunSpec((sys.executable, "-c", "print('ok')"), require_no_network=False))
     assert ok.qualified_success
     assert ok.stdout.strip() == "ok"
-    blocked = ToolRunner(CapabilityPolicy((sys.executable,))).run(ToolRunSpec((sys.executable, "-c", "print('x')"), require_no_network=True))
+    blocked = runner.run(ToolRunSpec((sys.executable, "-c", "print('x')"), require_no_network=True))
     assert blocked.status == "BLOCKED"
     assert "NETWORK_ISOLATION_NOT_ENFORCED" in blocked.reason_codes
-    timeout = runner.run(ToolRunSpec((sys.executable, "-c", "import time; time.sleep(1)"), timeout_seconds=0.05))
+    timeout = runner.run(ToolRunSpec((sys.executable, "-c", "import time; time.sleep(1)"), timeout_seconds=0.05, require_no_network=False))
     assert timeout.status == "TIMEOUT"
     assert timeout.timed_out
 
@@ -33,18 +33,18 @@ def test_ru10_runner_pass_timeout_and_fail_closed_network():
 def test_ru11_pass_requires_real_execution_and_independent_oracle():
     verifier = FunctionalVerifier(_runner())
     oracle = ExpectedOracle("o1", "CONTRACT", stdout_contains="READY")
-    passed = verifier.verify(BehaviorCase("c1", "f1", (sys.executable, "-c", "print('READY')"), oracle))
+    passed = verifier.verify(BehaviorCase("c1", "f1", (sys.executable, "-c", "print('READY')"), oracle, require_no_network=False))
     assert passed.status == "PASS" and passed.executed and passed.oracle_qualified
-    mock = verifier.verify(BehaviorCase("c2", "f1", (sys.executable, "-c", "print('READY')"), oracle, mock_only=True))
+    mock = verifier.verify(BehaviorCase("c2", "f1", (sys.executable, "-c", "print('READY')"), oracle, require_no_network=False, mock_only=True))
     assert mock.status == "INSUFFICIENT"
-    copied = verifier.verify(BehaviorCase("c3", "f1", (sys.executable, "-c", "print('READY')"), ExpectedOracle("o2", "IMPLEMENTATION", stdout_contains="READY")))
+    copied = verifier.verify(BehaviorCase("c3", "f1", (sys.executable, "-c", "print('READY')"), ExpectedOracle("o2", "IMPLEMENTATION", stdout_contains="READY"), require_no_network=False))
     assert copied.status == "INSUFFICIENT"
     matrix = verifier.matrix((FeatureRevision("f1", "1", "task", ("cli",)),), (passed, mock))
     assert matrix["features"][0]["status"] == "INSUFFICIENT"
 
 
 def test_ru12b_projection_drills_to_evidence_and_blockers():
-    assessment = FunctionalVerifier(_runner()).verify(BehaviorCase("case", "feature", (sys.executable, "-c", "print('wrong')"), ExpectedOracle("oracle", "USER_TASK", stdout_contains="expected")))
+    assessment = FunctionalVerifier(_runner()).verify(BehaviorCase("case", "feature", (sys.executable, "-c", "print('wrong')"), ExpectedOracle("oracle", "USER_TASK", stdout_contains="expected"), require_no_network=False))
     projection = VerifiedMatrixProjection("source@abc", "cut123", (assessment,), ("contradiction-1",))
     row = projection.explain("case")
     assert row["source_identity"] == "source@abc"
