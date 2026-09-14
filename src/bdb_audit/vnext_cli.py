@@ -279,7 +279,7 @@ def _run_feature_verification(data: Mapping[str, Any]) -> tuple[dict[str, object
         _str_tuple(oracle_raw.get("source_refs")),
     )
     testability = assess_testability(behavior, _str_tuple(data.get("available_adapters")))
-    plan = plan_verification(
+    verification_plan = plan_verification(
         source_identity=str(data["source_identity"]),
         behavior=behavior,
         oracle=oracle,
@@ -289,21 +289,21 @@ def _run_feature_verification(data: Mapping[str, Any]) -> tuple[dict[str, object
         fixture_refs=_str_tuple(data.get("fixture_refs")),
         environment_identity=str(data.get("environment_identity", "LOCAL_DECLARED")),
     )
-    spec = CliBehaviorAdapter.to_tool_spec(
-        plan,
+    tool_spec = CliBehaviorAdapter.to_tool_spec(
+        verification_plan,
         ruleset_ref=str(data.get("ruleset_ref", "functional-cli-v1")),
         require_no_network=bool(data.get("require_no_network", True)),
     )
-    allowed_executables = _str_tuple(data.get("authorized_executables")) or (spec.argv[0],)
+    allowed_executables = _str_tuple(data.get("authorized_executables")) or (tool_spec.argv[0],)
     authorization = ActionAuthorization(
         ("FUNCTIONAL_VERIFICATION",),
         allowed_executables,
         _str_tuple(data.get("allowed_work_roots")),
     )
-    run_result = OperationalToolSupervisor(authorization).run(spec)
-    assessment = qualify_behavior(plan, run_result)
+    run_result = OperationalToolSupervisor(authorization).run(tool_spec)
+    assessment = qualify_behavior(verification_plan, run_result)
     output: dict[str, object] = {
-        "plan": asdict(plan),
+        "plan": asdict(verification_plan),
         "run": asdict(run_result),
         "assessment": asdict(assessment),
     }
@@ -320,12 +320,12 @@ def run_cli(argv: list[str] | None = None) -> int:
             snapshot = ReportBuilder.from_path(args.store).build()
             report = snapshot.as_dict()
             validate_report(report)
-            plan = RemediationPlanner(snapshot).build().as_dict()
-            validate_remediation_plan(plan)
+            report_remediation_plan = RemediationPlanner(snapshot).build().as_dict()
+            validate_remediation_plan(report_remediation_plan)
             if args.format == "bundle":
-                result = export_report_bundle(snapshot, plan, args.out)
-                result["section_completeness"] = section_completeness(report, remediation_plan=plan)
-                _json(result)
+                export_result = export_report_bundle(snapshot, report_remediation_plan, args.out)
+                export_result["section_completeness"] = section_completeness(report, remediation_plan=report_remediation_plan)
+                _json(export_result)
             else:
                 root = Path(args.out)
                 root.parent.mkdir(parents=True, exist_ok=True)
@@ -340,16 +340,16 @@ def run_cli(argv: list[str] | None = None) -> int:
             return 0
         if args.command == "remediation" and args.action == "export":
             snapshot = ReportBuilder.from_path(args.store).build()
-            plan = RemediationPlanner(snapshot).build().as_dict()
-            validate_remediation_plan(plan)
+            remediation_plan = RemediationPlanner(snapshot).build().as_dict()
+            validate_remediation_plan(remediation_plan)
             out = Path(args.out)
             out.parent.mkdir(parents=True, exist_ok=True)
-            out.write_text(json.dumps(plan, ensure_ascii=False, sort_keys=True, indent=2), encoding="utf-8")
-            _json({"status": "PASS", "path": str(out), "repair_unit_count": len(plan["repair_units"])})
+            out.write_text(json.dumps(remediation_plan, ensure_ascii=False, sort_keys=True, indent=2), encoding="utf-8")
+            _json({"status": "PASS", "path": str(out), "repair_unit_count": len(remediation_plan["repair_units"])})
             return 0
         if args.command == "remediation" and args.action == "validate":
-            plan = json.loads(Path(args.file).read_text(encoding="utf-8"))
-            _json(validate_remediation_plan(plan))
+            remediation_payload = json.loads(Path(args.file).read_text(encoding="utf-8"))
+            _json(validate_remediation_plan(remediation_payload))
             return 0
         if args.command == "coverage":
             store = TransactionalHistoryStore(args.store)
@@ -368,22 +368,30 @@ def run_cli(argv: list[str] | None = None) -> int:
             assessment_values = data.get("assessments")
             if not isinstance(feature_values, list) or not isinstance(assessment_values, list):
                 raise ValueError("features and assessments must be arrays")
-            result = feature_status_matrix(
+            feature_matrix_result = feature_status_matrix(
                 tuple(_feature_revision(item) for item in feature_values),
                 tuple(_behavior_assessment(item) for item in assessment_values),
             )
-            _json(result)
+            _json(feature_matrix_result)
             return 0
         if args.command == "features" and args.action == "verify":
-            result, code = _run_feature_verification(_load_object(args.file))
-            _json(result)
+            feature_verify_result, code = _run_feature_verification(_load_object(args.file))
+            _json(feature_verify_result)
             return code
         if args.command == "tools":
-            spec = _tool_spec(args)
-            auth = ActionAuthorization(("OPERATOR_EXPLICIT_TOOL",), (spec.argv[0],), (args.cwd,) if args.cwd else ())
+            explicit_tool_spec = _tool_spec(args)
+            auth = ActionAuthorization(
+                ("OPERATOR_EXPLICIT_TOOL",),
+                (explicit_tool_spec.argv[0],),
+                (args.cwd,) if args.cwd else (),
+            )
             supervisor = OperationalToolSupervisor(auth)
-            result = supervisor.inspect(spec) if args.action == "inspect" else supervisor.run(spec).__dict__
-            _json(result)
+            tool_result = (
+                supervisor.inspect(explicit_tool_spec)
+                if args.action == "inspect"
+                else supervisor.run(explicit_tool_spec).__dict__
+            )
+            _json(tool_result)
             return 0
         if args.command == "qualification" and args.action == "continuous":
             data = _load_object(args.file)
@@ -393,14 +401,14 @@ def run_cli(argv: list[str] | None = None) -> int:
             holdout = FrozenHoldout.freeze(tuple(_benchmark(item) for item in holdout_values))
             observed_raw = _object(data.get("observed"), "observed")
             bypass_raw = _object(data.get("anti_bypass_results"), "anti_bypass_results")
-            result = evaluate_continuous_holdout(
+            qualification_result = evaluate_continuous_holdout(
                 holdout,
                 {str(key): str(value) for key, value in observed_raw.items()},
                 {str(key): value is True for key, value in bypass_raw.items()},
                 required_anti_bypass_ids=_str_tuple(data.get("required_anti_bypass_ids")),
             )
-            _json(asdict(result))
-            return 0 if result.qualified else 3
+            _json(asdict(qualification_result))
+            return 0 if qualification_result.qualified else 3
         if args.command == "strategy" and args.action == "validate":
             data = _load_object(args.file)
             profile_raw = _object(data.get("profile"), "profile")
@@ -416,7 +424,7 @@ def run_cli(argv: list[str] | None = None) -> int:
                 int(profile_raw.get("max_budget_units", 0)),
             )
             lanes = tuple(_lane(item) for item in lane_values)
-            plan = StrategyPlan(
+            strategy_plan = StrategyPlan(
                 str(plan_raw.get("revision", "1")),
                 str(plan_raw["source_identity"]),
                 str(plan_raw["history_cut_digest"]),
@@ -424,18 +432,18 @@ def run_cli(argv: list[str] | None = None) -> int:
                 int(plan_raw.get("budget_units", sum(lane.cost_units for lane in lanes))),
                 str(plan_raw.get("state", "PLAN_PROPOSED")),
             )
-            result = validate_plan(plan, profile)
-            _json(result)
-            return 0 if result.get("status") == "VALIDATED" else 3
+            strategy_validation_result = validate_plan(strategy_plan, profile)
+            _json(strategy_validation_result)
+            return 0 if strategy_validation_result.get("status") == "VALIDATED" else 3
         if args.command == "strategy" and args.action == "benchmark":
             data = _load_object(args.file)
-            result = compare_adaptive_to_baseline(
+            strategy_benchmark_result = compare_adaptive_to_baseline(
                 _strategy_run(data.get("baseline")),
                 _strategy_run(data.get("adaptive")),
                 required_baseline_root_causes=_str_tuple(data.get("required_baseline_root_causes")),
             )
-            _json(asdict(result))
-            return 0 if result.benefit_demonstrated else 3
+            _json(asdict(strategy_benchmark_result))
+            return 0 if strategy_benchmark_result.benefit_demonstrated else 3
         if args.command == "opportunities" and args.action == "review":
             data = _load_object(args.file)
             context_raw = _object(data.get("context"), "context")
@@ -466,34 +474,36 @@ def run_cli(argv: list[str] | None = None) -> int:
                 str(proposal_raw.get("consumer_report_section", "PRODUCT_AND_UX_OPPORTUNITIES")),
             )
             simpler = data.get("simpler_alternative")
-            result = qualify_opportunity_for_report(
+            opportunity_decision = qualify_opportunity_for_report(
                 proposal,
                 context,
                 existing_feature_titles=_str_tuple(data.get("existing_feature_titles")),
                 simpler_alternative=str(simpler) if simpler is not None else None,
             )
-            _json(asdict(result))
-            return 0 if result.status == "ACCEPT_FOR_REPORT" else 3
+            _json(asdict(opportunity_decision))
+            return 0 if opportunity_decision.status == "ACCEPT_FOR_REPORT" else 3
         if args.command == "incremental" and args.action == "successor-validate":
             data = _load_object(args.file)
             spec_raw = _object(data.get("spec"), "spec")
-            spec = SuccessorCampaignSpec(
+            successor_spec = SuccessorCampaignSpec(
                 str(spec_raw["predecessor_campaign_id"]),
                 str(spec_raw["predecessor_conclusion_digest"]),
                 str(spec_raw["predecessor_source_identity"]),
                 str(spec_raw["successor_campaign_id"]),
                 str(spec_raw["successor_source_identity"]),
             )
-            result = validate_successor_selection(
-                spec,
+            successor_result = validate_successor_selection(
+                successor_spec,
                 predecessor_is_concluded=bool(data.get("predecessor_is_concluded", False)),
                 predecessor_source_after=str(data.get("predecessor_source_after", "")),
                 predecessor_state_after=str(data.get("predecessor_state_after", "")),
                 competing_successor_refs=_str_tuple(data.get("competing_successor_refs")),
-                selected_successor_ref=str(data["selected_successor_ref"]) if data.get("selected_successor_ref") is not None else None,
+                selected_successor_ref=str(data["selected_successor_ref"])
+                if data.get("selected_successor_ref") is not None
+                else None,
             )
-            _json(result)
-            return 0 if result.get("status") == "PASS" else 3
+            _json(successor_result)
+            return 0 if successor_result.get("status") == "PASS" else 3
         if args.command == "share" and args.action == "trends":
             data = _load_object(args.file)
             snapshot_values = data.get("snapshots")
@@ -509,9 +519,9 @@ def run_cli(argv: list[str] | None = None) -> int:
                     int(raw["qualified"]),
                     int(raw["denominator"]),
                 ))
-            result = compare_trend(tuple(snapshots))
-            _json(result)
-            return 0 if result.get("status") == "COMPARABLE" else 3
+            trend_result = compare_trend(tuple(snapshots))
+            _json(trend_result)
+            return 0 if trend_result.get("status") == "COMPARABLE" else 3
         if args.command == "share" and args.action == "verify":
             data = _load_object(args.file)
             bundle = RecipientBundle(
@@ -524,13 +534,13 @@ def run_cli(argv: list[str] | None = None) -> int:
                 _str_tuple(data.get("removed_private_fields")),
                 str(data.get("signature_profile", "HMAC-SHA256-SHARED-SECRET")),
             )
-            result = verify_recipient_bundle(
+            share_verification_result = verify_recipient_bundle(
                 bundle,
                 signing_key=bytes.fromhex(args.key_hex),
                 expected_key_id=args.expected_key_id,
             )
-            _json(result)
-            return 0 if result.get("status") == "PASS" else 3
+            _json(share_verification_result)
+            return 0 if share_verification_result.get("status") == "PASS" else 3
         return 2
     except Exception as exc:
         _json({"status": "ERROR", "error": type(exc).__name__, "detail": str(exc)})
