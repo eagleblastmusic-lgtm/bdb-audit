@@ -57,6 +57,7 @@ class RepairUnit:
 class RemediationPlan:
     campaign_id: str
     history_cut: Mapping[str, Any]
+    source_identity: Mapping[str, Any] = field(default_factory=dict)
     repair_units: Sequence[RepairUnit] = field(default_factory=tuple)
     unresolved_inputs: Sequence[Mapping[str, Any]] = field(default_factory=tuple)
     plan_version: str = "2"
@@ -68,6 +69,7 @@ class RemediationPlan:
             "status": self.status,
             "campaign_id": self.campaign_id,
             "history_cut": dict(self.history_cut),
+            "source_identity": dict(self.source_identity),
             "repair_units": [u.as_dict() for u in self.repair_units],
             "unresolved_inputs": [dict(v) for v in self.unresolved_inputs],
         }
