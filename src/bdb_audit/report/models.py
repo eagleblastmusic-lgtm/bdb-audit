@@ -21,9 +21,10 @@ class ReportSnapshot:
     coverage: Sequence[Mapping[str, Any]] = field(default_factory=tuple)
     evidence_index: Sequence[Mapping[str, Any]] = field(default_factory=tuple)
     contradictions: Sequence[Mapping[str, Any]] = field(default_factory=tuple)
+    root_causes: Sequence[Mapping[str, Any]] = field(default_factory=tuple)
     stop_evaluations: Sequence[Mapping[str, Any]] = field(default_factory=tuple)
     unknowns: Sequence[Mapping[str, Any]] = field(default_factory=tuple)
-    report_version: str = "1"
+    report_version: str = "2"
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -38,6 +39,7 @@ class ReportSnapshot:
             "coverage": [dict(v) for v in self.coverage],
             "evidence_index": [dict(v) for v in self.evidence_index],
             "contradictions": [dict(v) for v in self.contradictions],
+            "root_causes": [dict(v) for v in self.root_causes],
             "stop_evaluations": [dict(v) for v in self.stop_evaluations],
             "unknowns": [dict(v) for v in self.unknowns],
         }
