@@ -10,6 +10,7 @@ import hashlib
 from typing import Any, Mapping
 
 from ..core.errors import ValidationError
+from ..history.selection import chronological_accepted_records
 from ..history.store import TransactionalHistoryStore
 from ..orchestration.stages import StageSpec
 from .e6 import AdaptiveE6Generator, reconstruct_stop_evaluation, reconstruct_stop_input
@@ -76,7 +77,7 @@ def _resolve_accepted_stop_input_record(
 
 
 def build_next_adaptive_e6_stage_spec(store: TransactionalHistoryStore) -> StageSpec:
-    """Derive the next immutable E6 StageSpec from the latest accepted E6_REQUIRED STOP."""
+    """Derive the next immutable E6 StageSpec from the chronologically latest accepted E6_REQUIRED STOP."""
     # Lazy import avoids coordinator.operations -> e6_history -> workflow package
     # initialization -> history_projection -> coordinator.operations cycle.
     from ..workflow.read_models import current_accepted_cut
@@ -86,7 +87,7 @@ def build_next_adaptive_e6_stage_spec(store: TransactionalHistoryStore) -> Stage
     if head is None:
         raise ValidationError("CAMPAIGN_NOT_FOUND")
 
-    stop_rows = list(store.accepted_records("stop_evaluation", cut))
+    stop_rows = chronological_accepted_records(store, "stop_evaluation", cut)
     if not stop_rows:
         raise ValidationError("E6_REQUIRES_ACCEPTED_STOP_EVALUATION")
     stop_row = stop_rows[-1]
