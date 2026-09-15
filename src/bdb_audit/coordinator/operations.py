@@ -24,6 +24,7 @@ from . import Coordinator
 from ..orchestration.stages import StageSpec
 from ..orchestration.runs import LaneSpec
 from ..orchestration.templates import TemplateRegistry
+from ..stop.e6_history import build_next_adaptive_e6_stage_spec
 
 
 _BASELINE_STAGE_ORDER = ("E1", "E2", "E3", "E4", "E5")
@@ -286,7 +287,7 @@ class AuditOperationApi:
         stage_id: str,
         stage_spec_revision: str = "1",
     ) -> dict[str, Any]:
-        """Accept a StageSpec in baseline declaration order without treating preparation as completion."""
+        """Accept a StageSpec in baseline order; E6 is derived only from accepted STOP history."""
         path = Path(store_path).resolve()
         status = self.get_campaign_status(path)
         if status.get("termination_state", "OPEN") != "OPEN":
@@ -295,22 +296,22 @@ class AuditOperationApi:
         store = TransactionalHistoryStore(path, registry=self.registry)
         coordinator = Coordinator(store)
         head = store.head()
+        if head is None:
+            raise ValidationError("CAMPAIGN_NOT_FOUND")
 
         stage_key = _canonical_stage_key(stage_id)
         prepared_stages = list(status["stages_prepared"])
-        if stage_key in prepared_stages:
-            raise ValidationError("STAGE_ALREADY_PREPARED", f"Stage {stage_key} is already prepared")
 
-        predecessor_requirements: tuple[str, ...]
         if stage_key == "E6":
             if "E5" not in status["stages_completed"]:
                 raise ValidationError(
                     "PREDECESSOR_STAGE_NOT_COMPLETED",
                     "Stage E5 must be completed before preparing E6",
                 )
-            stage_ordinal = 6
-            predecessor_requirements = ("E5",)
+            spec = build_next_adaptive_e6_stage_spec(store)
         else:
+            if stage_key in prepared_stages:
+                raise ValidationError("STAGE_ALREADY_PREPARED", f"Stage {stage_key} is already prepared")
             expected_stage = next((s for s in _BASELINE_STAGE_ORDER if s not in prepared_stages), None)
             if expected_stage is not None and stage_key != expected_stage:
                 raise ValidationError(
@@ -321,16 +322,16 @@ class AuditOperationApi:
             predecessor_requirements = (
                 (_BASELINE_STAGE_ORDER[stage_ordinal - 2],) if stage_ordinal > 1 else ()
             )
-        spec = StageSpec(
-            stage_key=stage_key,
-            stage_spec_revision=stage_spec_revision,
-            stage_role=stage_key,
-            stage_ordinal=stage_ordinal,
-            purpose=f"BDB {stage_key} operational stage",
-            predecessor_requirements=predecessor_requirements,
-            blind_reveal_phase_model="CONTROLLED",
-            transition_policy_ref="TRANSITION_PROFILE_V1",
-        )
+            spec = StageSpec(
+                stage_key=stage_key,
+                stage_spec_revision=stage_spec_revision,
+                stage_role=stage_key,
+                stage_ordinal=stage_ordinal,
+                purpose=f"BDB {stage_key} operational stage",
+                predecessor_requirements=predecessor_requirements,
+                blind_reveal_phase_model="CONTROLLED",
+                transition_policy_ref="TRANSITION_PROFILE_V1",
+            )
         spec_obj = spec.as_object()
 
         parent_head_ref = {"tag": "ACCEPTED_HEAD_REF", **head.as_dict()}
@@ -342,13 +343,13 @@ class AuditOperationApi:
             conn.close()
 
         cmd = CommandEnvelope(
-            command_id=_command_id(f"stage_prep_{stage_key}_{head.commit_seq + 1}"),
+            command_id=_command_id(f"stage_prep_{stage_key}_{spec_obj.digest}_{head.commit_seq + 1}"),
             command_kind="RECORD_FOUNDATION_FACT",
             actor_ref=prior_commit.get("actor_ref", "installation-owner"),
             expected_parent_head=parent_head_ref,
             governing_policy_ref=prior_commit.get("governing_policy_ref", "pin:initial_governing_policy_ref"),
             governing_spec_refs=tuple(prior_commit.get("governing_spec_refs", ("pin:initial_transition_profile_ref",))),
-            idempotency_scope=f"stage_prep_{stage_key}_{head.commit_seq + 1}",
+            idempotency_scope=f"stage_prep_{stage_key}_{spec_obj.digest[:16]}",
             campaign_ref=head.campaign_id,
         )
 
@@ -357,6 +358,7 @@ class AuditOperationApi:
             "status": "SUCCESS",
             "stage_id": stage_id,
             "stage_key": stage_key,
+            "stage_spec_revision": spec.stage_spec_revision,
             "stage_spec_digest": spec_obj.digest,
             "commit_seq": res.head.commit_seq,
             "commit_hash": res.head.commit_hash,
