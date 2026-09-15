@@ -15,6 +15,7 @@ from typing import Any, Mapping, Sequence
 from .candidate_case import CandidateAssuranceCase, CandidateAssuranceCaseBuilder
 from .candidate_projection import current_finding_adjudication_pairs
 from .challenger import ChallengerAssignment, ChallengerResult, REQUIRED_BASELINE_CHALLENGER_TYPES
+from .challenger_evidence import validate_positive_challenger_evidence
 from ..coordinator import Coordinator
 from ..core.errors import ValidationError
 from ..core.ids import new_id
@@ -308,6 +309,18 @@ class E5ChallengeService:
 
         for ref in (*skeptic_evidence_qualification_refs, *hunter_evidence_qualification_refs):
             self.store.resolve_accepted(ref, cut)
+        validate_positive_challenger_evidence(
+            self.store,
+            cut,
+            status=skeptic_status,
+            evidence_qualification_refs=skeptic_evidence_qualification_refs,
+        )
+        validate_positive_challenger_evidence(
+            self.store,
+            cut,
+            status=hunter_status,
+            evidence_qualification_refs=hunter_evidence_qualification_refs,
+        )
 
         candidate_ref = dict(candidate_row["ref"], ref_class="PRIOR_ACCEPTED_ONLY")
         inputs = (
