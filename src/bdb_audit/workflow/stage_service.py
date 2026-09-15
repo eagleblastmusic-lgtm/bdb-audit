@@ -11,12 +11,9 @@ from pathlib import Path
 import time
 from typing import Any, Mapping, Sequence
 
-from ..assurance.candidate_case import CandidateAssuranceCaseBuilder
-from ..assurance.challenger import (
-    ChallengerAssignment,
-    ChallengerResult,
-    E5ChallengerOrchestrator,
-)
+from ..assurance.challenger import E5ChallengerOrchestrator
+from ..assurance.challenger_evidence import validate_positive_challenger_evidence
+from ..assurance.e5_challenge_service import E5ChallengeService
 from ..history.objects import CommandEnvelope
 from ..coordinator import Coordinator
 from ..core.canonical_json import canonical_bytes
@@ -249,119 +246,34 @@ class StageService:
                 if not ev_refs:
                     f["claim_status"] = "UNKNOWN"
         elif stage_key == "E5":
-            conn = self.store._connect()
-            try:
-                row = conn.execute("SELECT body FROM commits WHERE commit_hash=?", (head.commit_hash,)).fetchone()
-                prior_commit = json.loads(row[0]) if row else {}
-            finally:
-                conn.close()
-
-            # Retrieve real source generation from history cut
-            sg_records = self.store.accepted_records("source_generation", cut)
-            si_records = self.store.accepted_records("source_identity", cut)
-            sg_ref = sg_records[-1]["ref"] if sg_records else (si_records[-1]["ref"] if si_records else _external_ref("source_generation", "0" * 64))
-
-            # Scope inventory ref
-            inv_records = self.store.accepted_records("inventory_revision", cut)
-            inv_ref = inv_records[-1]["ref"] if inv_records else _external_ref("inventory_revision", "0" * 64, ref_class="CONTENT_OR_PRIOR")
-
-            camp_ref = {
-                "kind": "campaign_ref",
-                "revision_digest": hashlib.sha256(head.campaign_id.encode()).hexdigest(),
-                "digest_profile": "BDB-OBJECT-DIGEST-1",
-                "schema_revision_ref": "BDB_TARGET/campaign_ref",
-                "ref_class": "PRIOR_ACCEPTED_ONLY",
-            }
-            claim_set_ref = {
-                "kind": "assurance_claim_set_ref",
-                "revision_digest": "0" * 64,
-                "digest_profile": "BDB-OBJECT-DIGEST-1",
-                "schema_revision_ref": "BDB_TARGET/assurance_claim_set_ref",
-                "ref_class": "CONTENT_OR_PRIOR",
-            }
-
-            cac_builder = CandidateAssuranceCaseBuilder(
-                case_id=new_id("candidate_assurance_case"),
-                campaign_ref=camp_ref,
-                source_generation_ref=sg_ref,
-                candidate_input_history_cut=cut,
-                scope_inventory_ref=inv_ref,
-                assurance_claim_set_ref=claim_set_ref,
+            e5_service = E5ChallengeService(self.store)
+            candidate, skeptic_assignment, hunter_assignment, skeptic_result, hunter_result = (
+                e5_service.current_pair()
             )
-            cac = cac_builder.build()
-            cac_obj = CanonicalObject("candidate_assurance_case", cac.body(), logical_id=cac.candidate_assurance_case_id)
-
-            challenger_pol_ref = {
-                "kind": "policy_revision",
-                "revision_digest": "1" * 64,
-                "digest_profile": "BDB-OBJECT-DIGEST-1",
-                "schema_revision_ref": "BDB_TARGET/policy_revision",
-                "ref_class": "HISTORY_CONTEXT_BINDING",
-            }
-            challenger_exec_ref = {
-                "kind": "executor_spec",
-                "revision_digest": "2" * 64,
-                "digest_profile": "BDB-OBJECT-DIGEST-1",
-                "schema_revision_ref": "BDB_TARGET/executor_spec",
-                "ref_class": "HISTORY_CONTEXT_BINDING",
-            }
-
-            cac_prior_ref = dict(cac_obj.as_ref().as_dict(), ref_class="PRIOR_ACCEPTED_ONLY")
-
-            asgn_sk = ChallengerAssignment(
-                challenge_assignment_id=new_id("challenger_assignment"),
-                candidate_assurance_case_ref=cac_prior_ref,
-                challenger_type="FALSE_POSITIVE_SKEPTIC",
-                challenge_scope="ALL",
-                challenge_policy_ref=challenger_pol_ref,
-                executor_profile_ref=challenger_exec_ref,
-                assignment_input_history_cut=cut,
+            validate_positive_challenger_evidence(
+                self.store,
+                skeptic_result.result_input_history_cut,
+                status=skeptic_result.status,
+                evidence_qualification_refs=skeptic_result.evidence_qualification_refs,
             )
-            asgn_hu = ChallengerAssignment(
-                challenge_assignment_id=new_id("challenger_assignment"),
-                candidate_assurance_case_ref=cac_prior_ref,
-                challenger_type="FALSE_NEGATIVE_HUNTER",
-                challenge_scope="ALL",
-                challenge_policy_ref=challenger_pol_ref,
-                executor_profile_ref=challenger_exec_ref,
-                assignment_input_history_cut=cut,
-            )
-            asgn_sk_obj = CanonicalObject("challenger_assignment", asgn_sk.body(), logical_id=asgn_sk.challenge_assignment_id)
-            asgn_hu_obj = CanonicalObject("challenger_assignment", asgn_hu.body(), logical_id=asgn_hu.challenge_assignment_id)
-
-            asgn_sk_prior_ref = dict(asgn_sk_obj.as_ref().as_dict(), ref_class="PRIOR_ACCEPTED_ONLY")
-            asgn_hu_prior_ref = dict(asgn_hu_obj.as_ref().as_dict(), ref_class="PRIOR_ACCEPTED_ONLY")
-
-            res_sk = ChallengerResult(
-                challenger_result_id=new_id("challenger_result"),
-                challenge_assignment_ref=asgn_sk_prior_ref,
-                candidate_assurance_case_ref=cac_prior_ref,
-                result_input_history_cut=cut,
-                status="NO_MATERIAL_COUNTEREVIDENCE",
-            )
-            res_hu = ChallengerResult(
-                challenger_result_id=new_id("challenger_result"),
-                challenge_assignment_ref=asgn_hu_prior_ref,
-                candidate_assurance_case_ref=cac_prior_ref,
-                result_input_history_cut=cut,
-                status="NO_MATERIAL_COUNTEREVIDENCE",
+            validate_positive_challenger_evidence(
+                self.store,
+                hunter_result.result_input_history_cut,
+                status=hunter_result.status,
+                evidence_qualification_refs=hunter_result.evidence_qualification_refs,
             )
             eligible, reasons = E5ChallengerOrchestrator.validate_challenger_results_pair(
-                cac, res_sk, res_hu, asgn_sk, asgn_hu
+                candidate,
+                skeptic_result,
+                hunter_result,
+                skeptic_assignment,
+                hunter_assignment,
             )
             if not eligible:
-                raise ValidationError("CHALLENGER_VALIDATION_FAILED", f"Challengers failed: {reasons}")
-
-            res_sk_obj = CanonicalObject("challenger_result", res_sk.body(), logical_id=res_sk.challenger_result_id)
-            res_hu_obj = CanonicalObject("challenger_result", res_hu.body(), logical_id=res_hu.challenger_result_id)
-
-            objects_to_commit.extend([
-                cac_obj,
-                asgn_sk_obj,
-                asgn_hu_obj,
-                res_sk_obj,
-                res_hu_obj,
-            ])
+                raise ValidationError(
+                    "CHALLENGER_VALIDATION_FAILED",
+                    f"Challengers failed: {reasons}",
+                )
 
         summary = unknown_blocked_summary or {"unknown_surfaces_count": 0, "is_blocked": False}
 
