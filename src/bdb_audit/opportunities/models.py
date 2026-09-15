@@ -33,6 +33,19 @@ class FrictionCandidate:
 
 
 @dataclass(frozen=True)
+class OpportunityEvidence:
+    """Source-bound evidence record supporting one opportunity claim."""
+
+    evidence_ref: str
+    target_source_identity: str
+    evidence_kind: str
+    provenance_ref: str
+    measured_value: float | int | None = None
+    measurement_unit: str | None = None
+    observed: bool = True
+
+
+@dataclass(frozen=True)
 class OpportunityProposal:
     opportunity_id: str
     target_source_identity: str

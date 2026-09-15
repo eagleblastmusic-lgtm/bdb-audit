@@ -216,10 +216,29 @@ def test_cli_opportunity_review_and_successor_validation(tmp_path, capsys):
             "alternatives": ["keep current"], "controls_and_measurement": "measure completion rate",
             "confidence_basis": "MEASURED",
         },
+        "evidence": [{
+            "evidence_ref": "metric:task_steps",
+            "target_source_identity": "src",
+            "evidence_kind": "METRIC",
+            "provenance_ref": "accepted-history:metric-task-steps",
+            "measured_value": 6,
+            "measurement_unit": "steps",
+            "observed": True,
+        }],
     }
     path = _write(tmp_path, "opportunity.json", opportunity)
     assert run_cli(["opportunities", "review", "--file", path]) == 0
-    assert "QUICK_WIN" in capsys.readouterr().out
+    output = capsys.readouterr().out
+    assert "QUICK_WIN" in output
+    assert "verified_evidence_refs" in output
+
+    missing_evidence = dict(opportunity)
+    missing_evidence.pop("evidence")
+    path = _write(tmp_path, "opportunity-no-evidence.json", missing_evidence)
+    assert run_cli(["opportunities", "review", "--file", path]) == 3
+    output = capsys.readouterr().out
+    assert "EVIDENCE_CATALOG_REQUIRED" in output
+    assert "QUICK_WIN" not in output
 
     successor = {
         "spec": {

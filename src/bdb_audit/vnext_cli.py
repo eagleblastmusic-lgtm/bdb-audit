@@ -1,9 +1,9 @@
-"""vNext CLI with strict evidence binding for RU13 and RU14.
+"""vNext CLI with strict evidence binding for RU13, RU14 and RU15.
 
-All commands outside the strict qualification/strategy-benchmark surfaces
-delegate to the previously qualified CLI implementation.  The intercepted
-paths cannot qualify from caller-declared labels, booleans, receipt ids, cost,
-or root-cause summaries without reconciling actual execution receipts.
+All commands outside the strict qualification/strategy/opportunity surfaces
+delegate to the previously qualified CLI implementation.  Intercepted paths
+cannot qualify from caller-declared labels, receipt ids, cost/root-cause
+summaries, or unresolved product evidence.
 """
 from __future__ import annotations
 
@@ -12,6 +12,12 @@ from dataclasses import asdict
 from typing import Any
 
 from . import vnext_cli_legacy as _legacy
+from .opportunities import (
+    OpportunityEvidence,
+    OpportunityProposal,
+    ProductContext,
+    qualify_opportunity_for_report,
+)
 from .qualification import ActualRunReceipt, FrozenHoldout, evaluate_continuous_holdout
 from .qualification.corpus import BenchmarkRun
 from .strategy import StrategyRunMetrics, compare_adaptive_to_baseline
@@ -112,6 +118,85 @@ def _run_strict_strategy_benchmark(args: argparse.Namespace) -> int:
     return 0 if result.benefit_demonstrated else 3
 
 
+def _opportunity_evidence(value: object) -> OpportunityEvidence:
+    raw = _legacy._object(value, "opportunity evidence")
+    measured_raw = raw.get("measured_value")
+    measured: float | int | None
+    if isinstance(measured_raw, bool) or not isinstance(measured_raw, (int, float)):
+        measured = None
+    else:
+        measured = measured_raw
+    observed_raw = raw.get("observed", True)
+    if not isinstance(observed_raw, bool):
+        raise ValueError("opportunity evidence observed must be boolean")
+    unit_raw = raw.get("measurement_unit")
+    return OpportunityEvidence(
+        evidence_ref=str(raw["evidence_ref"]),
+        target_source_identity=str(raw["target_source_identity"]),
+        evidence_kind=str(raw["evidence_kind"]),
+        provenance_ref=str(raw["provenance_ref"]),
+        measured_value=measured,
+        measurement_unit=str(unit_raw) if unit_raw is not None else None,
+        observed=observed_raw,
+    )
+
+
+def _run_strict_opportunity_review(args: argparse.Namespace) -> int:
+    data: dict[str, Any] = _legacy._load_object(args.file)
+    context_raw = _legacy._object(data.get("context"), "context")
+    proposal_raw = _legacy._object(data.get("proposal"), "proposal")
+    context = ProductContext(
+        str(context_raw["target_source_identity"]),
+        str(context_raw["product_name"]),
+        _legacy._str_tuple(context_raw.get("user_groups")),
+        _legacy._str_tuple(context_raw.get("platform_classes")),
+        _legacy._str_tuple(context_raw.get("context_refs")),
+    )
+    proposal = OpportunityProposal(
+        str(proposal_raw["opportunity_id"]),
+        str(proposal_raw["target_source_identity"]),
+        str(proposal_raw["category"]),
+        str(proposal_raw["title"]),
+        str(proposal_raw["user_problem"]),
+        _legacy._str_tuple(proposal_raw.get("target_users")),
+        _legacy._str_tuple(proposal_raw.get("evidence_refs")),
+        int(proposal_raw["current_steps"]) if proposal_raw.get("current_steps") is not None else None,
+        int(proposal_raw["proposed_steps"]) if proposal_raw.get("proposed_steps") is not None else None,
+        str(proposal_raw["expected_value"]),
+        str(proposal_raw["implementation_cost"]),
+        str(proposal_raw["risk"]),
+        _legacy._str_tuple(proposal_raw.get("alternatives")),
+        str(proposal_raw["controls_and_measurement"]),
+        str(proposal_raw["confidence_basis"]),
+        str(proposal_raw.get("consumer_report_section", "PRODUCT_AND_UX_OPPORTUNITIES")),
+    )
+
+    evidence_values = data.get("evidence")
+    catalog: dict[str, OpportunityEvidence] | None
+    if evidence_values is None:
+        catalog = None
+    elif isinstance(evidence_values, list):
+        catalog = {}
+        for item in evidence_values:
+            record = _opportunity_evidence(item)
+            if record.evidence_ref in catalog:
+                raise ValueError(f"duplicate opportunity evidence ref: {record.evidence_ref}")
+            catalog[record.evidence_ref] = record
+    else:
+        raise ValueError("evidence must be an array")
+
+    simpler = data.get("simpler_alternative")
+    result = qualify_opportunity_for_report(
+        proposal,
+        context,
+        existing_feature_titles=_legacy._str_tuple(data.get("existing_feature_titles")),
+        simpler_alternative=str(simpler) if simpler is not None else None,
+        evidence_catalog=catalog,
+    )
+    _legacy._json(asdict(result))
+    return 0 if result.status == "ACCEPT_FOR_REPORT" else 3
+
+
 def run_cli(argv: list[str] | None = None) -> int:
     args = create_parser().parse_args(argv)
     if args.command == "qualification" and args.action == "continuous":
@@ -123,6 +208,12 @@ def run_cli(argv: list[str] | None = None) -> int:
     if args.command == "strategy" and args.action == "benchmark":
         try:
             return _run_strict_strategy_benchmark(args)
+        except Exception as exc:
+            _legacy._json({"status": "ERROR", "error": type(exc).__name__, "detail": str(exc)})
+            return 1
+    if args.command == "opportunities" and args.action == "review":
+        try:
+            return _run_strict_opportunity_review(args)
         except Exception as exc:
             _legacy._json({"status": "ERROR", "error": type(exc).__name__, "detail": str(exc)})
             return 1
