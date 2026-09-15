@@ -187,7 +187,7 @@ class E5ChallengeService:
             )
         for row in chronological_accepted_records(self.store, "contradiction", cut):
             builder.add_contradiction(dict(row["ref"]))
-        for row in chronological_accepted_records(self.store, "evidence_qualification", cut):
+        for row in chronological_accepted_records(self.store, "evidence_qualification_assessment", cut):
             builder.add_evidence_qualification(dict(row["ref"]))
         for row in chronological_accepted_records(self.store, "residual_risk", cut):
             builder.add_residual_risk(dict(row["ref"]))
