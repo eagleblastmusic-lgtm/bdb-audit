@@ -4,8 +4,9 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from .challenger import REQUIRED_BASELINE_CHALLENGER_TYPES
 from ..core.errors import ValidationError
-from ..history.selection import chronological_accepted_records
+from ..history.selection import chronological_accepted_records, latest_accepted_record
 from ..history.store import TransactionalHistoryStore
 
 _MATERIAL_KINDS = (
@@ -80,4 +81,59 @@ def validate_e5_candidate_freshness(
             )
 
 
-__all__ = ["validate_e5_candidate_freshness"]
+def validate_latest_e5_candidate_freshness(
+    store: TransactionalHistoryStore,
+    cut: dict[str, Any],
+) -> None:
+    """Validate freshness for the latest candidate and its exact baseline results."""
+    candidate_row = latest_accepted_record(store, "candidate_assurance_case", cut)
+    if candidate_row is None:
+        raise ValidationError("E5_CHALLENGER_CANDIDATE_REQUIRED")
+    candidate_digest = _digest(candidate_row.get("ref"))
+    if candidate_digest is None:
+        raise ValidationError("E5_CANDIDATE_REF_INVALID")
+
+    assignment_by_role: dict[str, Mapping[str, Any]] = {}
+    for row in chronological_accepted_records(store, "challenger_assignment", cut):
+        body = row.get("body")
+        if not isinstance(body, Mapping):
+            continue
+        if _digest(body.get("candidate_assurance_case_ref")) != candidate_digest:
+            continue
+        role = body.get("challenger_type")
+        if role not in REQUIRED_BASELINE_CHALLENGER_TYPES:
+            continue
+        if str(role) in assignment_by_role:
+            raise ValidationError("E5_CHALLENGER_ASSIGNMENT_AMBIGUOUS", str(role))
+        assignment_by_role[str(role)] = row
+    if set(assignment_by_role) != REQUIRED_BASELINE_CHALLENGER_TYPES:
+        raise ValidationError("E5_REQUIRED_CHALLENGER_ASSIGNMENTS_MISSING")
+
+    role_by_assignment_digest = {
+        _digest(row.get("ref")): role for role, row in assignment_by_role.items()
+    }
+    result_by_role: dict[str, Mapping[str, Any]] = {}
+    for row in chronological_accepted_records(store, "challenger_result", cut):
+        body = row.get("body")
+        if not isinstance(body, Mapping):
+            continue
+        if _digest(body.get("candidate_assurance_case_ref")) != candidate_digest:
+            continue
+        role = role_by_assignment_digest.get(_digest(body.get("challenge_assignment_ref")))
+        if role is None:
+            continue
+        if role in result_by_role:
+            raise ValidationError("E5_CHALLENGER_RESULT_AMBIGUOUS", role)
+        result_by_role[role] = row
+    if set(result_by_role) != REQUIRED_BASELINE_CHALLENGER_TYPES:
+        raise ValidationError("E5_REQUIRED_CHALLENGER_RESULTS_MISSING")
+
+    validate_e5_candidate_freshness(
+        store,
+        candidate_row,
+        tuple(result_by_role.values()),
+        cut,
+    )
+
+
+__all__ = ["validate_e5_candidate_freshness", "validate_latest_e5_candidate_freshness"]
