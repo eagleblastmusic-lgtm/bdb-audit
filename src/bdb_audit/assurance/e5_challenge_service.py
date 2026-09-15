@@ -16,6 +16,7 @@ from .candidate_case import CandidateAssuranceCase, CandidateAssuranceCaseBuilde
 from .candidate_projection import current_finding_adjudication_pairs
 from .challenger import ChallengerAssignment, ChallengerResult, REQUIRED_BASELINE_CHALLENGER_TYPES
 from .challenger_evidence import validate_positive_challenger_evidence
+from .e5_temporal import validate_e5_challenge_temporal_order
 from ..coordinator import Coordinator
 from ..core.errors import ValidationError
 from ..core.ids import new_id
@@ -397,6 +398,11 @@ class E5ChallengeService:
         if set(result_by_role) != REQUIRED_BASELINE_CHALLENGER_TYPES:
             raise ValidationError("E5_REQUIRED_CHALLENGER_RESULTS_MISSING")
 
+        validate_e5_challenge_temporal_order(
+            candidate_row,
+            tuple(asgn_by_role.values()),
+            tuple(result_by_role.values()),
+        )
         return (
             _candidate_from_body(candidate_row["body"]),
             _assignment_from_body(asgn_by_role["FALSE_POSITIVE_SKEPTIC"]["body"]),
