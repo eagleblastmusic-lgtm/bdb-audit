@@ -95,11 +95,11 @@ def test_e5_challenge_service_rejects_temporal_shortcuts_and_duplicates(tmp_path
         svc.assign_required_challengers()
 
     svc.record_required_challenger_results(
-        skeptic_status="NO_MATERIAL_COUNTEREVIDENCE",
-        hunter_status="NO_MATERIAL_COUNTEREVIDENCE",
+        skeptic_status="INCONCLUSIVE",
+        hunter_status="INCONCLUSIVE",
     )
     with pytest.raises(ValidationError, match="E5_CHALLENGER_RESULTS_ALREADY_RECORDED"):
         svc.record_required_challenger_results(
-            skeptic_status="NO_MATERIAL_COUNTEREVIDENCE",
-            hunter_status="NO_MATERIAL_COUNTEREVIDENCE",
+            skeptic_status="INCONCLUSIVE",
+            hunter_status="INCONCLUSIVE",
         )
