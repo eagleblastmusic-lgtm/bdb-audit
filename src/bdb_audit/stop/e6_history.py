@@ -12,7 +12,6 @@ from typing import Any, Mapping
 from ..core.errors import ValidationError
 from ..history.store import TransactionalHistoryStore
 from ..orchestration.stages import StageSpec
-from ..workflow.read_models import current_accepted_cut
 from .e6 import AdaptiveE6Generator, reconstruct_stop_evaluation, reconstruct_stop_input
 
 
@@ -42,9 +41,9 @@ def _resolve_accepted_stop_input_record(
     """Resolve a historical StopInput ref through accepted history without weakening typed identity.
 
     Older StopEvaluation bodies omitted ``logical_id`` from ``stop_input_ref`` even though
-    the accepted StopInput object itself has one.  We therefore select the unique accepted
-    StopInput by canonical digest and require every typed identity component that *was*
-    recorded to agree with the authoritative accepted ref.  The missing logical_id is never
+    the accepted StopInput object itself has one. We therefore select the unique accepted
+    StopInput by canonical digest and require every typed identity component that was
+    recorded to agree with the authoritative accepted ref. The missing logical_id is never
     invented from caller data; it comes only from the accepted record.
     """
     digest = _digest(stored_ref)
@@ -78,6 +77,10 @@ def _resolve_accepted_stop_input_record(
 
 def build_next_adaptive_e6_stage_spec(store: TransactionalHistoryStore) -> StageSpec:
     """Derive the next immutable E6 StageSpec from the latest accepted E6_REQUIRED STOP."""
+    # Lazy import avoids coordinator.operations -> e6_history -> workflow package
+    # initialization -> history_projection -> coordinator.operations cycle.
+    from ..workflow.read_models import current_accepted_cut
+
     cut = current_accepted_cut(store)
     head = store.head()
     if head is None:
