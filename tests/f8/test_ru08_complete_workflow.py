@@ -96,10 +96,19 @@ def test_core_acceptance_2_material_e6_fresh_challenger(workflow_env):
         api.prepare_stage(store_path, stage)
         api.qualify_stage(store_path, stage)
 
-    # Simulate STOP evaluation with approved E6 plan
-    stop_res = api.evaluate_stop_gate(store_path, evaluation_context="FINAL_POST_E5", e6_plan_approved=True)
+    # A bounded E6 plan is actionable only because there is a real material
+    # unresolved condition. Approval alone must never manufacture E6_REQUIRED.
+    stop_res = api.evaluate_stop_gate(
+        store_path,
+        evaluation_context="FINAL_POST_E5",
+        e6_plan_approved=True,
+        unknown_blocked_summary={
+            "unknown_surfaces_count": 1,
+            "has_unknown_scope": True,
+            "is_blocked": False,
+        },
+    )
     assert stop_res["status"] == "SUCCESS"
-    # When E6 plan is approved for gap resolution, continuation_decision is E6_REQUIRED
     assert stop_res["continuation_decision"] == "E6_REQUIRED"
     assert stop_res["assurance_level"] == "BOUNDED"
 
@@ -109,7 +118,7 @@ def test_core_acceptance_2_material_e6_fresh_challenger(workflow_env):
     assert e6_res["status"] == "SUCCESS"
     assert e6_res["stage"] == "E6"
 
-    # Post-E6 STOP evaluation
+    # Post-E6 STOP evaluation on the new cut; the synthetic gap is now resolved.
     post_e6_stop = api.evaluate_stop_gate(store_path, evaluation_context="POST_E6")
     assert post_e6_stop["status"] == "SUCCESS"
     assert post_e6_stop["continuation_decision"] == "PASS"
