@@ -219,7 +219,7 @@ def evaluate_stop(
                     e6_reasons.extend(["E6_REQUIRED", "BOUNDED_ADDITIONAL_PLAN_APPROVED"])
                 if ctx == "POST_E6":
                     e6_reasons.append("POST_E6_ADDITIONAL_ROUND_REQUIRED")
-                
+
                 # Deduplicate e6_reasons
                 final_e6_reasons: list[str] = []
                 s_e6: set[str] = set()
@@ -250,20 +250,9 @@ def evaluate_stop(
                     remaining_obligation_refs=tuple(stop_input.mandatory_obligation_refs),
                 )
 
-        # Check if E6 plan was approved for gap resolution / bounded additional round
-        if e6_plan_approved and ctx == "FINAL_POST_E5":
-            return StopEvaluation(
-                stop_evaluation_id=stop_evaluation_id,
-                stop_input_ref=input_ref,
-                continuation_decision="E6_REQUIRED",
-                assurance_level="BOUNDED",
-                release_readiness="QUALIFICATION_BLOCKED",
-                reason_codes=("E6_REQUIRED", "BOUNDED_ADDITIONAL_PLAN_APPROVED"),
-                blocking_obligation_refs=tuple(stop_input.mandatory_obligation_refs),
-                remaining_obligation_refs=tuple(stop_input.mandatory_obligation_refs),
-            )
-
-        # Complete satisfaction -> PASS
+        # Complete satisfaction -> PASS. An approved E6 plan does not itself
+        # create a material gap; approval only authorizes the E6 path when a
+        # real unresolved condition above requires it.
         release_readiness = (
             "READY_WITH_RESIDUAL_RISK"
             if stop_input.residual_risk_refs
