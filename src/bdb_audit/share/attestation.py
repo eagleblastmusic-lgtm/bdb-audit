@@ -90,13 +90,34 @@ def recipient_bundle_from_dict(value: Mapping[str, object]) -> RecipientBundle:
     )
 
 
-def verify_recipient_bundle(bundle: RecipientBundle, *, signing_key: bytes, expected_key_id: str | None = None) -> dict:
+def verify_recipient_bundle(
+    bundle: RecipientBundle,
+    *,
+    signing_key: bytes,
+    expected_key_id: str | None = None,
+    expected_source_identity: str | None = None,
+    expected_history_cut_digest: str | None = None,
+) -> dict[str, object]:
     reasons: list[str] = []
+    if not signing_key:
+        reasons.append("SIGNING_KEY_MISSING")
     if bundle.signature_profile != "HMAC-SHA256-SHARED-SECRET":
         reasons.append("SIGNATURE_PROFILE_UNSUPPORTED")
+    if not bundle.key_id:
+        reasons.append("KEY_ID_MISSING")
+    if not bundle.source_identity:
+        reasons.append("SOURCE_IDENTITY_MISSING")
+    if not bundle.history_cut_digest:
+        reasons.append("HISTORY_CUT_MISSING")
     if expected_key_id is not None and bundle.key_id != expected_key_id:
         reasons.append("KEY_ID_MISMATCH")
-    if not hmac.compare_digest(hashlib.sha256(bundle.payload).hexdigest(), bundle.payload_sha256):
+    if expected_source_identity is not None and bundle.source_identity != expected_source_identity:
+        reasons.append("EXPECTED_SOURCE_IDENTITY_MISMATCH")
+    if expected_history_cut_digest is not None and bundle.history_cut_digest != expected_history_cut_digest:
+        reasons.append("EXPECTED_HISTORY_CUT_MISMATCH")
+    if not _is_sha256(bundle.payload_sha256):
+        reasons.append("PAYLOAD_DIGEST_INVALID")
+    elif not hmac.compare_digest(hashlib.sha256(bundle.payload).hexdigest(), bundle.payload_sha256):
         reasons.append("PAYLOAD_DIGEST_MISMATCH")
     expected = hmac.new(signing_key, bundle.payload, hashlib.sha256).hexdigest()
     if not hmac.compare_digest(expected, bundle.signature_hex):
@@ -130,6 +151,9 @@ def verify_recipient_bundle(bundle: RecipientBundle, *, signing_key: bytes, expe
             redaction_count = count_value
         if not _is_sha256(digest_value):
             reasons.append("REDACTION_DIGEST_INVALID")
+        document_value = envelope.get("document")
+        if not isinstance(document_value, dict):
+            reasons.append("DOCUMENT_PAYLOAD_INVALID")
 
     return {
         "status": "PASS" if not reasons else "FAIL",
@@ -138,6 +162,8 @@ def verify_recipient_bundle(bundle: RecipientBundle, *, signing_key: bytes, expe
         "source_identity": bundle.source_identity,
         "history_cut_digest": bundle.history_cut_digest,
         "redacted_private_field_count": redaction_count,
+        "verification_profile": "HMAC_SHA256_SHARED_SECRET_RECIPIENT_VERIFICATION",
+        "trust_model": "SHARED_SECRET_RECIPIENT_VERIFICATION",
     }
 
 
