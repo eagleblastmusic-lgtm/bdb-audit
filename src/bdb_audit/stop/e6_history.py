@@ -34,6 +34,48 @@ def _completed_stage_spec_digests(store: TransactionalHistoryStore, cut: Mapping
     return completed
 
 
+def _resolve_accepted_stop_input_record(
+    store: TransactionalHistoryStore,
+    cut: Mapping[str, Any],
+    stored_ref: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Resolve a historical StopInput ref through accepted history without weakening typed identity.
+
+    Older StopEvaluation bodies omitted ``logical_id`` from ``stop_input_ref`` even though
+    the accepted StopInput object itself has one.  We therefore select the unique accepted
+    StopInput by canonical digest and require every typed identity component that *was*
+    recorded to agree with the authoritative accepted ref.  The missing logical_id is never
+    invented from caller data; it comes only from the accepted record.
+    """
+    digest = _digest(stored_ref)
+    if stored_ref.get("kind") != "stop_input" or digest is None:
+        raise ValidationError("E6_STOP_INPUT_REF_INVALID")
+
+    matches = [
+        row for row in store.accepted_records("stop_input", dict(cut))
+        if _digest(row.get("ref")) == digest
+    ]
+    if len(matches) != 1:
+        raise ValidationError(
+            "E6_STOP_INPUT_ACCEPTED_BINDING_AMBIGUOUS",
+            f"Expected exactly one accepted StopInput for digest {digest}, found {len(matches)}",
+        )
+
+    accepted_ref = matches[0].get("ref")
+    if not isinstance(accepted_ref, Mapping):
+        raise ValidationError("E6_STOP_INPUT_ACCEPTED_REF_INVALID")
+    for field in ("kind", "revision_digest", "digest_profile", "schema_revision_ref", "ref_class"):
+        if stored_ref.get(field) != accepted_ref.get(field):
+            raise ValidationError(
+                "E6_STOP_INPUT_TYPED_IDENTITY_MISMATCH",
+                f"Stored STOP input ref disagrees with accepted identity field {field}",
+            )
+    stored_logical_id = stored_ref.get("logical_id")
+    if stored_logical_id is not None and stored_logical_id != accepted_ref.get("logical_id"):
+        raise ValidationError("E6_STOP_INPUT_LOGICAL_ID_MISMATCH")
+    return matches[0]
+
+
 def build_next_adaptive_e6_stage_spec(store: TransactionalHistoryStore) -> StageSpec:
     """Derive the next immutable E6 StageSpec from the latest accepted E6_REQUIRED STOP."""
     cut = current_accepted_cut(store)
@@ -59,7 +101,7 @@ def build_next_adaptive_e6_stage_spec(store: TransactionalHistoryStore) -> Stage
     stop_input_ref = stop_body.get("stop_input_ref")
     if not isinstance(stop_input_ref, dict):
         raise ValidationError("E6_STOP_INPUT_REF_MISSING")
-    stop_input_row = store.resolve_accepted(stop_input_ref, cut)
+    stop_input_row = _resolve_accepted_stop_input_record(store, cut, stop_input_ref)
     stop_input = reconstruct_stop_input(stop_input_row["body"])
     stop_evaluation = reconstruct_stop_evaluation(stop_body)
     if stop_input.campaign_id != head.campaign_id:
