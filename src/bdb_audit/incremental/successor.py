@@ -1,8 +1,8 @@
 """Successor-campaign invariants for RU16.
 
-A successor never rewrites the predecessor campaign/source or reopens its
-conclusion. Competing successors require explicit selection; recency is never
-used as authority.
+A successor never rewrites the predecessor campaign/source/conclusion or
+reopens its concluded state. Competing successors require explicit selection;
+recency is never used as authority.
 """
 from __future__ import annotations
 
@@ -37,18 +37,26 @@ def validate_successor_selection(
     predecessor_is_concluded: bool,
     predecessor_source_after: str,
     predecessor_state_after: str,
+    predecessor_conclusion_digest_after: str,
     competing_successor_refs: Sequence[str] = (),
     selected_successor_ref: str | None = None,
-) -> dict:
+) -> dict[str, object]:
     reasons: list[str] = []
     if not predecessor_is_concluded:
         reasons.append("PREDECESSOR_NOT_CONCLUDED")
     if predecessor_source_after != spec.predecessor_source_identity:
         reasons.append("PREDECESSOR_SOURCE_MUTATION_FORBIDDEN")
-    if predecessor_state_after == "OPEN":
-        reasons.append("PREDECESSOR_REOPEN_FORBIDDEN")
+    if predecessor_state_after != "CONCLUDED":
+        reasons.append("PREDECESSOR_MUST_REMAIN_CONCLUDED")
+    if predecessor_conclusion_digest_after != spec.predecessor_conclusion_digest:
+        reasons.append("PREDECESSOR_CONCLUSION_MUTATION_FORBIDDEN")
 
-    candidates = tuple(sorted(set(competing_successor_refs)))
+    raw_candidates = tuple(competing_successor_refs)
+    if any(not value.strip() for value in raw_candidates):
+        reasons.append("SUCCESSOR_CANDIDATE_ID_MISSING")
+    if len(set(raw_candidates)) != len(raw_candidates):
+        reasons.append("SUCCESSOR_CANDIDATE_DUPLICATE")
+    candidates = tuple(sorted(set(raw_candidates)))
     if len(candidates) > 1:
         if selected_successor_ref is None:
             reasons.append("EXPLICIT_SUCCESSOR_SELECTION_REQUIRED")

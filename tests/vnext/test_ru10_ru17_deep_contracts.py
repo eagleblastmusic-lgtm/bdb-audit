@@ -6,7 +6,15 @@ from bdb_audit.features import (
     BehaviorCase, assess_testability, plan_verification, qualify_behavior, qualify_oracle,
 )
 from bdb_audit.features.adapters.api import LocalApiTestAdapter
-from bdb_audit.incremental import DependencyEdge, SourceManifest, build_change_map, build_requalification_plan, propagate_impact, qualify_reuse
+from bdb_audit.incremental import (
+    DependencyEdge,
+    EvidenceReuseBinding,
+    SourceManifest,
+    build_change_map,
+    build_requalification_plan,
+    propagate_impact,
+    qualify_reuse,
+)
 from bdb_audit.opportunities import OpportunityProposal, ProductContext, skeptic_review
 from bdb_audit.runner import ActionAuthorization, OperationalToolSupervisor
 from bdb_audit.strategy import AuditStrategyProfile, ExposureManifest, LaneProposal, propose_plan, validate_plan
@@ -83,8 +91,18 @@ def test_ru16_dependency_and_environment_changes_force_requalification():
     assert change["changed_paths"] == ["db.py"]
     assert change["external_input_changes"] == ["DEPENDENCY_LOCK"]
     impact = propagate_impact(("db.py",), (DependencyEdge("db.py", "service"), DependencyEdge("service", "api.py", "UNCERTAIN")))
-    assessment = qualify_reuse(evidence_id="ev", dependency_nodes=("api.py",), impact=impact, source_semantics_same=True, policy_same=True, runtime_same=True, evidence_present=True)
+    binding = EvidenceReuseBinding(
+        evidence_id="ev",
+        evidence_digest="a" * 64,
+        source_identity="old",
+        dependency_lock_digest="lock1",
+        policy_digest="policy",
+        runtime_profile_digest="runtime",
+        dependency_nodes=("api.py",),
+    )
+    assessment = qualify_reuse(binding=binding, old_manifest=old, new_manifest=new, impact=impact)
     assert assessment["status"] == "REQUALIFICATION_REQUIRED"
+    assert "DEPENDENCY_LOCK_CHANGED" in assessment["reason_codes"]
     assert "DEPENDENCY_IMPACTED" in assessment["reason_codes"]
     plan = build_requalification_plan((assessment,), control_sample_nodes=("unrelated.py",))
     assert plan["status"] == "TARGETED_AUDIT_REQUIRED"

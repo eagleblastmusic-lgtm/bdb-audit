@@ -20,21 +20,24 @@ def test_ru16_successor_preserves_predecessor_source_and_conclusion_state():
         _spec(),
         predecessor_is_concluded=True,
         predecessor_source_after="source@old",
-        predecessor_state_after="COMPLETED",
+        predecessor_state_after="CONCLUDED",
+        predecessor_conclusion_digest_after="a" * 64,
     )
     assert result["status"] == "PASS"
 
 
-def test_ru16_successor_rejects_reopening_or_mutating_predecessor():
+def test_ru16_successor_rejects_any_state_source_or_conclusion_mutation():
     result = validate_successor_selection(
         _spec(),
         predecessor_is_concluded=True,
         predecessor_source_after="source@new",
-        predecessor_state_after="OPEN",
+        predecessor_state_after="FAILED",
+        predecessor_conclusion_digest_after="b" * 64,
     )
     assert result["status"] == "REJECTED"
     assert "PREDECESSOR_SOURCE_MUTATION_FORBIDDEN" in result["reason_codes"]
-    assert "PREDECESSOR_REOPEN_FORBIDDEN" in result["reason_codes"]
+    assert "PREDECESSOR_MUST_REMAIN_CONCLUDED" in result["reason_codes"]
+    assert "PREDECESSOR_CONCLUSION_MUTATION_FORBIDDEN" in result["reason_codes"]
 
 
 def test_ru16_competing_successors_require_explicit_selection():
@@ -42,11 +45,26 @@ def test_ru16_competing_successors_require_explicit_selection():
         _spec(),
         predecessor_is_concluded=True,
         predecessor_source_after="source@old",
-        predecessor_state_after="COMPLETED",
+        predecessor_state_after="CONCLUDED",
+        predecessor_conclusion_digest_after="a" * 64,
         competing_successor_refs=("successor:a", "successor:b"),
     )
     assert result["status"] == "REJECTED"
     assert "EXPLICIT_SUCCESSOR_SELECTION_REQUIRED" in result["reason_codes"]
+
+
+def test_ru16_duplicate_successor_candidates_are_not_silently_normalized():
+    result = validate_successor_selection(
+        _spec(),
+        predecessor_is_concluded=True,
+        predecessor_source_after="source@old",
+        predecessor_state_after="CONCLUDED",
+        predecessor_conclusion_digest_after="a" * 64,
+        competing_successor_refs=("successor:a", "successor:a"),
+        selected_successor_ref="successor:a",
+    )
+    assert result["status"] == "REJECTED"
+    assert "SUCCESSOR_CANDIDATE_DUPLICATE" in result["reason_codes"]
 
 
 def test_ru16_same_source_is_not_a_successor_campaign():

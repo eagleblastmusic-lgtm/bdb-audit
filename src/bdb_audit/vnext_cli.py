@@ -1,9 +1,8 @@
-"""vNext CLI with strict evidence binding for RU13, RU14 and RU15.
+"""vNext CLI with strict evidence binding for RU13 through RU16.
 
-All commands outside the strict qualification/strategy/opportunity surfaces
-delegate to the previously qualified CLI implementation.  Intercepted paths
-cannot qualify from caller-declared labels, receipt ids, cost/root-cause
-summaries, or unresolved product evidence.
+All commands outside the strict qualification/strategy/opportunity/successor
+surfaces delegate to the previously qualified CLI implementation. Intercepted
+paths fail closed on unresolved execution evidence or mutable predecessor state.
 """
 from __future__ import annotations
 
@@ -12,6 +11,7 @@ from dataclasses import asdict
 from typing import Any
 
 from . import vnext_cli_legacy as _legacy
+from .incremental import SuccessorCampaignSpec, validate_successor_selection
 from .opportunities import (
     OpportunityEvidence,
     OpportunityProposal,
@@ -197,6 +197,31 @@ def _run_strict_opportunity_review(args: argparse.Namespace) -> int:
     return 0 if result.status == "ACCEPT_FOR_REPORT" else 3
 
 
+def _run_strict_successor_validate(args: argparse.Namespace) -> int:
+    data: dict[str, Any] = _legacy._load_object(args.file)
+    spec_raw = _legacy._object(data.get("spec"), "spec")
+    if "predecessor_conclusion_digest_after" not in data:
+        raise ValueError("predecessor_conclusion_digest_after is required")
+    spec = SuccessorCampaignSpec(
+        predecessor_campaign_id=str(spec_raw["predecessor_campaign_id"]),
+        predecessor_conclusion_digest=str(spec_raw["predecessor_conclusion_digest"]),
+        predecessor_source_identity=str(spec_raw["predecessor_source_identity"]),
+        successor_campaign_id=str(spec_raw["successor_campaign_id"]),
+        successor_source_identity=str(spec_raw["successor_source_identity"]),
+    )
+    result = validate_successor_selection(
+        spec,
+        predecessor_is_concluded=bool(data.get("predecessor_is_concluded", False)),
+        predecessor_source_after=str(data.get("predecessor_source_after", "")),
+        predecessor_state_after=str(data.get("predecessor_state_after", "")),
+        predecessor_conclusion_digest_after=str(data["predecessor_conclusion_digest_after"]),
+        competing_successor_refs=_legacy._str_tuple(data.get("competing_successor_refs")),
+        selected_successor_ref=str(data["selected_successor_ref"]) if data.get("selected_successor_ref") is not None else None,
+    )
+    _legacy._json(result)
+    return 0 if result["status"] == "PASS" else 3
+
+
 def run_cli(argv: list[str] | None = None) -> int:
     args = create_parser().parse_args(argv)
     if args.command == "qualification" and args.action == "continuous":
@@ -214,6 +239,12 @@ def run_cli(argv: list[str] | None = None) -> int:
     if args.command == "opportunities" and args.action == "review":
         try:
             return _run_strict_opportunity_review(args)
+        except Exception as exc:
+            _legacy._json({"status": "ERROR", "error": type(exc).__name__, "detail": str(exc)})
+            return 1
+    if args.command == "incremental" and args.action == "successor-validate":
+        try:
+            return _run_strict_successor_validate(args)
         except Exception as exc:
             _legacy._json({"status": "ERROR", "error": type(exc).__name__, "detail": str(exc)})
             return 1

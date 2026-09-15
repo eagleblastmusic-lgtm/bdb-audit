@@ -248,10 +248,19 @@ def test_cli_opportunity_review_and_successor_validation(tmp_path, capsys):
         "predecessor_is_concluded": True,
         "predecessor_source_after": "src1",
         "predecessor_state_after": "CONCLUDED",
+        "predecessor_conclusion_digest_after": "d1",
     }
     path = _write(tmp_path, "successor.json", successor)
     assert run_cli(["incremental", "successor-validate", "--file", path]) == 0
     assert '"status": "PASS"' in capsys.readouterr().out
+
+    successor["predecessor_conclusion_digest_after"] = "mutated"
+    successor["predecessor_state_after"] = "FAILED"
+    path = _write(tmp_path, "successor-mutated.json", successor)
+    assert run_cli(["incremental", "successor-validate", "--file", path]) == 3
+    output = capsys.readouterr().out
+    assert "PREDECESSOR_CONCLUSION_MUTATION_FORBIDDEN" in output
+    assert "PREDECESSOR_MUST_REMAIN_CONCLUDED" in output
 
 
 def test_cli_feature_matrix_requires_declared_denominator_and_trend_scope_is_explicit(tmp_path, capsys):
