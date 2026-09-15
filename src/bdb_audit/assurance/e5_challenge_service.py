@@ -13,6 +13,7 @@ import time
 from typing import Any, Mapping, Sequence
 
 from .candidate_case import CandidateAssuranceCase, CandidateAssuranceCaseBuilder
+from .candidate_projection import current_finding_adjudication_pairs
 from .challenger import ChallengerAssignment, ChallengerResult, REQUIRED_BASELINE_CHALLENGER_TYPES
 from ..coordinator import Coordinator
 from ..core.errors import ValidationError
@@ -185,6 +186,13 @@ class E5ChallengeService:
                 dict(row["ref"]),
                 dict(qual_by_obligation[_digest(row["ref"])]) if _digest(row["ref"]) in qual_by_obligation else None,
             )
+        finding_rows = chronological_accepted_records(self.store, "finding_claim_revision", cut)
+        adjudication_rows = chronological_accepted_records(self.store, "finding_adjudication_decision", cut)
+        for claim_ref, adjudication_ref in current_finding_adjudication_pairs(
+            finding_rows,
+            adjudication_rows,
+        ):
+            builder.add_finding(claim_ref, adjudication_ref)
         for row in chronological_accepted_records(self.store, "contradiction", cut):
             builder.add_contradiction(dict(row["ref"]))
         for row in chronological_accepted_records(self.store, "evidence_qualification_assessment", cut):
