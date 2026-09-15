@@ -46,6 +46,41 @@ def _receipt(
     }
 
 
+def _strategy_receipt(
+    run_id: str,
+    profile: str,
+    roots: list[str],
+    cost_units: float,
+    *,
+    receipt_id: str,
+) -> dict[str, object]:
+    return {
+        "receipt_id": receipt_id,
+        "benchmark_id": f"strategy:{profile}",
+        "target_id": run_id,
+        "checker_id": f"strategy-runner:{profile}",
+        "execution_timestamp": "2026-09-15T00:00:00Z",
+        "exit_code": 0,
+        "status": "PASS",
+        "raw_output_digest": "e" * 64,
+        "evaluated_cases_count": 1,
+        "passed_cases_count": 1,
+        "failed_cases_count": 0,
+        "unsupported_cases_count": 0,
+        "unknown_cases_count": 0,
+        "execution_duration_ms": 1,
+        "details": {
+            "strategy_run_id": run_id,
+            "strategy_profile_id": profile,
+            "source_identity": "src",
+            "frozen_corpus_digest": "c" * 64,
+            "evaluated_cases": 10,
+            "cost_units": cost_units,
+            "qualified_root_cause_ids": roots,
+        },
+    }
+
+
 def test_vnext_cli_exposes_operational_vnext_surfaces():
     parser = create_parser()
     assert parser.parse_args(["features", "matrix", "--file", "x"]).command == "features"
@@ -128,27 +163,43 @@ def test_cli_continuous_qualification_is_receipt_bound_fail_closed_and_machine_r
     assert '"qualified": true' not in output
 
 
-def test_cli_strategy_benchmark_requires_measured_unique_gain(tmp_path, capsys):
+def test_cli_strategy_benchmark_requires_receipt_bound_measured_unique_gain(tmp_path, capsys):
+    baseline_receipt = _strategy_receipt("base", "fixed", ["r1"], 5, receipt_id="receipt-base")
+    adaptive_receipt = _strategy_receipt("adaptive", "adaptive", ["r1", "r2"], 7, receipt_id="receipt-adaptive")
     data = {
         "baseline": {
             "run_id": "base", "strategy_profile_id": "fixed", "source_identity": "src",
             "frozen_corpus_digest": "c" * 64, "qualified_root_cause_ids": ["r1"],
-            "execution_receipt_ids": ["receipt-base"], "cost_units": 5, "evaluated_cases": 10,
+            "execution_receipt_ids": ["receipt-base"], "actual_receipts": [baseline_receipt],
+            "cost_units": 5, "evaluated_cases": 10,
         },
         "adaptive": {
             "run_id": "adaptive", "strategy_profile_id": "adaptive", "source_identity": "src",
             "frozen_corpus_digest": "c" * 64, "qualified_root_cause_ids": ["r1", "r2"],
-            "execution_receipt_ids": ["receipt-adaptive"], "cost_units": 7, "evaluated_cases": 10,
+            "execution_receipt_ids": ["receipt-adaptive"], "actual_receipts": [adaptive_receipt],
+            "cost_units": 7, "evaluated_cases": 10,
         },
     }
     path = _write(tmp_path, "benchmark.json", data)
     assert run_cli(["strategy", "benchmark", "--file", path]) == 0
-    assert "BENEFIT_DEMONSTRATED" in capsys.readouterr().out
+    output = capsys.readouterr().out
+    assert "BENEFIT_DEMONSTRATED" in output
+    assert "verified_execution_receipt_digests" in output
 
     data["adaptive"]["qualified_root_cause_ids"] = ["r2"]
+    adaptive_receipt["details"]["qualified_root_cause_ids"] = ["r2"]
     path = _write(tmp_path, "benchmark-weakened.json", data)
     assert run_cli(["strategy", "benchmark", "--file", path]) == 3
     assert "BASELINE_ASSURANCE_WEAKENED" in capsys.readouterr().out
+
+    data["adaptive"]["qualified_root_cause_ids"] = ["r1", "r2"]
+    adaptive_receipt["details"]["qualified_root_cause_ids"] = ["r1", "r2"]
+    data["baseline"].pop("actual_receipts")
+    path = _write(tmp_path, "benchmark-declarative-only.json", data)
+    assert run_cli(["strategy", "benchmark", "--file", path]) == 3
+    output = capsys.readouterr().out
+    assert "BASELINE_ACTUAL_EXECUTION_RECEIPTS_REQUIRED" in output
+    assert "BENEFIT_DEMONSTRATED" not in output
 
 
 def test_cli_opportunity_review_and_successor_validation(tmp_path, capsys):
