@@ -12,6 +12,12 @@ from ..history.store import TransactionalHistoryStore
 from .models import StopInput
 
 
+_REQUIRED_BASELINE_CHALLENGER_TYPES = (
+    "FALSE_POSITIVE_SKEPTIC",
+    "FALSE_NEGATIVE_HUNTER",
+)
+
+
 def _ref(kind: str, digest: str, ref_class: str = "CONTENT_OR_PRIOR") -> dict[str, Any]:
     return {
         "kind": kind,
@@ -20,6 +26,119 @@ def _ref(kind: str, digest: str, ref_class: str = "CONTENT_OR_PRIOR") -> dict[st
         "schema_revision_ref": f"BDB_SCHEMA_REGISTRY::{kind}/1",
         "ref_class": ref_class,
     }
+
+
+def _revision_digest(ref: object) -> str | None:
+    if not isinstance(ref, dict):
+        return None
+    digest = ref.get("revision_digest")
+    return digest if isinstance(digest, str) and digest else None
+
+
+def _accepted_cut_key(value: object) -> tuple[str, int, str] | None:
+    if not isinstance(value, dict):
+        return None
+    campaign_id = value.get("campaign_id")
+    seq = value.get("accepted_head_seq")
+    accepted_hash = value.get("accepted_head_hash")
+    if not isinstance(campaign_id, str) or not campaign_id:
+        return None
+    if type(seq) is not int or seq < 0:
+        return None
+    if not isinstance(accepted_hash, str) or not accepted_hash:
+        return None
+    return campaign_id, seq, accepted_hash
+
+
+def select_current_baseline_challenger_refs(
+    candidate_record: dict[str, Any] | None,
+    assignment_records: Sequence[dict[str, Any]],
+    result_records: Sequence[dict[str, Any]],
+) -> tuple[dict[str, Any], ...]:
+    """Return one fresh accepted result for each required baseline challenger role.
+
+    Results are eligible only when they bind the exact current CandidateAssuranceCase,
+    resolve through an accepted assignment for the matching baseline role, preserve
+    canonical candidate -> assignment -> result ordering, and report no material
+    counterevidence. Ambiguity or duplication fails closed by returning no pair.
+    """
+    if candidate_record is None:
+        return ()
+    candidate_ref = candidate_record.get("ref")
+    candidate_body = candidate_record.get("body")
+    if not isinstance(candidate_body, dict):
+        return ()
+    candidate_digest = _revision_digest(candidate_ref)
+    candidate_cut = _accepted_cut_key(candidate_body.get("candidate_input_history_cut"))
+    if candidate_digest is None or candidate_cut is None:
+        return ()
+    candidate_campaign, candidate_seq, _ = candidate_cut
+
+    assignments: dict[str, tuple[str, int, dict[str, Any]]] = {}
+    for row in assignment_records:
+        body = row.get("body")
+        ref = row.get("ref")
+        if not isinstance(body, dict) or not isinstance(ref, dict):
+            continue
+        if _revision_digest(body.get("candidate_assurance_case_ref")) != candidate_digest:
+            continue
+        role = body.get("challenger_type")
+        if role not in _REQUIRED_BASELINE_CHALLENGER_TYPES:
+            continue
+        cut = _accepted_cut_key(body.get("assignment_input_history_cut"))
+        digest = _revision_digest(ref)
+        if cut is None or digest is None:
+            continue
+        campaign_id, seq, _ = cut
+        if campaign_id != candidate_campaign or seq < candidate_seq:
+            continue
+        assignments[digest] = (str(role), seq, ref)
+
+    eligible_by_role: dict[str, list[tuple[str, str, dict[str, Any]]]] = {
+        role: [] for role in _REQUIRED_BASELINE_CHALLENGER_TYPES
+    }
+    for row in result_records:
+        body = row.get("body")
+        ref = row.get("ref")
+        if not isinstance(body, dict) or not isinstance(ref, dict):
+            continue
+        if body.get("status") != "NO_MATERIAL_COUNTEREVIDENCE":
+            continue
+        if _revision_digest(body.get("candidate_assurance_case_ref")) != candidate_digest:
+            continue
+        assignment_digest = _revision_digest(body.get("challenge_assignment_ref"))
+        if assignment_digest is None or assignment_digest not in assignments:
+            continue
+        role, assignment_seq, _ = assignments[assignment_digest]
+        result_cut = _accepted_cut_key(body.get("result_input_history_cut"))
+        result_digest = _revision_digest(ref)
+        if result_cut is None or result_digest is None:
+            continue
+        campaign_id, result_seq, _ = result_cut
+        if campaign_id != candidate_campaign or result_seq < assignment_seq:
+            continue
+        eligible_by_role[role].append((assignment_digest, result_digest, ref))
+
+    selected: list[dict[str, Any]] = []
+    selected_assignments: set[str] = set()
+    selected_results: set[str] = set()
+    for role in _REQUIRED_BASELINE_CHALLENGER_TYPES:
+        candidates = eligible_by_role[role]
+        if len(candidates) != 1:
+            return ()
+        assignment_digest, result_digest, ref = candidates[0]
+        if assignment_digest in selected_assignments or result_digest in selected_results:
+            return ()
+        selected_assignments.add(assignment_digest)
+        selected_results.add(result_digest)
+        selected.append(dict(ref))
+    return tuple(selected)
+
+
+def _same_ref_set(left: Sequence[dict[str, Any]], right: Sequence[dict[str, Any]]) -> bool:
+    left_digests = sorted(d for d in (_revision_digest(ref) for ref in left) if d is not None)
+    right_digests = sorted(d for d in (_revision_digest(ref) for ref in right) if d is not None)
+    return len(left_digests) == len(left) and len(right_digests) == len(right) and left_digests == right_digests
 
 
 class StopInputBuilder:
@@ -81,16 +200,31 @@ class StopInputBuilder:
             if row["body"].get("stage_key") not in completed_stage_keys
         ]
 
-        # Candidate case
-        if candidate_assurance_case_ref is None:
-            cac_records = store.accepted_records("candidate_assurance_case", cut)
-            if cac_records:
-                candidate_assurance_case_ref = cac_records[-1]["ref"]
+        # Candidate case and challengers are selected only from the accepted cut.
+        cac_records = list(store.accepted_records("candidate_assurance_case", cut))
+        current_candidate_record = cac_records[-1] if cac_records else None
+        current_candidate_ref = current_candidate_record["ref"] if current_candidate_record is not None else None
+        if candidate_assurance_case_ref is not None:
+            if current_candidate_ref is None or _revision_digest(candidate_assurance_case_ref) != _revision_digest(current_candidate_ref):
+                raise ValidationError(
+                    "STOP_CANDIDATE_REF_NOT_CURRENT",
+                    "Explicit candidate assurance case is not the latest accepted candidate revision",
+                )
+        candidate_assurance_case_ref = dict(current_candidate_ref) if isinstance(current_candidate_ref, dict) else None
 
-        # Challengers
-        if not challenger_refs:
-            ch_records = store.accepted_records("challenger_result", cut)
-            challenger_refs = [r["ref"] for r in ch_records]
+        assignment_records = list(store.accepted_records("challenger_assignment", cut))
+        result_records = list(store.accepted_records("challenger_result", cut))
+        current_challenger_refs = select_current_baseline_challenger_refs(
+            current_candidate_record,
+            assignment_records,
+            result_records,
+        )
+        if challenger_refs and not _same_ref_set(challenger_refs, current_challenger_refs):
+            raise ValidationError(
+                "STOP_CHALLENGER_REFS_NOT_CURRENT_BASELINE_PAIR",
+                "Explicit challenger refs do not equal the current accepted baseline challenger pair",
+            )
+        challenger_refs = current_challenger_refs
 
         # Invalidation, contradictions, residual risks
         invalidation_records = store.accepted_records("evidence_invalidation", cut)
@@ -172,3 +306,6 @@ class StopInputBuilder:
         )
         object.__setattr__(stop_input, "_snapshot_obj", snapshot_obj)
         return stop_input
+
+
+__all__ = ["StopInputBuilder", "select_current_baseline_challenger_refs"]
