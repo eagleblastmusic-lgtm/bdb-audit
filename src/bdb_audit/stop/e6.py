@@ -16,13 +16,15 @@ from dataclasses import dataclass, field
 import hashlib
 from typing import Any, Mapping, Sequence, Set
 
-from ..core.canonical_json import canonical_bytes
 from ..core.errors import ValidationError
+from ..orchestration.stages import StageSpec
 from .models import StopInput, StopEvaluation
 
 
 @dataclass(frozen=True)
 class AdaptiveE6Spec:
+    """Adaptive E6 planning context with a schema-valid canonical StageSpec projection."""
+
     e6_stage_spec_id: str
     source_stop_evaluation_ref: dict[str, Any]
     source_generation_ref: dict[str, Any]
@@ -36,35 +38,41 @@ class AdaptiveE6Spec:
     unresolved_contradictions: tuple[dict[str, Any], ...] = ()
     e6_input_history_cut: dict[str, Any] = field(default_factory=dict)
 
+    def to_stage_spec(self) -> StageSpec:
+        stop_digest = str(self.source_stop_evaluation_ref.get("revision_digest", ""))
+        policy_digest = str(self.governing_policy_ref.get("revision_digest", ""))
+        if len(stop_digest) != 64:
+            raise ValidationError("E6_SOURCE_STOP_REF_INVALID")
+        if not policy_digest:
+            raise ValidationError("E6_GOVERNING_POLICY_REF_INVALID")
+        return StageSpec(
+            stage_key="E6",
+            stage_spec_revision=self.e6_stage_spec_id,
+            stage_role="E6",
+            stage_ordinal=6,
+            purpose="Adaptive E6 work derived from an accepted E6_REQUIRED STOP result",
+            predecessor_requirements=("E5",),
+            required_lane_slots=("E6_PRIMARY",),
+            optional_lane_slots=(),
+            blind_reveal_phase_model="CONTROLLED",
+            allowed_corpus_roles=(),
+            forbidden_corpus_roles=(),
+            coverage_obligation_policy_ref=f"POLICY_DIGEST:{policy_digest}",
+            required_stage_completion_outputs=("STAGE_COMPLETED",),
+            transition_policy_ref="TRANSITION_PROFILE_V1",
+            stop_e6_relationship=f"SOURCE_STOP_EVALUATION:{stop_digest}",
+        )
+
     def body(self) -> dict[str, Any]:
-        return {
-            "e6_stage_spec_id": self.e6_stage_spec_id,
-            "source_stop_evaluation_ref": dict(self.source_stop_evaluation_ref),
-            "source_generation_ref": dict(self.source_generation_ref),
-            "governing_policy_ref": dict(self.governing_policy_ref),
-            "trust_profile_ref": dict(self.trust_profile_ref),
-            "isolation_profile_ref": dict(self.isolation_profile_ref),
-            "inherited_unresolved_obligations": [dict(r) for r in self.inherited_unresolved_obligations],
-            "added_surfaces": [dict(r) for r in self.added_surfaces],
-            "added_invariants": [dict(r) for r in self.added_invariants],
-            "added_obligations": [dict(r) for r in self.added_obligations],
-            "unresolved_contradictions": [dict(r) for r in self.unresolved_contradictions],
-            "e6_input_history_cut": dict(self.e6_input_history_cut),
-        }
+        """Return the executable canonical ``stage_spec`` body, not a side-channel schema."""
+        return self.to_stage_spec().body()
 
     def digest(self) -> str:
-        from ..history.objects import CanonicalObject
-        return CanonicalObject("stage_spec", self.body()).digest
+        return self.to_stage_spec().revision_digest
 
     @property
     def ref(self) -> dict[str, Any]:
-        return {
-            "kind": "stage_spec",
-            "revision_digest": self.digest(),
-            "digest_profile": "BDB-OBJECT-DIGEST-1",
-            "schema_revision_ref": "BDB_SCHEMA_REGISTRY::stage_spec/1",
-            "ref_class": "CONTENT_OR_PRIOR",
-        }
+        return self.to_stage_spec().ref
 
 
 class AdaptiveE6Generator:
@@ -89,6 +97,11 @@ class AdaptiveE6Generator:
             raise ValidationError(
                 "E6_ONLY_FROM_E6_REQUIRED",
                 f"Cannot generate E6 from STOP decision '{stop_evaluation.continuation_decision}'; requires E6_REQUIRED",
+            )
+        if stop_evaluation.stop_input_ref.get("revision_digest") != stop_input.ref.get("revision_digest"):
+            raise ValidationError(
+                "E6_STOP_INPUT_BINDING_MISMATCH",
+                "Accepted STOP evaluation does not bind the supplied StopInput revision",
             )
 
         # Invariant 2: Denominator manipulation forbidden: cannot drop unresolved obligations
@@ -132,12 +145,30 @@ class AdaptiveE6Generator:
         )
 
     @staticmethod
-    def verify_post_e6_return_to_stop(new_head_cut: dict[str, Any], previous_cut: dict[str, Any]) -> None:
-        """Verify that after E6 completion, control flow returns to global STOP on the new accepted head."""
-        new_seq = new_head_cut.get("commit_seq", 0)
-        prev_seq = previous_cut.get("commit_seq", 0)
-        if new_seq <= prev_seq:
+    def verify_post_e6_return_to_stop(new_head_cut: Mapping[str, Any], previous_cut: Mapping[str, Any]) -> None:
+        """Verify that after E6 completion, control flow returns to global STOP on a newer accepted cut."""
+        new_seq = new_head_cut.get("accepted_head_seq", new_head_cut.get("commit_seq", 0))
+        prev_seq = previous_cut.get("accepted_head_seq", previous_cut.get("commit_seq", 0))
+        if type(new_seq) is not int or type(prev_seq) is not int or new_seq <= prev_seq:
             raise ValidationError(
                 "POST_E6_MUST_ADVANCE_HEAD",
                 f"Post-E6 evaluation requires advanced head cut (new {new_seq} <= prev {prev_seq})",
             )
+
+
+def reconstruct_stop_input(body: Mapping[str, Any]) -> StopInput:
+    """Rehydrate an accepted StopInput body without inventing authority fields."""
+    return StopInput(**dict(body))
+
+
+def reconstruct_stop_evaluation(body: Mapping[str, Any]) -> StopEvaluation:
+    """Rehydrate an accepted StopEvaluation body for exact binding checks."""
+    return StopEvaluation(**dict(body))
+
+
+__all__ = [
+    "AdaptiveE6Generator",
+    "AdaptiveE6Spec",
+    "reconstruct_stop_evaluation",
+    "reconstruct_stop_input",
+]
