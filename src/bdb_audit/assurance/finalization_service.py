@@ -18,6 +18,7 @@ from ..core.canonical_json import canonical_bytes
 from ..core.errors import ValidationError
 from ..core.ids import new_id
 from ..history.objects import CanonicalObject
+from ..history.selection import chronological_accepted_records, latest_accepted_record
 from ..history.store import TransactionalHistoryStore
 from ..stop.evaluator import evaluate_stop
 from ..stop.input_builder import StopInputBuilder
@@ -77,7 +78,6 @@ class FinalizationService:
 
         stop_input_obj = stop_input.as_object()
 
-        # Commit StopInput and StopEvaluation into history
         cmd = CommandEnvelope(
             command_id=command_id,
             command_kind="RECORD_ASSURANCE_DECISION",
@@ -110,13 +110,13 @@ class FinalizationService:
         termination_state: str | None = None,
         bounded_statement: str = "Campaign concluded via post-E5 finalization",
     ) -> dict[str, Any]:
-        """Conclude campaign based on accepted StopEvaluation and evaluate release qualification."""
+        """Conclude campaign based on the chronologically latest accepted StopEvaluation."""
         head = self.store.head()
         if head is None:
             raise ValidationError("EMPTY_STORE", "Cannot conclude an empty store")
         cut = current_accepted_cut(self.store)
 
-        stop_eval_records = self.store.accepted_records("stop_evaluation", cut)
+        stop_eval_records = chronological_accepted_records(self.store, "stop_evaluation", cut)
         if not stop_eval_records:
             if termination_state == "COMPLETED":
                 raise ValidationError(
@@ -126,7 +126,7 @@ class FinalizationService:
             self.evaluate_stop_gate(evaluation_context="FINAL_POST_E5")
             head = self.store.head()
             cut = current_accepted_cut(self.store)
-            stop_eval_records = self.store.accepted_records("stop_evaluation", cut)
+            stop_eval_records = chronological_accepted_records(self.store, "stop_evaluation", cut)
             if not stop_eval_records:
                 raise ValidationError(
                     "STOP_EVALUATION_REQUIRED",
@@ -140,14 +140,12 @@ class FinalizationService:
         assurance = stop_eval_body.get("assurance_level")
         readiness = stop_eval_body.get("release_readiness")
 
-        # Resolve termination state
         if termination_state is None:
             if decision == "PASS" and assurance == "ADEQUATE_FOR_DECLARED_SCOPE":
                 termination_state = "COMPLETED"
             else:
                 termination_state = "COMPLETED_LIMITED"
 
-        # Anti-false-PASS: COMPLETED requires PASS and ADEQUATE_FOR_DECLARED_SCOPE
         if termination_state == "COMPLETED":
             if decision != "PASS":
                 raise ValidationError(
@@ -168,10 +166,10 @@ class FinalizationService:
             "ref_class": "PRIOR_ACCEPTED_ONLY",
         }
 
-        sg_records = self.store.accepted_records("source_generation", cut)
-        if not sg_records:
-            si_records = self.store.accepted_records("source_identity", cut)
-            sg_ref = dict(si_records[-1]["ref"], ref_class="PRIOR_ACCEPTED_ONLY") if si_records else {
+        sg_record = latest_accepted_record(self.store, "source_generation", cut)
+        if sg_record is None:
+            si_record = latest_accepted_record(self.store, "source_identity", cut)
+            sg_ref = dict(si_record["ref"], ref_class="PRIOR_ACCEPTED_ONLY") if si_record is not None else {
                 "kind": "source_generation",
                 "revision_digest": "0" * 64,
                 "digest_profile": "BDB-OBJECT-DIGEST-1",
@@ -179,10 +177,10 @@ class FinalizationService:
                 "ref_class": "PRIOR_ACCEPTED_ONLY",
             }
         else:
-            sg_ref = dict(sg_records[-1]["ref"], ref_class="PRIOR_ACCEPTED_ONLY")
+            sg_ref = dict(sg_record["ref"], ref_class="PRIOR_ACCEPTED_ONLY")
 
-        cac_records = self.store.accepted_records("candidate_assurance_case", cut)
-        cac_ref = dict(cac_records[-1]["ref"], ref_class="PRIOR_ACCEPTED_ONLY") if cac_records else None
+        cac_record = latest_accepted_record(self.store, "candidate_assurance_case", cut)
+        cac_ref = dict(cac_record["ref"], ref_class="PRIOR_ACCEPTED_ONLY") if cac_record is not None else None
 
         basis_refs: tuple[dict[str, Any], ...] = ()
         if termination_state == "COMPLETED_LIMITED":
@@ -203,7 +201,6 @@ class FinalizationService:
         concl_obj = CanonicalObject("campaign_conclusion", conclusion.body(), logical_id=conclusion.campaign_conclusion_id)
         concl_prior_ref = dict(concl_obj.as_ref().as_dict(), ref_class="PRIOR_ACCEPTED_ONLY")
 
-        # Build FinalAssuranceCase
         stmt_ref = {
             "kind": "public_conclusion_statement_ref",
             "revision_digest": hashlib.sha256(bounded_statement.encode("utf-8")).hexdigest(),
@@ -222,7 +219,6 @@ class FinalizationService:
         final_obj = CanonicalObject("final_assurance_case", final_case.body(), logical_id=final_case.final_assurance_case_id)
         final_prior_ref = dict(final_obj.as_ref().as_dict(), ref_class="PRIOR_ACCEPTED_ONLY")
 
-        # Build ReleaseQualification
         pol_ref = {
             "kind": "policy_revision",
             "revision_digest": "1" * 64,
@@ -255,7 +251,6 @@ class FinalizationService:
         finally:
             conn.close()
 
-        # Commit conclusion, final case, and release qualification atomically
         cmd = CommandEnvelope(
             command_id=command_id,
             command_kind="RECORD_ASSURANCE_DECISION",

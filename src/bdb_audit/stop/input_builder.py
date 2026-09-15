@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import Any, Sequence
 
 from ..core.errors import ValidationError
+from ..history.selection import chronological_accepted_records, latest_accepted_record
 from ..history.store import TransactionalHistoryStore
 from .models import StopInput
 
@@ -55,13 +56,7 @@ def select_current_baseline_challenger_refs(
     assignment_records: Sequence[dict[str, Any]],
     result_records: Sequence[dict[str, Any]],
 ) -> tuple[dict[str, Any], ...]:
-    """Return one fresh accepted result for each required baseline challenger role.
-
-    Results are eligible only when they bind the exact current CandidateAssuranceCase,
-    resolve through an accepted assignment for the matching baseline role, preserve
-    canonical candidate -> assignment -> result ordering, and report no material
-    counterevidence. Ambiguity or duplication fails closed by returning no pair.
-    """
+    """Return one fresh accepted result for each required baseline challenger role."""
     if candidate_record is None:
         return ()
     candidate_ref = candidate_record.get("ref")
@@ -161,18 +156,15 @@ class StopInputBuilder:
             raise ValidationError("EMPTY_STORE", "Cannot build StopInput on empty store")
         cut = current_accepted_cut(store)
 
-        # Source generation
-        sg_records = store.accepted_records("source_generation", cut)
-        if not sg_records:
-            # Fallback to source identity
-            si_records = store.accepted_records("source_identity", cut)
-            sg_ref = si_records[-1]["ref"] if si_records else _ref("source_generation", "0" * 64)
+        sg_record = latest_accepted_record(store, "source_generation", cut)
+        if sg_record is None:
+            si_record = latest_accepted_record(store, "source_identity", cut)
+            sg_ref = si_record["ref"] if si_record is not None else _ref("source_generation", "0" * 64)
         else:
-            sg_ref = sg_records[-1]["ref"]
+            sg_ref = sg_record["ref"]
 
-        # Stage specs and completions
         stage_specs = store.accepted_records("stage_spec", cut)
-        stage_completions = store.accepted_records("stage_completion", cut)
+        stage_completions = chronological_accepted_records(store, "stage_completion", cut)
 
         spec_digest_to_key = {
             row["ref"]["revision_digest"]: row["body"].get("stage_key")
@@ -192,7 +184,6 @@ class StopInputBuilder:
                 completed_stage_keys.add(sk_direct)
 
         completed_stage_refs = [row["ref"] for row in stage_completions]
-
         required_stage_spec_refs = [row["ref"] for row in stage_specs]
         pending_required_stage_refs = [
             row["ref"]
@@ -200,8 +191,7 @@ class StopInputBuilder:
             if row["body"].get("stage_key") not in completed_stage_keys
         ]
 
-        # Candidate case and challengers are selected only from the accepted cut.
-        cac_records = list(store.accepted_records("candidate_assurance_case", cut))
+        cac_records = chronological_accepted_records(store, "candidate_assurance_case", cut)
         current_candidate_record = cac_records[-1] if cac_records else None
         current_candidate_ref = current_candidate_record["ref"] if current_candidate_record is not None else None
         if candidate_assurance_case_ref is not None:
@@ -212,8 +202,8 @@ class StopInputBuilder:
                 )
         candidate_assurance_case_ref = dict(current_candidate_ref) if isinstance(current_candidate_ref, dict) else None
 
-        assignment_records = list(store.accepted_records("challenger_assignment", cut))
-        result_records = list(store.accepted_records("challenger_result", cut))
+        assignment_records = chronological_accepted_records(store, "challenger_assignment", cut)
+        result_records = chronological_accepted_records(store, "challenger_result", cut)
         current_challenger_refs = select_current_baseline_challenger_refs(
             current_candidate_record,
             assignment_records,
@@ -226,16 +216,16 @@ class StopInputBuilder:
             )
         challenger_refs = current_challenger_refs
 
-        # Invalidation, contradictions, residual risks
         invalidation_records = store.accepted_records("evidence_invalidation", cut)
         contradiction_records = store.accepted_records("contradiction", cut)
         residual_risk_records = store.accepted_records("residual_risk", cut)
         obligation_records = store.accepted_records("coverage_obligation", cut)
         qualification_records = store.accepted_records("obligation_qualification", cut)
 
-        # Inventory
-        inv_records = store.accepted_records("inventory_revision", cut)
-        inv_ref = inv_records[-1]["ref"] if inv_records else _ref("inventory_revision", "0" * 64, ref_class="CONTENT_OR_PRIOR")
+        inv_record = latest_accepted_record(store, "inventory_revision", cut)
+        inv_ref = inv_record["ref"] if inv_record is not None else _ref(
+            "inventory_revision", "0" * 64, ref_class="CONTENT_OR_PRIOR"
+        )
 
         summary = unknown_blocked_summary or {
             "unknown_surfaces_count": 0,
@@ -243,7 +233,6 @@ class StopInputBuilder:
             "unresolved_obligations_count": len(pending_required_stage_refs),
         }
 
-        # Context-dependent defaults
         pol_ref = _ref("policy_revision", "1" * 64, ref_class="HISTORY_CONTEXT_BINDING")
         spec_ref = _ref("spec_revision", "1" * 64, ref_class="HISTORY_CONTEXT_BINDING")
         prof_ref = _ref("external_profile_ref", "1" * 64, ref_class="HISTORY_CONTEXT_BINDING")
