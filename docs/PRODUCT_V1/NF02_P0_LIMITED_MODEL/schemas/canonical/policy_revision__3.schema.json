@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:canonical:policy_revision/3",
+  "type": "object",
+  "properties": {
+    "object_id": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+        },
+        {
+          "pattern": "^policy_revision_"
+        }
+      ]
+    },
+    "model_id": {
+      "const": "BDB_NF02_P0_LIMITED_1"
+    },
+    "authorization_profile_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/ProfileRef"
+        },
+        {
+          "properties": {
+            "profile_id": {
+              "const": "P0_AUTHORIZATION_V1"
+            }
+          }
+        }
+      ]
+    },
+    "recovery_profile_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/ProfileRef"
+        },
+        {
+          "properties": {
+            "profile_id": {
+              "const": "P0_HISTORY_RECOVERY_V1"
+            }
+          }
+        }
+      ]
+    },
+    "allowed_model": {
+      "const": "BDB_NF02_P0_LIMITED_1"
+    }
+  },
+  "required": [
+    "allowed_model",
+    "authorization_profile_ref",
+    "model_id",
+    "object_id",
+    "recovery_profile_ref"
+  ],
+  "additionalProperties": false
+}

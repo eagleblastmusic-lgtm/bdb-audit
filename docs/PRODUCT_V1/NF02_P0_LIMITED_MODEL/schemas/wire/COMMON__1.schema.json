@@ -1,0 +1,811 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:wire:COMMON/1",
+  "$defs": {
+    "LogicalId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{0,63}_[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "TypedRef": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "artifact_contract_registry",
+            "assignment_manifest",
+            "assignment_package_binding",
+            "attempt",
+            "bdb_audit_lane_result",
+            "campaign_genesis",
+            "command_envelope",
+            "command_receipt",
+            "commit_body",
+            "installation_bootstrap_profile",
+            "lane_result_admission_evidence",
+            "nf02_p0_abort",
+            "nf02_p0_delivery",
+            "nf02_p0_source_snapshot",
+            "policy_revision",
+            "schema_registry",
+            "spec_revision",
+            "trust_profile"
+          ]
+        },
+        "version": {
+          "type": "string"
+        },
+        "revision_digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "schema_revision_ref": {
+          "type": "object",
+          "properties": {
+            "schema_id": {
+              "enum": [
+                "urn:bdb:p0:canonical:artifact_contract_registry/2",
+                "urn:bdb:p0:canonical:schema_registry/3",
+                "urn:bdb:p0:canonical:policy_revision/3",
+                "urn:bdb:p0:canonical:spec_revision/3",
+                "urn:bdb:p0:canonical:trust_profile/3",
+                "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+                "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+                "urn:bdb:p0:canonical:campaign_genesis/3",
+                "urn:bdb:p0:canonical:attempt/3",
+                "urn:bdb:p0:canonical:assignment_manifest/3",
+                "urn:bdb:p0:canonical:assignment_package_binding/3",
+                "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+                "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+                "urn:bdb:p0:canonical:bdb_audit_lane_result/4",
+                "urn:bdb:p0:canonical:nf02_p0_abort/1",
+                "urn:bdb:p0:canonical:command_envelope/3",
+                "urn:bdb:p0:canonical:commit_body/3",
+                "urn:bdb:p0:canonical:command_receipt/3"
+              ]
+            },
+            "raw_digest": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "raw_digest",
+            "schema_id"
+          ],
+          "additionalProperties": false
+        },
+        "digest_profile": {
+          "const": "BDB-OBJECT-DIGEST-1"
+        },
+        "logical_id": {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+        }
+      },
+      "required": [
+        "digest_profile",
+        "kind",
+        "logical_id",
+        "revision_digest",
+        "schema_revision_ref",
+        "version"
+      ],
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "properties": {
+            "kind": {
+              "const": "artifact_contract_registry"
+            },
+            "version": {
+              "const": "2"
+            },
+            "logical_id": {
+              "pattern": "^artifact_contract_registry_"
+            },
+            "schema_revision_ref": {
+              "properties": {
+                "schema_id": {
+                  "const": "urn:bdb:p0:canonical:artifact_contract_registry/2"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "schema_registry"
+            },
+            "version": {
+              "const": "3"
+            },
+            "logical_id": {
+              "pattern": "^schema_registry_"
+            },
+            "schema_revision_ref": {
+              "properties": {
+                "schema_id": {
+                  "const": "urn:bdb:p0:canonical:schema_registry/3"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "policy_revision"
+            },
+            "version": {
+              "const": "3"
+            },
+            "logical_id": {
+              "pattern": "^policy_revision_"
+            },
+            "schema_revision_ref": {
+              "properties": {
+                "schema_id": {
+                  "const": "urn:bdb:p0:canonical:policy_revision/3"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "spec_revision"
+            },
+            "version": {
+              "const": "3"
+            },
+            "logical_id": {
+              "pattern": "^spec_revision_"
+            },
+            "schema_revision_ref": {
+              "properties": {
+                "schema_id": {
+                  "const": "urn:bdb:p0:canonical:spec_revision/3"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "trust_profile"
+            },
+            "version": {
+              "const": "3"
+            },
+            "logical_id": {
+              "pattern": "^trust_profile_"
+            },
+            "schema_revision_ref": {
+              "properties": {
+                "schema_id": {
+                  "const": "urn:bdb:p0:canonical:trust_profile/3"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "installation_bootstrap_profile"
+            },
+            "version": {
+              "const": "2"
+            },
+            "logical_id": {
+              "pattern": "^installation_bootstrap_profile_"
+            },
+            "schema_revision_ref": {
+              "properties": {
+                "schema_id": {
+                  "const": "urn:bdb:p0:canonical:installation_bootstrap_profile/2"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "nf02_p0_source_snapshot"
+            },
+            "version": {
+              "const": "1"
+            },
+            "logical_id": {
+              "pattern": "^nf02_p0_source_snapshot_"
+            },
+            "schema_revision_ref": {
+              "properties": {
+                "schema_id": {
+                  "const": "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "campaign_genesis"
+            },
+            "version": {
+              "const": "3"
+            },
+            "logical_id": {
+              "pattern": "^campaign_genesis_"
+            },
+            "schema_revision_ref": {
+              "properties": {
+                "schema_id": {
+                  "const": "urn:bdb:p0:canonical:campaign_genesis/3"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "attempt"
+            },
+            "version": {
+              "const": "3"
+            },
+            "logical_id": {
+              "pattern": "^attempt_"
+            },
+            "schema_revision_ref": {
+              "properties": {
+                "schema_id": {
+                  "const": "urn:bdb:p0:canonical:attempt/3"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "assignment_manifest"
+            },
+            "version": {
+              "const": "3"
+            },
+            "logical_id": {
+              "pattern": "^assignment_manifest_"
+            },
+            "schema_revision_ref": {
+              "properties": {
+                "schema_id": {
+                  "const": "urn:bdb:p0:canonical:assignment_manifest/3"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "assignment_package_binding"
+            },
+            "version": {
+              "const": "3"
+            },
+            "logical_id": {
+              "pattern": "^assignment_package_binding_"
+            },
+            "schema_revision_ref": {
+              "properties": {
+                "schema_id": {
+                  "const": "urn:bdb:p0:canonical:assignment_package_binding/3"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "nf02_p0_delivery"
+            },
+            "version": {
+              "const": "1"
+            },
+            "logical_id": {
+              "pattern": "^nf02_p0_delivery_"
+            },
+            "schema_revision_ref": {
+              "properties": {
+                "schema_id": {
+                  "const": "urn:bdb:p0:canonical:nf02_p0_delivery/1"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "lane_result_admission_evidence"
+            },
+            "version": {
+              "const": "4"
+            },
+            "logical_id": {
+              "pattern": "^lane_result_admission_evidence_"
+            },
+            "schema_revision_ref": {
+              "properties": {
+                "schema_id": {
+                  "const": "urn:bdb:p0:canonical:lane_result_admission_evidence/4"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "bdb_audit_lane_result"
+            },
+            "version": {
+              "const": "4"
+            },
+            "logical_id": {
+              "pattern": "^bdb_audit_lane_result_"
+            },
+            "schema_revision_ref": {
+              "properties": {
+                "schema_id": {
+                  "const": "urn:bdb:p0:canonical:bdb_audit_lane_result/4"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "nf02_p0_abort"
+            },
+            "version": {
+              "const": "1"
+            },
+            "logical_id": {
+              "pattern": "^nf02_p0_abort_"
+            },
+            "schema_revision_ref": {
+              "properties": {
+                "schema_id": {
+                  "const": "urn:bdb:p0:canonical:nf02_p0_abort/1"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "command_envelope"
+            },
+            "version": {
+              "const": "3"
+            },
+            "logical_id": {
+              "pattern": "^command_envelope_"
+            },
+            "schema_revision_ref": {
+              "properties": {
+                "schema_id": {
+                  "const": "urn:bdb:p0:canonical:command_envelope/3"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "commit_body"
+            },
+            "version": {
+              "const": "3"
+            },
+            "logical_id": {
+              "pattern": "^commit_body_"
+            },
+            "schema_revision_ref": {
+              "properties": {
+                "schema_id": {
+                  "const": "urn:bdb:p0:canonical:commit_body/3"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "command_receipt"
+            },
+            "version": {
+              "const": "3"
+            },
+            "logical_id": {
+              "pattern": "^command_receipt_"
+            },
+            "schema_revision_ref": {
+              "properties": {
+                "schema_id": {
+                  "const": "urn:bdb:p0:canonical:command_receipt/3"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ProfileRef": {
+      "type": "object",
+      "properties": {
+        "profile_id": {
+          "enum": [
+            "BDB_CJSON_1",
+            "P0_AUTHORIZATION_V1",
+            "P0_BOOTSTRAP_SOURCE_V1",
+            "P0_EXECUTION_ISOLATION_V1",
+            "P0_HISTORY_RECOVERY_V1",
+            "P0_PACKAGE_TRANSPORT_V1",
+            "P0_RESULT_TRANSPORT_V1"
+          ]
+        },
+        "revision_digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "profile_id",
+        "revision_digest"
+      ],
+      "additionalProperties": false
+    },
+    "RawRef": {
+      "type": "object",
+      "properties": {
+        "raw_digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "byte_length": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "media_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "artifact_contract_ref": {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/ProfileRef"
+        }
+      },
+      "required": [
+        "artifact_contract_ref",
+        "byte_length",
+        "media_type",
+        "raw_digest"
+      ],
+      "additionalProperties": false
+    },
+    "Head": {
+      "type": "object",
+      "properties": {
+        "campaign_id": {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+        },
+        "commit_seq": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "commit_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "campaign_id",
+        "commit_hash",
+        "commit_seq"
+      ],
+      "additionalProperties": false
+    },
+    "HistoryCut": {
+      "type": "object",
+      "properties": {
+        "head": {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/Head"
+        },
+        "policy_ref": {
+          "allOf": [
+            {
+              "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "policy_revision"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "spec_ref": {
+          "allOf": [
+            {
+              "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "spec_revision"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "schema_registry_ref": {
+          "allOf": [
+            {
+              "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "schema_registry"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "source_ref": {
+          "allOf": [
+            {
+              "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "nf02_p0_source_snapshot"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "required": [
+        "head",
+        "policy_ref",
+        "schema_registry_ref",
+        "source_ref",
+        "spec_ref"
+      ],
+      "additionalProperties": false
+    },
+    "EventId": {
+      "type": "object",
+      "properties": {
+        "commit_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "ordinal": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "commit_hash",
+        "ordinal"
+      ],
+      "additionalProperties": false
+    },
+    "FileEntry": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "maxLength": 512,
+          "pattern": "^[A-Za-z0-9_-]+(?:[.][A-Za-z0-9_-]+)*(?:/[A-Za-z0-9_-]+(?:[.][A-Za-z0-9_-]+)*)*$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "bytes",
+        "file",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "Member": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "maxLength": 512,
+          "pattern": "^[A-Za-z0-9_-]+(?:[.][A-Za-z0-9_-]+)*(?:/[A-Za-z0-9_-]+(?:[.][A-Za-z0-9_-]+)*)*$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "media_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "bytes",
+        "media_type",
+        "path",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "State": {
+      "enum": [
+        "ASSIGNED",
+        "BOUND",
+        "STARTED",
+        "DELIVERED",
+        "EVIDENCE_ACCEPTED",
+        "RESULT_ACCEPTED",
+        "ABORTED"
+      ]
+    },
+    "Event": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "event_type": {
+              "const": "P0FactAccepted"
+            },
+            "artifact_ref": {
+              "allOf": [
+                {
+                  "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "artifact_contract_registry",
+                        "schema_registry",
+                        "policy_revision",
+                        "spec_revision",
+                        "trust_profile",
+                        "installation_bootstrap_profile",
+                        "nf02_p0_source_snapshot",
+                        "campaign_genesis",
+                        "attempt",
+                        "assignment_manifest",
+                        "assignment_package_binding",
+                        "nf02_p0_delivery",
+                        "lane_result_admission_evidence",
+                        "bdb_audit_lane_result",
+                        "nf02_p0_abort"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "required": [
+            "artifact_ref",
+            "event_type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "event_type": {
+              "const": "P0AttemptStarted"
+            },
+            "attempt_ref": {
+              "allOf": [
+                {
+                  "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "attempt"
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            "assignment_ref": {
+              "allOf": [
+                {
+                  "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "assignment_manifest"
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            "binding_ref": {
+              "allOf": [
+                {
+                  "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "assignment_package_binding"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "required": [
+            "assignment_ref",
+            "attempt_ref",
+            "binding_ref",
+            "event_type"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "not": {}
+}

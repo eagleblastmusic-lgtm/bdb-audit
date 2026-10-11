@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:canonical:attempt/3",
+  "type": "object",
+  "properties": {
+    "object_id": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+        },
+        {
+          "pattern": "^attempt_"
+        }
+      ]
+    },
+    "model_id": {
+      "const": "BDB_NF02_P0_LIMITED_1"
+    },
+    "campaign_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "campaign_genesis"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "source_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "nf02_p0_source_snapshot"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "creation_cut": {
+      "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/HistoryCut"
+    },
+    "retry_of_attempt_ref": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "attempt"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "abort_basis_ref": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "nf02_p0_abort"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "auditor_certificate_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "abort_basis_ref",
+    "auditor_certificate_sha256",
+    "campaign_ref",
+    "creation_cut",
+    "model_id",
+    "object_id",
+    "retry_of_attempt_ref",
+    "source_ref"
+  ],
+  "additionalProperties": false
+}

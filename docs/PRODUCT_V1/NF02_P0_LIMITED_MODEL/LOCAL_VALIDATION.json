@@ -1,0 +1,136 @@
+{
+  "record_type": "UNSIGNED_LOCAL_DESIGN_VALIDATION_NOT_Q1_Q2_RQ_OR_AUTHORITY",
+  "date": "2026-10-11",
+  "status": "ONE_CLOSED_PROPOSED_MODEL_READY_FOR_OWNER_DECISION",
+  "proposal_manifest_sha256": "278d45caa8fe3a814c2d16c3706c93454cdd04676207b3159f57166a611d7ee9",
+  "normative_set_sha256": "f4aeeadd96314ef7854f61747fdf3f72caf5dfb599c4977a78170aa3620165df",
+  "machine_set_sha256": "7449d5eb45ca2aa49b065318d1287ac473fed54dc0e8359bcc32033215f5709d",
+  "set_counts": {
+    "normative": 55,
+    "machine": 55,
+    "unique_readback_files": 57
+  },
+  "counts": {
+    "canonical_contracts": 18,
+    "profiles": 7,
+    "schemas": 43,
+    "schema_categories": {
+      "wire": 9,
+      "profile": 7,
+      "canonical": 18,
+      "external": 9
+    },
+    "qualification_stages": 3,
+    "canonical_operations": 8,
+    "delivery_operations": 1
+  },
+  "dependency_graph_sha256": "7ad1c90ee72634b633e2a9c260e5d7b93d69fc9a1bcca76632291a047f15f27e",
+  "validation_source_bindings": [
+    {
+      "file": "tools/nf02_p0_limited_model.py",
+      "sha256": "6b634d4d64c74afb9cd1bba9a42cb847db86a0d86fd320111ef6103ddfd82da5",
+      "bytes": 51785
+    },
+    {
+      "file": "tools/test_nf02_p0_limited_model.py",
+      "sha256": "c031973892f7391f2d17d485eac4e3a36d51645c2ebb8c8a9b5fd0e7a8f8ff1b",
+      "bytes": 13032
+    }
+  ],
+  "head_before_checkpoint": "9c291f241795c5ef46393b6520a5066e852fe4ae",
+  "tree_before_checkpoint": "ac96051d9aad87fa620701bebca87e11e1cb5d1f",
+  "branch": "work/nf02-runtime-completion",
+  "checks": [
+    {
+      "command": ".venv-f2/Scripts/python.exe -m unittest -v tools.test_nf02_p0_limited_model",
+      "exit_code": 0,
+      "output": "test_abort_body_schema_excludes_terminal_states (tools.test_nf02_p0_limited_model.ProposedModelChecks.test_abort_body_schema_excludes_terminal_states) ... ok\r\ntest_all_43_schemas_have_valid_draft_2020_12_grammar (tools.test_nf02_p0_limited_model.ProposedModelChecks.test_all_43_schemas_have_valid_draft_2020_12_grammar) ... ok\r\ntest_all_external_refs_and_fragments_resolve_offline (tools.test_nf02_p0_limited_model.ProposedModelChecks.test_all_external_refs_and_fragments_resolve_offline) ... ok\r\ntest_all_typed_kinds_accept_only_their_exact_version_schema_and_id (tools.test_nf02_p0_limited_model.ProposedModelChecks.test_all_typed_kinds_accept_only_their_exact_version_schema_and_id) ... ok\r\ntest_candidate_manifest_has_two_complete_sets_without_self_preimages (tools.test_nf02_p0_limited_model.ProposedModelChecks.test_candidate_manifest_has_two_complete_sets_without_self_preimages) ... ok\r\ntest_closure_has_all_categories_no_unknowns_and_three_qualifications (tools.test_nf02_p0_limited_model.ProposedModelChecks.test_closure_has_all_categories_no_unknowns_and_three_qualifications) ... ok\r\ntest_each_of_eight_command_branches_and_fact_domains (tools.test_nf02_p0_limited_model.ProposedModelChecks.test_each_of_eight_command_branches_and_fact_domains) ... ok\r\ntest_every_profile_is_exact_and_rejects_changed_or_extra_rules (tools.test_nf02_p0_limited_model.ProposedModelChecks.test_every_profile_is_exact_and_rejects_changed_or_extra_rules) ... ok\r\ntest_field_specific_refs_and_raw_profile_media_are_closed (tools.test_nf02_p0_limited_model.ProposedModelChecks.test_field_specific_refs_and_raw_profile_media_are_closed) ... ok\r\ntest_generation_is_deterministic_and_schema_membership_is_exact (tools.test_nf02_p0_limited_model.ProposedModelChecks.test_generation_is_deterministic_and_schema_membership_is_exact) ... ok\r\ntest_installation_modes_require_real_runtime_or_independent_mandate (tools.test_nf02_p0_limited_model.ProposedModelChecks.test_installation_modes_require_real_runtime_or_independent_mandate) ... ok\r\ntest_no_signature_trace_cycle_in_command_and_installation_grants (tools.test_nf02_p0_limited_model.ProposedModelChecks.test_no_signature_trace_cycle_in_command_and_installation_grants) ... ok\r\ntest_old_unknown_and_generic_ref_classes_are_denied (tools.test_nf02_p0_limited_model.ProposedModelChecks.test_old_unknown_and_generic_ref_classes_are_denied) ... ok\r\ntest_qualification_matrix_preserves_full_declared_case_sets (tools.test_nf02_p0_limited_model.ProposedModelChecks.test_qualification_matrix_preserves_full_declared_case_sets) ... ok\r\ntest_result_schema_has_no_truth_or_completion_authority (tools.test_nf02_p0_limited_model.ProposedModelChecks.test_result_schema_has_no_truth_or_completion_authority) ... ok\r\ntest_shared_definitions_are_not_public_payload_dispatch (tools.test_nf02_p0_limited_model.ProposedModelChecks.test_shared_definitions_are_not_public_payload_dispatch) ... ok\r\ntest_source_manifest_explicitly_preserves_git_types_and_original_names (tools.test_nf02_p0_limited_model.ProposedModelChecks.test_source_manifest_explicitly_preserves_git_types_and_original_names) ... ok\r\ntest_start_requires_one_specific_event_and_no_new_binding (tools.test_nf02_p0_limited_model.ProposedModelChecks.test_start_requires_one_specific_event_and_no_new_binding) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 18 tests in 2.401s\r\n\r\nOK\r\n",
+      "wall_time_seconds": 3.7235737
+    },
+    {
+      "command": ".venv-f2/Scripts/python.exe tools/nf02_p0_limited_model.py --check",
+      "exit_code": 0,
+      "output": "{\"files\": 54, \"bytes\": 347302, \"counts\": {\"canonical_contracts\": 18, \"profiles\": 7, \"schemas\": 43, \"schema_categories\": {\"wire\": 9, \"profile\": 7, \"canonical\": 18, \"external\": 9}, \"qualification_stages\": 3, \"canonical_operations\": 8, \"delivery_operations\": 1}, \"qualification\": false}\r\n",
+      "wall_time_seconds": 1.1925896
+    },
+    {
+      "command": ".venv-f2/Scripts/python.exe -m ruff check tools/nf02_p0_limited_model.py tools/test_nf02_p0_limited_model.py",
+      "exit_code": 0,
+      "output": "All checks passed!\n",
+      "wall_time_seconds": 0.8421633
+    },
+    {
+      "command": ".venv-f2/Scripts/python.exe -m mypy tools/nf02_p0_limited_model.py tools/test_nf02_p0_limited_model.py --ignore-missing-imports",
+      "exit_code": 0,
+      "output": "Success: no issues found in 2 source files\r\n",
+      "wall_time_seconds": 1.4777632
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "output": "",
+      "wall_time_seconds": 0.7114231
+    }
+  ],
+  "qualification": {
+    "Q1": "NOT_RUN",
+    "Q2": "NOT_RUN",
+    "RQ": "NOT_RUN",
+    "normative_approval": "NOT_OBTAINED",
+    "independent_authority": "NOT_ESTABLISHED",
+    "production_import": "BLOCKED",
+    "real_external_audit_result": "NOT_EXECUTED",
+    "test_values": "SHAPE_ONLY_UNPERSISTED_PLACEHOLDERS; no fake credential/root/qualification instance"
+  },
+  "preserved_checkpoints": [
+    {
+      "file": "docs/R5_4_2/OWNER_R5_4_2_SEMANTIC_CLOSURE_APPROVAL.json",
+      "bytes": 4956,
+      "sha256": "78cb86ad8f311e1f4db73d10b6d18e3f9567ac03d8b446a0849a15f047ea9aae",
+      "matches_checkpoint": true
+    },
+    {
+      "file": "docs/R5_4_2/R5_4_2_SEMANTIC_CLOSURE_GRAPH.json",
+      "bytes": 4372832,
+      "sha256": "57e16f3dc8ffdc448c62cd5ed74663c875517eb6d141f13516358069d15ea75a",
+      "matches_checkpoint": true
+    },
+    {
+      "file": "docs/PRODUCT_V1/NF02_P0_SUCCESSOR_SCOPE_PROPOSAL.md",
+      "bytes": 33792,
+      "sha256": "aebaf9129044fe3d5f861fcccb53d1504c09866c7581942604a0f9edfd3d6f99",
+      "matches_checkpoint": true
+    },
+    {
+      "file": "docs/PRODUCT_V1/NF02_P0_SUCCESSOR_DEPENDENCIES.json",
+      "bytes": 3006193,
+      "sha256": "0a91b1f1f7fbdcb42984f58aa7581fa9dfe4742440335541240a62eace267048",
+      "matches_checkpoint": true
+    },
+    {
+      "file": "docs/PRODUCT_V1/NF02_P0_IMPLEMENTATION_EVIDENCE.json",
+      "bytes": 52956,
+      "sha256": "6e56aa21f16f005f60d1c5884f95915641af118d84db0bf7abc7e52939c981d2",
+      "matches_checkpoint": true
+    }
+  ],
+  "existing_implementation_evidence": {
+    "checkpoint": "7508d4fd5d0dc3e2f3cfa3fe5e07834c9e3b8298",
+    "readback_counts": {
+      "source_bindings": 260,
+      "test_bindings": 3,
+      "test_reports": 2
+    },
+    "drift": [],
+    "previous_tests": {
+      "targeted": 16,
+      "broader": 274,
+      "status": "RETAINED_HISTORICAL_PASS_NOT_RERUN_NOT_QUALIFICATION_FOR_NEW_MODEL"
+    },
+    "runtime_code_changes_this_iteration": 0
+  },
+  "completed_scope": "Normative proposal, exact schema/profile/reference closure, mandatory qualification families, risks, normative deltas, implementation/qualification comparison; runtime integration remains future authorized work",
+  "preservation": "All prior WIP, untracked data, frozen R5.4.2/131/approval/evidence unchanged; only live status/qualification navigation updated",
+  "stopping_condition": "Explicit owner instruction: stop after this concrete packet for approval; no next formalization/implementation milestone, activation, push, merge or release",
+  "manifest_boundary": "This unsigned local validation record and the manifest itself are outside candidate self-preimages; future signed qualifications are outside the campaign"
+}

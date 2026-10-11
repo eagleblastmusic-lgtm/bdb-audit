@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:profile:P0_HISTORY_RECOVERY_V1",
+  "const": {
+    "profile_id": "P0_HISTORY_RECOVERY_V1",
+    "purpose": "Single-writer chronological accepted history and durable retry",
+    "rules": [
+      "ATOMIC_HEAD_OBJECT_RAW_RECEIPT_CAS",
+      "EXACT_PRIOR_REFS_AND_CUT",
+      "BIND_THEN_LATER_START_THEN_DELIVERY_THEN_EVIDENCE_THEN_RESULT",
+      "NO_MISSING_RAW_REPAIR_OR_BACKFILL",
+      "CURRENT_AUTHORITY_FOR_NEW_WRITES",
+      "AT_LEAST_ONCE_SAME_BYTES_DELIVERY",
+      "NO_FULL_HOST_ROLLBACK_GUARANTEE"
+    ]
+  }
+}

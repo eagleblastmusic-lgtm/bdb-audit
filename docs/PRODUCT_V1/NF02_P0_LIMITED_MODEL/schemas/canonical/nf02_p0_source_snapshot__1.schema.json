@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+  "type": "object",
+  "properties": {
+    "object_id": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+        },
+        {
+          "pattern": "^nf02_p0_source_snapshot_"
+        }
+      ]
+    },
+    "model_id": {
+      "const": "BDB_NF02_P0_LIMITED_1"
+    },
+    "repository_authority_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "repository_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "git_object_algorithm": {
+      "enum": [
+        "sha1",
+        "sha256"
+      ]
+    },
+    "git_commit_object_id": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{40}|[0-9a-f]{64})$"
+    },
+    "git_tree_object_id": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{40}|[0-9a-f]{64})$"
+    },
+    "source_manifest_raw_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/RawRef"
+        },
+        {
+          "properties": {
+            "media_type": {
+              "const": "application/json"
+            },
+            "artifact_contract_ref": {
+              "allOf": [
+                {
+                  "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/ProfileRef"
+                },
+                {
+                  "properties": {
+                    "profile_id": {
+                      "const": "P0_BOOTSTRAP_SOURCE_V1"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "source_archive_raw_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/RawRef"
+        },
+        {
+          "properties": {
+            "media_type": {
+              "const": "application/zip"
+            },
+            "artifact_contract_ref": {
+              "allOf": [
+                {
+                  "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/ProfileRef"
+                },
+                {
+                  "properties": {
+                    "profile_id": {
+                      "const": "P0_BOOTSTRAP_SOURCE_V1"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "approved_view_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "approved_view_digest",
+    "git_commit_object_id",
+    "git_object_algorithm",
+    "git_tree_object_id",
+    "model_id",
+    "object_id",
+    "repository_authority_digest",
+    "repository_id",
+    "source_archive_raw_ref",
+    "source_manifest_raw_ref"
+  ],
+  "additionalProperties": false
+}

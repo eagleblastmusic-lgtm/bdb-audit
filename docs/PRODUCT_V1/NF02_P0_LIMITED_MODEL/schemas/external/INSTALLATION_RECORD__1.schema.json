@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:external:INSTALLATION_RECORD/1",
+  "type": "object",
+  "properties": {
+    "candidate_manifest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "normative_set_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "machine_set_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "mode": {
+      "enum": [
+        "QUALIFICATION_ONLY",
+        "PRODUCTION"
+      ]
+    },
+    "freeze_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "runtime_qualification_sha256": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      ]
+    },
+    "qualification_mandate_sha256": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      ]
+    },
+    "installed_files": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/FileEntry"
+      },
+      "minItems": 1,
+      "maxItems": 8192,
+      "uniqueItems": true
+    },
+    "implementation_files": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/FileEntry"
+      },
+      "minItems": 1,
+      "maxItems": 8192,
+      "uniqueItems": true
+    },
+    "namespace_authority_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "external_schema_root_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "coordinator_os_identity": {
+      "type": "object",
+      "properties": {
+        "sid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "privilege_class": {
+          "const": "NON_ADMIN_SERVICE_ACCOUNT"
+        }
+      },
+      "required": [
+        "privilege_class",
+        "sid"
+      ],
+      "additionalProperties": false
+    },
+    "initial_root_refs": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+          },
+          {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "artifact_contract_registry",
+                  "schema_registry",
+                  "policy_revision",
+                  "spec_revision",
+                  "trust_profile",
+                  "installation_bootstrap_profile"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "minItems": 6,
+      "maxItems": 6,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "candidate_manifest_sha256",
+    "coordinator_os_identity",
+    "external_schema_root_sha256",
+    "freeze_sha256",
+    "implementation_files",
+    "initial_root_refs",
+    "installed_files",
+    "machine_set_sha256",
+    "mode",
+    "namespace_authority_digest",
+    "normative_set_sha256",
+    "qualification_mandate_sha256",
+    "runtime_qualification_sha256"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "PRODUCTION"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "runtime_qualification_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "qualification_mandate_sha256": {
+            "type": "null"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "runtime_qualification_sha256": {
+            "type": "null"
+          },
+          "qualification_mandate_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    }
+  ]
+}

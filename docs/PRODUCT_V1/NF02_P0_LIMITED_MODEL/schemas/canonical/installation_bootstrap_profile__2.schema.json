@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+  "type": "object",
+  "properties": {
+    "object_id": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+        },
+        {
+          "pattern": "^installation_bootstrap_profile_"
+        }
+      ]
+    },
+    "model_id": {
+      "const": "BDB_NF02_P0_LIMITED_1"
+    },
+    "registry_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "artifact_contract_registry"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "schema_registry_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "schema_registry"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "policy_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "policy_revision"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "spec_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "spec_revision"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "trust_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "trust_profile"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "serialization_profile_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/ProfileRef"
+        },
+        {
+          "properties": {
+            "profile_id": {
+              "const": "BDB_CJSON_1"
+            }
+          }
+        }
+      ]
+    },
+    "source_profile_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/ProfileRef"
+        },
+        {
+          "properties": {
+            "profile_id": {
+              "const": "P0_BOOTSTRAP_SOURCE_V1"
+            }
+          }
+        }
+      ]
+    },
+    "namespace_authority_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "initial_command": {
+      "const": "INITIALIZE_P0_FROM_APPROVED_GIT"
+    }
+  },
+  "required": [
+    "initial_command",
+    "model_id",
+    "namespace_authority_digest",
+    "object_id",
+    "policy_ref",
+    "registry_ref",
+    "schema_registry_ref",
+    "serialization_profile_ref",
+    "source_profile_ref",
+    "spec_ref",
+    "trust_ref"
+  ],
+  "additionalProperties": false
+}

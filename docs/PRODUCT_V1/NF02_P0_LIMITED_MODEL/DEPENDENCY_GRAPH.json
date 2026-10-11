@@ -1,0 +1,2007 @@
+{
+  "model_id": "BDB_NF02_P0_LIMITED_1",
+  "authority": "DESIGN_ONLY",
+  "roots": [
+    "urn:bdb:p0:canonical:artifact_contract_registry/2",
+    "urn:bdb:p0:canonical:assignment_manifest/3",
+    "urn:bdb:p0:canonical:assignment_package_binding/3",
+    "urn:bdb:p0:canonical:attempt/3",
+    "urn:bdb:p0:canonical:bdb_audit_lane_result/4",
+    "urn:bdb:p0:canonical:campaign_genesis/3",
+    "urn:bdb:p0:canonical:command_envelope/3",
+    "urn:bdb:p0:canonical:command_receipt/3",
+    "urn:bdb:p0:canonical:commit_body/3",
+    "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+    "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+    "urn:bdb:p0:canonical:nf02_p0_abort/1",
+    "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+    "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+    "urn:bdb:p0:canonical:policy_revision/3",
+    "urn:bdb:p0:canonical:schema_registry/3",
+    "urn:bdb:p0:canonical:spec_revision/3",
+    "urn:bdb:p0:canonical:trust_profile/3",
+    "urn:bdb:p0:external:AUTHOR_QUALIFICATION/1",
+    "urn:bdb:p0:external:CANDIDATE_MANIFEST/1",
+    "urn:bdb:p0:external:INDEPENDENT_FREEZE/1",
+    "urn:bdb:p0:external:INSTALLATION_RECORD/1",
+    "urn:bdb:p0:external:OWNER_MODEL_DECISION/1",
+    "urn:bdb:p0:external:PRINCIPAL_GRANT/1",
+    "urn:bdb:p0:external:QUALIFICATION_MANDATE/1",
+    "urn:bdb:p0:external:ROOT/1",
+    "urn:bdb:p0:external:RUNTIME_QUALIFICATION/1",
+    "urn:bdb:p0:wire:AUDIT_RETURN/1",
+    "urn:bdb:p0:wire:AUTHORIZATION_TRACE/1",
+    "urn:bdb:p0:wire:COMMON/1",
+    "urn:bdb:p0:wire:DELIVERY_ACK/1",
+    "urn:bdb:p0:wire:NORMALIZED_RESULT/1",
+    "urn:bdb:p0:wire:PACKAGE_MANIFEST/1",
+    "urn:bdb:p0:wire:RELEASE_JOB/1",
+    "urn:bdb:p0:wire:RESULT_MANIFEST/1",
+    "urn:bdb:p0:wire:SOURCE_MANIFEST/1"
+  ],
+  "nodes": [
+    "urn:bdb:p0:canonical:artifact_contract_registry/2",
+    "urn:bdb:p0:canonical:assignment_manifest/3",
+    "urn:bdb:p0:canonical:assignment_package_binding/3",
+    "urn:bdb:p0:canonical:attempt/3",
+    "urn:bdb:p0:canonical:bdb_audit_lane_result/4",
+    "urn:bdb:p0:canonical:campaign_genesis/3",
+    "urn:bdb:p0:canonical:command_envelope/3",
+    "urn:bdb:p0:canonical:command_receipt/3",
+    "urn:bdb:p0:canonical:commit_body/3",
+    "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+    "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+    "urn:bdb:p0:canonical:nf02_p0_abort/1",
+    "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+    "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+    "urn:bdb:p0:canonical:policy_revision/3",
+    "urn:bdb:p0:canonical:schema_registry/3",
+    "urn:bdb:p0:canonical:spec_revision/3",
+    "urn:bdb:p0:canonical:trust_profile/3",
+    "urn:bdb:p0:external:AUTHOR_QUALIFICATION/1",
+    "urn:bdb:p0:external:CANDIDATE_MANIFEST/1",
+    "urn:bdb:p0:external:INDEPENDENT_FREEZE/1",
+    "urn:bdb:p0:external:INSTALLATION_RECORD/1",
+    "urn:bdb:p0:external:OWNER_MODEL_DECISION/1",
+    "urn:bdb:p0:external:PRINCIPAL_GRANT/1",
+    "urn:bdb:p0:external:QUALIFICATION_MANDATE/1",
+    "urn:bdb:p0:external:ROOT/1",
+    "urn:bdb:p0:external:RUNTIME_QUALIFICATION/1",
+    "urn:bdb:p0:profile:BDB_CJSON_1",
+    "urn:bdb:p0:profile:P0_AUTHORIZATION_V1",
+    "urn:bdb:p0:profile:P0_BOOTSTRAP_SOURCE_V1",
+    "urn:bdb:p0:profile:P0_EXECUTION_ISOLATION_V1",
+    "urn:bdb:p0:profile:P0_HISTORY_RECOVERY_V1",
+    "urn:bdb:p0:profile:P0_PACKAGE_TRANSPORT_V1",
+    "urn:bdb:p0:profile:P0_RESULT_TRANSPORT_V1",
+    "urn:bdb:p0:wire:AUDIT_RETURN/1",
+    "urn:bdb:p0:wire:AUTHORIZATION_TRACE/1",
+    "urn:bdb:p0:wire:COMMON/1",
+    "urn:bdb:p0:wire:DELIVERY_ACK/1",
+    "urn:bdb:p0:wire:NORMALIZED_RESULT/1",
+    "urn:bdb:p0:wire:PACKAGE_MANIFEST/1",
+    "urn:bdb:p0:wire:RELEASE_JOB/1",
+    "urn:bdb:p0:wire:RESULT_MANIFEST/1",
+    "urn:bdb:p0:wire:SOURCE_MANIFEST/1"
+  ],
+  "edges": [
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:canonical:artifact_contract_registry/2",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:canonical:assignment_package_binding/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:canonical:attempt/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:canonical:bdb_audit_lane_result/4",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:canonical:campaign_genesis/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:canonical:command_envelope/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:canonical:command_receipt/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:canonical:commit_body/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:canonical:nf02_p0_abort/1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:canonical:policy_revision/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:canonical:schema_registry/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:canonical:spec_revision/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:canonical:trust_profile/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:profile:BDB_CJSON_1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:profile:P0_AUTHORIZATION_V1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:profile:P0_BOOTSTRAP_SOURCE_V1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:profile:P0_EXECUTION_ISOLATION_V1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:profile:P0_HISTORY_RECOVERY_V1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:profile:P0_PACKAGE_TRANSPORT_V1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:profile:P0_RESULT_TRANSPORT_V1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:COMMON/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:artifact_contract_registry/2",
+      "to": "urn:bdb:p0:profile:BDB_CJSON_1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:artifact_contract_registry/2",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:schema_registry/3",
+      "to": "urn:bdb:p0:canonical:artifact_contract_registry/2",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:schema_registry/3",
+      "to": "urn:bdb:p0:profile:BDB_CJSON_1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:schema_registry/3",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:policy_revision/3",
+      "to": "urn:bdb:p0:profile:BDB_CJSON_1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:policy_revision/3",
+      "to": "urn:bdb:p0:profile:P0_AUTHORIZATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:policy_revision/3",
+      "to": "urn:bdb:p0:profile:P0_HISTORY_RECOVERY_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:policy_revision/3",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:spec_revision/3",
+      "to": "urn:bdb:p0:profile:BDB_CJSON_1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:spec_revision/3",
+      "to": "urn:bdb:p0:profile:P0_AUTHORIZATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:spec_revision/3",
+      "to": "urn:bdb:p0:profile:P0_BOOTSTRAP_SOURCE_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:spec_revision/3",
+      "to": "urn:bdb:p0:profile:P0_EXECUTION_ISOLATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:spec_revision/3",
+      "to": "urn:bdb:p0:profile:P0_HISTORY_RECOVERY_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:spec_revision/3",
+      "to": "urn:bdb:p0:profile:P0_PACKAGE_TRANSPORT_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:spec_revision/3",
+      "to": "urn:bdb:p0:profile:P0_RESULT_TRANSPORT_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:spec_revision/3",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:trust_profile/3",
+      "to": "urn:bdb:p0:profile:BDB_CJSON_1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:trust_profile/3",
+      "to": "urn:bdb:p0:profile:P0_AUTHORIZATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:trust_profile/3",
+      "to": "urn:bdb:p0:profile:P0_EXECUTION_ISOLATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:trust_profile/3",
+      "to": "urn:bdb:p0:profile:P0_HISTORY_RECOVERY_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:trust_profile/3",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+      "to": "urn:bdb:p0:canonical:artifact_contract_registry/2",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+      "to": "urn:bdb:p0:canonical:policy_revision/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+      "to": "urn:bdb:p0:canonical:schema_registry/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+      "to": "urn:bdb:p0:canonical:spec_revision/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+      "to": "urn:bdb:p0:canonical:trust_profile/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+      "to": "urn:bdb:p0:profile:BDB_CJSON_1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+      "to": "urn:bdb:p0:profile:P0_AUTHORIZATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+      "to": "urn:bdb:p0:profile:P0_BOOTSTRAP_SOURCE_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+      "to": "urn:bdb:p0:profile:P0_HISTORY_RECOVERY_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+      "to": "urn:bdb:p0:profile:BDB_CJSON_1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+      "to": "urn:bdb:p0:profile:P0_BOOTSTRAP_SOURCE_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+      "to": "urn:bdb:p0:profile:P0_EXECUTION_ISOLATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+      "to": "urn:bdb:p0:wire:SOURCE_MANIFEST/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:campaign_genesis/3",
+      "to": "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:campaign_genesis/3",
+      "to": "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:campaign_genesis/3",
+      "to": "urn:bdb:p0:profile:BDB_CJSON_1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:campaign_genesis/3",
+      "to": "urn:bdb:p0:profile:P0_AUTHORIZATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:campaign_genesis/3",
+      "to": "urn:bdb:p0:profile:P0_BOOTSTRAP_SOURCE_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:campaign_genesis/3",
+      "to": "urn:bdb:p0:profile:P0_HISTORY_RECOVERY_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:campaign_genesis/3",
+      "to": "urn:bdb:p0:profile:P0_PACKAGE_TRANSPORT_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:campaign_genesis/3",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:attempt/3",
+      "to": "urn:bdb:p0:canonical:attempt/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:attempt/3",
+      "to": "urn:bdb:p0:canonical:campaign_genesis/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:attempt/3",
+      "to": "urn:bdb:p0:canonical:nf02_p0_abort/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:attempt/3",
+      "to": "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:attempt/3",
+      "to": "urn:bdb:p0:profile:BDB_CJSON_1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:attempt/3",
+      "to": "urn:bdb:p0:profile:P0_AUTHORIZATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:attempt/3",
+      "to": "urn:bdb:p0:profile:P0_EXECUTION_ISOLATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:attempt/3",
+      "to": "urn:bdb:p0:profile:P0_HISTORY_RECOVERY_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:attempt/3",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "to": "urn:bdb:p0:canonical:attempt/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "to": "urn:bdb:p0:canonical:campaign_genesis/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "to": "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "to": "urn:bdb:p0:profile:BDB_CJSON_1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "to": "urn:bdb:p0:profile:P0_AUTHORIZATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "to": "urn:bdb:p0:profile:P0_BOOTSTRAP_SOURCE_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "to": "urn:bdb:p0:profile:P0_EXECUTION_ISOLATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "to": "urn:bdb:p0:profile:P0_HISTORY_RECOVERY_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "to": "urn:bdb:p0:profile:P0_PACKAGE_TRANSPORT_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "to": "urn:bdb:p0:profile:P0_RESULT_TRANSPORT_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "to": "urn:bdb:p0:wire:SOURCE_MANIFEST/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:assignment_package_binding/3",
+      "to": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:assignment_package_binding/3",
+      "to": "urn:bdb:p0:profile:BDB_CJSON_1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:assignment_package_binding/3",
+      "to": "urn:bdb:p0:profile:P0_AUTHORIZATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:assignment_package_binding/3",
+      "to": "urn:bdb:p0:profile:P0_HISTORY_RECOVERY_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:assignment_package_binding/3",
+      "to": "urn:bdb:p0:profile:P0_PACKAGE_TRANSPORT_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:assignment_package_binding/3",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:assignment_package_binding/3",
+      "to": "urn:bdb:p0:wire:PACKAGE_MANIFEST/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+      "to": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+      "to": "urn:bdb:p0:canonical:assignment_package_binding/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+      "to": "urn:bdb:p0:profile:BDB_CJSON_1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+      "to": "urn:bdb:p0:profile:P0_AUTHORIZATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+      "to": "urn:bdb:p0:profile:P0_EXECUTION_ISOLATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+      "to": "urn:bdb:p0:profile:P0_HISTORY_RECOVERY_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+      "to": "urn:bdb:p0:profile:P0_PACKAGE_TRANSPORT_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+      "to": "urn:bdb:p0:wire:DELIVERY_ACK/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+      "to": "urn:bdb:p0:wire:RELEASE_JOB/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+      "to": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+      "to": "urn:bdb:p0:canonical:assignment_package_binding/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+      "to": "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+      "to": "urn:bdb:p0:profile:BDB_CJSON_1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+      "to": "urn:bdb:p0:profile:P0_AUTHORIZATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+      "to": "urn:bdb:p0:profile:P0_BOOTSTRAP_SOURCE_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+      "to": "urn:bdb:p0:profile:P0_EXECUTION_ISOLATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+      "to": "urn:bdb:p0:profile:P0_HISTORY_RECOVERY_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+      "to": "urn:bdb:p0:profile:P0_PACKAGE_TRANSPORT_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+      "to": "urn:bdb:p0:profile:P0_RESULT_TRANSPORT_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+      "to": "urn:bdb:p0:wire:AUDIT_RETURN/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+      "to": "urn:bdb:p0:wire:RESULT_MANIFEST/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:bdb_audit_lane_result/4",
+      "to": "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:bdb_audit_lane_result/4",
+      "to": "urn:bdb:p0:profile:BDB_CJSON_1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:bdb_audit_lane_result/4",
+      "to": "urn:bdb:p0:profile:P0_AUTHORIZATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:bdb_audit_lane_result/4",
+      "to": "urn:bdb:p0:profile:P0_HISTORY_RECOVERY_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:bdb_audit_lane_result/4",
+      "to": "urn:bdb:p0:profile:P0_RESULT_TRANSPORT_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:bdb_audit_lane_result/4",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:bdb_audit_lane_result/4",
+      "to": "urn:bdb:p0:wire:NORMALIZED_RESULT/1",
+      "reasons": [
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_abort/1",
+      "to": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_abort/1",
+      "to": "urn:bdb:p0:canonical:attempt/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_abort/1",
+      "to": "urn:bdb:p0:profile:BDB_CJSON_1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_abort/1",
+      "to": "urn:bdb:p0:profile:P0_AUTHORIZATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_abort/1",
+      "to": "urn:bdb:p0:profile:P0_HISTORY_RECOVERY_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:nf02_p0_abort/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:canonical:artifact_contract_registry/2",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:canonical:assignment_package_binding/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:canonical:attempt/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:canonical:bdb_audit_lane_result/4",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:canonical:campaign_genesis/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:canonical:nf02_p0_abort/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:canonical:policy_revision/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:canonical:schema_registry/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:canonical:spec_revision/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:canonical:trust_profile/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:profile:BDB_CJSON_1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:profile:P0_AUTHORIZATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:profile:P0_BOOTSTRAP_SOURCE_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:profile:P0_EXECUTION_ISOLATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:profile:P0_HISTORY_RECOVERY_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:profile:P0_PACKAGE_TRANSPORT_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:profile:P0_RESULT_TRANSPORT_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_envelope/3",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:canonical:artifact_contract_registry/2",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:canonical:assignment_package_binding/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:canonical:attempt/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:canonical:bdb_audit_lane_result/4",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:canonical:campaign_genesis/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:canonical:command_envelope/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:canonical:nf02_p0_abort/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:canonical:policy_revision/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:canonical:schema_registry/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:canonical:spec_revision/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:canonical:trust_profile/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:profile:BDB_CJSON_1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:profile:P0_AUTHORIZATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:profile:P0_HISTORY_RECOVERY_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:wire:AUTHORIZATION_TRACE/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:commit_body/3",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:canonical:artifact_contract_registry/2",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:canonical:assignment_package_binding/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:canonical:attempt/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:canonical:bdb_audit_lane_result/4",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:canonical:campaign_genesis/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:canonical:command_envelope/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:canonical:commit_body/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:canonical:nf02_p0_abort/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:canonical:policy_revision/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:canonical:schema_registry/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:canonical:spec_revision/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:canonical:trust_profile/3",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:profile:BDB_CJSON_1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:profile:P0_AUTHORIZATION_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:profile:P0_HISTORY_RECOVERY_V1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:canonical:command_receipt/3",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:SOURCE_MANIFEST/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:PACKAGE_MANIFEST/1",
+      "to": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:PACKAGE_MANIFEST/1",
+      "to": "urn:bdb:p0:canonical:attempt/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:PACKAGE_MANIFEST/1",
+      "to": "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:PACKAGE_MANIFEST/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:NORMALIZED_RESULT/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:RESULT_MANIFEST/1",
+      "to": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:RESULT_MANIFEST/1",
+      "to": "urn:bdb:p0:canonical:assignment_package_binding/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:RESULT_MANIFEST/1",
+      "to": "urn:bdb:p0:canonical:attempt/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:RESULT_MANIFEST/1",
+      "to": "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:RESULT_MANIFEST/1",
+      "to": "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:RESULT_MANIFEST/1",
+      "to": "urn:bdb:p0:profile:P0_PACKAGE_TRANSPORT_V1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:RESULT_MANIFEST/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:DELIVERY_ACK/1",
+      "to": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:DELIVERY_ACK/1",
+      "to": "urn:bdb:p0:canonical:assignment_package_binding/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:DELIVERY_ACK/1",
+      "to": "urn:bdb:p0:canonical:attempt/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:DELIVERY_ACK/1",
+      "to": "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:DELIVERY_ACK/1",
+      "to": "urn:bdb:p0:profile:P0_PACKAGE_TRANSPORT_V1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:DELIVERY_ACK/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:AUDIT_RETURN/1",
+      "to": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:AUDIT_RETURN/1",
+      "to": "urn:bdb:p0:canonical:assignment_package_binding/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:AUDIT_RETURN/1",
+      "to": "urn:bdb:p0:canonical:attempt/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:AUDIT_RETURN/1",
+      "to": "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:AUDIT_RETURN/1",
+      "to": "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:AUDIT_RETURN/1",
+      "to": "urn:bdb:p0:profile:P0_RESULT_TRANSPORT_V1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:AUDIT_RETURN/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:RELEASE_JOB/1",
+      "to": "urn:bdb:p0:canonical:assignment_manifest/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:RELEASE_JOB/1",
+      "to": "urn:bdb:p0:canonical:assignment_package_binding/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:RELEASE_JOB/1",
+      "to": "urn:bdb:p0:canonical:attempt/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:RELEASE_JOB/1",
+      "to": "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:RELEASE_JOB/1",
+      "to": "urn:bdb:p0:profile:P0_PACKAGE_TRANSPORT_V1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:RELEASE_JOB/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:AUTHORIZATION_TRACE/1",
+      "to": "urn:bdb:p0:canonical:command_envelope/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:AUTHORIZATION_TRACE/1",
+      "to": "urn:bdb:p0:profile:P0_AUTHORIZATION_V1",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:wire:AUTHORIZATION_TRACE/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:external:ROOT/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:external:CANDIDATE_MANIFEST/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:external:OWNER_MODEL_DECISION/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:external:AUTHOR_QUALIFICATION/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:external:INDEPENDENT_FREEZE/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:external:RUNTIME_QUALIFICATION/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:external:INSTALLATION_RECORD/1",
+      "to": "urn:bdb:p0:canonical:artifact_contract_registry/2",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:external:INSTALLATION_RECORD/1",
+      "to": "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:external:INSTALLATION_RECORD/1",
+      "to": "urn:bdb:p0:canonical:policy_revision/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:external:INSTALLATION_RECORD/1",
+      "to": "urn:bdb:p0:canonical:schema_registry/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:external:INSTALLATION_RECORD/1",
+      "to": "urn:bdb:p0:canonical:spec_revision/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:external:INSTALLATION_RECORD/1",
+      "to": "urn:bdb:p0:canonical:trust_profile/3",
+      "reasons": [
+        "TYPED_TARGET_OR_PROFILE_DOMAIN"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:external:INSTALLATION_RECORD/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:external:PRINCIPAL_GRANT/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    },
+    {
+      "from": "urn:bdb:p0:external:QUALIFICATION_MANDATE/1",
+      "to": "urn:bdb:p0:wire:COMMON/1",
+      "reasons": [
+        "DECLARED_PREDICATE_OR_MATERIAL_DEPENDENCY",
+        "EXECUTABLE_SCHEMA_REF"
+      ]
+    }
+  ],
+  "witnesses": {
+    "urn:bdb:p0:profile:BDB_CJSON_1": "urn:bdb:p0:canonical:artifact_contract_registry/2",
+    "urn:bdb:p0:profile:P0_AUTHORIZATION_V1": "urn:bdb:p0:canonical:assignment_manifest/3",
+    "urn:bdb:p0:profile:P0_BOOTSTRAP_SOURCE_V1": "urn:bdb:p0:canonical:assignment_manifest/3",
+    "urn:bdb:p0:profile:P0_EXECUTION_ISOLATION_V1": "urn:bdb:p0:canonical:assignment_manifest/3",
+    "urn:bdb:p0:profile:P0_HISTORY_RECOVERY_V1": "urn:bdb:p0:canonical:assignment_manifest/3",
+    "urn:bdb:p0:profile:P0_PACKAGE_TRANSPORT_V1": "urn:bdb:p0:canonical:assignment_manifest/3",
+    "urn:bdb:p0:profile:P0_RESULT_TRANSPORT_V1": "urn:bdb:p0:canonical:assignment_manifest/3"
+  },
+  "counts": {
+    "canonical_contracts": 18,
+    "profiles": 7,
+    "schemas": 43,
+    "schema_categories": {
+      "wire": 9,
+      "profile": 7,
+      "canonical": 18,
+      "external": 9
+    },
+    "qualification_stages": 3,
+    "canonical_operations": 8,
+    "delivery_operations": 1
+  },
+  "declared_graph_closed": true,
+  "semantic_qualification": false,
+  "import": "BLOCKED",
+  "normative_dependencies": [
+    {
+      "file": "docs/PRODUCT_V1/NF02_P0_LIMITED_MODEL/MODEL.md",
+      "scope": "M01-M18_AND_EXPLICIT_NORMATIVE_DELTAS"
+    },
+    {
+      "file": "F1_QUALIFICATION/inputs/ADR-006_CANONICAL_SERIALIZATION_AND_IDENTITY_PROFILE.md",
+      "scope": "PRIMITIVES_ONLY_2_3_4_6_9_AS_EXPLICITLY_DEFINED_IN_MODEL; other referenced foundation sources not imported"
+    }
+  ],
+  "operational_prerequisites_not_canonical_contracts": [
+    "INDEPENDENT_REAL_OWNER_QUALIFIER_AND_AUDITOR_AUTHORITY",
+    "QUALIFIED_OS_SID_ACL_CMS_CLOCK_AND_PROTECTED_CODE_STORAGE",
+    "VERIFIED_AUTHORIZED_GIT_OBJECTS_AND_APPROVED_VIEW_TASK",
+    "QUALIFIED_EXTERNAL_HOST_TRANSPORT_AND_ACTUAL_AUDIT_EXECUTION"
+  ]
+}

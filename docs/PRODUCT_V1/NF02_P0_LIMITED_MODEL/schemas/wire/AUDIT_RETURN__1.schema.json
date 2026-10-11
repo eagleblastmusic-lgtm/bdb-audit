@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:wire:AUDIT_RETURN/1",
+  "type": "object",
+  "properties": {
+    "domain": {
+      "const": "BDB_P0_AUDIT_RETURN/1"
+    },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "campaign_id": {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+        },
+        "attempt_ref": {
+          "allOf": [
+            {
+              "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "attempt"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "assignment_ref": {
+          "allOf": [
+            {
+              "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "assignment_manifest"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "source_ref": {
+          "allOf": [
+            {
+              "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "nf02_p0_source_snapshot"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "slot_id": {
+          "const": "EXTERNAL_AUDIT_RESULT"
+        }
+      },
+      "required": [
+        "assignment_ref",
+        "attempt_ref",
+        "campaign_id",
+        "slot_id",
+        "source_ref"
+      ],
+      "additionalProperties": false
+    },
+    "binding_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "assignment_package_binding"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "delivery_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "nf02_p0_delivery"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "result_raw_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/RawRef"
+        },
+        {
+          "properties": {
+            "media_type": {
+              "const": "application/zip"
+            },
+            "artifact_contract_ref": {
+              "allOf": [
+                {
+                  "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/ProfileRef"
+                },
+                {
+                  "properties": {
+                    "profile_id": {
+                      "const": "P0_RESULT_TRANSPORT_V1"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "auditor_certificate_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "execution_declaration": {
+      "const": "EXECUTED_ASSIGNED_AUDIT"
+    }
+  },
+  "required": [
+    "auditor_certificate_sha256",
+    "binding_ref",
+    "delivery_ref",
+    "domain",
+    "execution_declaration",
+    "result_raw_ref",
+    "scope"
+  ],
+  "additionalProperties": false
+}

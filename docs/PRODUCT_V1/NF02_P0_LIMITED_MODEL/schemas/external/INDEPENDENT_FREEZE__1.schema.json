@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:external:INDEPENDENT_FREEZE/1",
+  "type": "object",
+  "properties": {
+    "candidate_manifest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "normative_set_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "machine_set_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "owner_decision_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "governance_actor_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "author_qualification_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "independent_review_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "qualifier_actor_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "verdict": {
+      "const": "P0_INDEPENDENT_BASELINE_READY"
+    },
+    "decision": {
+      "const": "FREEZE"
+    }
+  },
+  "required": [
+    "author_qualification_sha256",
+    "candidate_manifest_sha256",
+    "decision",
+    "governance_actor_ref",
+    "independent_review_sha256",
+    "machine_set_sha256",
+    "normative_set_sha256",
+    "owner_decision_sha256",
+    "qualifier_actor_ref",
+    "verdict"
+  ],
+  "additionalProperties": false
+}

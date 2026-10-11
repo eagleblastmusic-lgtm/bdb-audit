@@ -1,0 +1,66 @@
+{
+  "model_id": "BDB_NF02_P0_LIMITED_1",
+  "status": "REQUIREMENTS_NOT_EXECUTION_OR_PASS",
+  "cases": {
+    "Q1": {
+      "Q1-01": "Exact normative/machine manifests, complete membership and readback; zero unexplained mismatches",
+      "Q1-02": "All 18 body/Registry field-target/predicate/schema definitions agree; no hidden target or alias",
+      "Q1-03": "All 7 profiles and 43 offline schemas plus every inline representation and external prerequisite have closed dependencies",
+      "Q1-04": "Every allowed command/event/state/retry branch is accounted for; excluded operations are explicit denials",
+      "Q1-05": "Positive and wrong-kind/version/extra-field/bounds/schema-revision cases for every schema and nested union",
+      "Q1-06": "CJSON/RawDigest/ObjectDigest/commit-hash fixtures verified by two independent reference procedures",
+      "Q1-07": "DAG dependency order, Kahn tie-break, duplicates, cycles, self/future refs and prior-only rules",
+      "Q1-08": "Eight external initial pins, source/view/task authority, root-schema precedence and empty-history bootstrap",
+      "Q1-09": "Separate Q1/Q2/runtime roles and exact signed inputs; qualification mode cannot become production by caller choice",
+      "Q1-10": "Compatibility and non-guarantees reviewed; unchanged R5.4.2 and historical bytes/readers proven",
+      "Q1-11": "Final retained audit covers all predicates and cases; author record is external and not independent assurance"
+    },
+    "Q2": {
+      "Q2-01": "Genuinely independent authorized reviewer verifies exact approved candidate and both manifests",
+      "Q2-02": "Independent semantic review of all 18 contracts/7 profiles/43 schemas and all normative clauses",
+      "Q2-03": "Independent adversarial assessment of authority, finite dispatch, bootstrap and isolation boundaries",
+      "Q2-04": "Every Q1 finding closed or explicit owner-approved limit; no hidden safety exception",
+      "Q2-05": "Independent review binds retained evidence and author record; owner risk/compatibility decision binds same bytes",
+      "Q2-06": "Authorized external FREEZE; code/install/runtime remain unqualified and blocked until runtime gate"
+    },
+    "RQ": {
+      "RQ-01": "Real owner/qualifier/auditor identification, independent certificate provisioning and separated private keys",
+      "RQ-02": "Non-admin service cannot modify installation root/code; executor cannot modify root/code/DB/vault/outbox",
+      "RQ-03": "CMS wrong signer/body/domain/installation/namespace/context/algorithm/expiry and revoked/missing rights deny",
+      "RQ-04": "Root/grant/code/storage replacement, reparse, rename and revocation races fail closed under leases",
+      "RQ-05": "Frozen model/code/schema bytes verified on install and restart; incomplete/drifting qualification denied",
+      "RQ-06": "Qualification mandate is independently signed, isolated, time-scoped; production denied before RQ and cross-mode transfer denied",
+      "RQ-07": "Real authorized Git repository commit/tree/blob types, algorithm and complete approved source view match",
+      "RQ-08": "Unsupported path/mode/submodule/LFS and omitted/substituted/extra source/task members deny without history change",
+      "RQ-09": "Real empty-history bootstrap checks all eight pins and dependency order; replayed bootstrap/post-genesis roots deny",
+      "RQ-10": "Assignment and retry after authorized abort use exact source/task/auditor/slot; one active attempt and no retry after result",
+      "RQ-11": "Package exact SHA256/length/members/metadata; substituted or repacked ZIP denies without history mutation",
+      "RQ-12": "Binding accepted before distinct START; missing/same-commit/reordered/wrong-context/duplicate START denied",
+      "RQ-13": "Real configured external-host transport releases retained bound bytes under current rights/state",
+      "RQ-14": "No public callback chooses trusted destination or marks SENT; fake ACK and wrong auditor/source/slot/package denied",
+      "RQ-15": "Delivery crash/retry/ACK loss preserves same release ID and bytes; actual at-least-once limits verified",
+      "RQ-16": "Genuine independently observed external audit execution and signed exact ZIP return with actual report",
+      "RQ-17": "Raw ZIP, signature, return and authorization trace durable before acceptance; corruption/missing raw deny on replay",
+      "RQ-18": "ZIP traversal/aliases/duplicates/encryption/metadata/bomb/quotas and strict JSON duplicate/float/surrogate/bounds rejected",
+      "RQ-19": "Evidence after prior acknowledged delivery; result after prior evidence; same-commit chain/cut laundering denied",
+      "RQ-20": "Full campaign/attempt/assignment/source/slot/binding/start/delivery/raw/profile/cut join rejects every substitution",
+      "RQ-21": "Original retained result ZIP is reread and deterministically normalized; modified payload/path/report/claims denied",
+      "RQ-22": "One evidence/result per slot; result cannot grant finding truth, completion, STOP, release or full NF02 closure",
+      "RQ-23": "Owner-authorized abort preserves all facts/raw; revoked auditor cannot abort or reuse old attempt for new result",
+      "RQ-24": "Current role/scope rights immediately before COMMIT and delivery; changed authority denies without accepted mutation",
+      "RQ-25": "Byte-for-byte no-history-mutation checks for all denied commands/events/raw and each public/direct entry point",
+      "RQ-26": "Atomic single Store CAS: concurrent equal retry, competing bind/result and mismatched command ID have one correct outcome",
+      "RQ-27": "Real process termination/power-loss-equivalent durability boundaries: raw/object/commit/receipt/head all or none",
+      "RQ-28": "New-process restart and complete replay reverify stored raw/command CMS/installation/grant context and receipts",
+      "RQ-29": "Exact command retry returns original receipt without append; conflicting bytes/current missing rights denied",
+      "RQ-30": "Generic Store, E1 inbox, typed events/generators, installed standalone and alternate CLI cannot bypass same predicates",
+      "RQ-31": "Historical readers/materials preserved; model/profile/schema/namespace mismatch never falls back to older path",
+      "RQ-32": "Actual production-equivalent OS/runtime/code/dependencies/external transport and auditor boundary included in signed RQ evidence"
+    }
+  },
+  "counts": {
+    "Q1": 11,
+    "Q2": 6,
+    "RQ": 32
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:canonical:artifact_contract_registry/2",
+  "type": "object",
+  "properties": {
+    "object_id": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+        },
+        {
+          "pattern": "^artifact_contract_registry_"
+        }
+      ]
+    },
+    "model_id": {
+      "const": "BDB_NF02_P0_LIMITED_1"
+    },
+    "contracts": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "artifact_contract_registry/2",
+          "assignment_manifest/3",
+          "assignment_package_binding/3",
+          "attempt/3",
+          "bdb_audit_lane_result/4",
+          "campaign_genesis/3",
+          "command_envelope/3",
+          "command_receipt/3",
+          "commit_body/3",
+          "installation_bootstrap_profile/2",
+          "lane_result_admission_evidence/4",
+          "nf02_p0_abort/1",
+          "nf02_p0_delivery/1",
+          "nf02_p0_source_snapshot/1",
+          "policy_revision/3",
+          "schema_registry/3",
+          "spec_revision/3",
+          "trust_profile/3"
+        ]
+      },
+      "minItems": 18,
+      "maxItems": 18,
+      "uniqueItems": true
+    },
+    "model_descriptor_raw_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/RawRef"
+        },
+        {
+          "properties": {
+            "media_type": {
+              "const": "application/json"
+            },
+            "artifact_contract_ref": {
+              "allOf": [
+                {
+                  "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/ProfileRef"
+                },
+                {
+                  "properties": {
+                    "profile_id": {
+                      "const": "BDB_CJSON_1"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  },
+  "required": [
+    "contracts",
+    "model_descriptor_raw_ref",
+    "model_id",
+    "object_id"
+  ],
+  "additionalProperties": false
+}

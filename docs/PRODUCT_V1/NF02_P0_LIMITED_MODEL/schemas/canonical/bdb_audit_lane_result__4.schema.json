@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:canonical:bdb_audit_lane_result/4",
+  "type": "object",
+  "properties": {
+    "object_id": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+        },
+        {
+          "pattern": "^bdb_audit_lane_result_"
+        }
+      ]
+    },
+    "model_id": {
+      "const": "BDB_NF02_P0_LIMITED_1"
+    },
+    "admission_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "lane_result_admission_evidence"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "result_cut": {
+      "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/HistoryCut"
+    },
+    "result_payload": {
+      "$ref": "urn:bdb:p0:wire:NORMALIZED_RESULT/1"
+    }
+  },
+  "required": [
+    "admission_ref",
+    "model_id",
+    "object_id",
+    "result_cut",
+    "result_payload"
+  ],
+  "additionalProperties": false
+}

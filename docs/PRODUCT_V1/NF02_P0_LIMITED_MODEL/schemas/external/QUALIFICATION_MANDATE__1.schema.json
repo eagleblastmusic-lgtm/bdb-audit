@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:external:QUALIFICATION_MANDATE/1",
+  "type": "object",
+  "properties": {
+    "candidate_manifest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "normative_set_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "machine_set_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "freeze_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "implementation_files": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/FileEntry"
+      },
+      "minItems": 1,
+      "maxItems": 8192,
+      "uniqueItems": true
+    },
+    "qualification_namespace": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "permitted_mode": {
+      "const": "QUALIFICATION_ONLY"
+    },
+    "owner_actor_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "qualifier_actor_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "not_before": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "not_after": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    }
+  },
+  "required": [
+    "candidate_manifest_sha256",
+    "freeze_sha256",
+    "implementation_files",
+    "machine_set_sha256",
+    "normative_set_sha256",
+    "not_after",
+    "not_before",
+    "owner_actor_ref",
+    "permitted_mode",
+    "qualification_namespace",
+    "qualifier_actor_ref"
+  ],
+  "additionalProperties": false
+}

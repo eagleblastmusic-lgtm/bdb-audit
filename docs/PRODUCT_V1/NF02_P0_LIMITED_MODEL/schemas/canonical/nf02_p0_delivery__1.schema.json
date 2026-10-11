@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+  "type": "object",
+  "properties": {
+    "object_id": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+        },
+        {
+          "pattern": "^nf02_p0_delivery_"
+        }
+      ]
+    },
+    "model_id": {
+      "const": "BDB_NF02_P0_LIMITED_1"
+    },
+    "assignment_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "assignment_manifest"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "binding_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "assignment_package_binding"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "start_event": {
+      "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/EventId"
+    },
+    "delivery_cut": {
+      "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/HistoryCut"
+    },
+    "release_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "ack_raw_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/RawRef"
+        },
+        {
+          "properties": {
+            "media_type": {
+              "const": "application/json"
+            },
+            "artifact_contract_ref": {
+              "allOf": [
+                {
+                  "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/ProfileRef"
+                },
+                {
+                  "properties": {
+                    "profile_id": {
+                      "const": "P0_AUTHORIZATION_V1"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "ack_signature_raw_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/RawRef"
+        },
+        {
+          "properties": {
+            "media_type": {
+              "const": "application/pkcs7-signature"
+            },
+            "artifact_contract_ref": {
+              "allOf": [
+                {
+                  "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/ProfileRef"
+                },
+                {
+                  "properties": {
+                    "profile_id": {
+                      "const": "P0_AUTHORIZATION_V1"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "auditor_certificate_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "ack_raw_ref",
+    "ack_signature_raw_ref",
+    "assignment_ref",
+    "auditor_certificate_sha256",
+    "binding_ref",
+    "delivery_cut",
+    "model_id",
+    "object_id",
+    "release_id",
+    "start_event"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,11 @@
+{
+  "profile_id": "BDB_CJSON_1",
+  "purpose": "Unchanged ADR-006 serialization and domain-separated identity",
+  "rules": [
+    "UTF8_NO_BOM",
+    "NO_FLOATS_OR_DUPLICATE_KEYS",
+    "EXACT_RAW_SHA256",
+    "UNCHANGED_BDB_OBJECT_DIGEST_1",
+    "COMMIT_HASH_EQUALS_COMMIT_BODY_OBJECT_DIGEST"
+  ]
+}

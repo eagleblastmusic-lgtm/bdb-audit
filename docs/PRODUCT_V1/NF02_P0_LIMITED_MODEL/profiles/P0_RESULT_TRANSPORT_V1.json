@@ -1,0 +1,28 @@
+{
+  "profile_id": "P0_RESULT_TRANSPORT_V1",
+  "purpose": "Retained original ZIP and finite deterministic result normalization",
+  "quotas": {
+    "archive_bytes": 33554432,
+    "members": 2048,
+    "member_bytes": 16777216,
+    "expanded_bytes": 33554432,
+    "json_bytes": 2097152,
+    "json_depth": 32
+  },
+  "rules": [
+    "BOUNDED_STRICT_JSON_AND_ZIP",
+    "EXACT_ASSIGNMENT_SOURCE_BINDING_DELIVERY_SLOT",
+    "AUDITOR_SIGNED_RETURN_NOT_SELF_AUTHORITY",
+    "ORIGINAL_BYTES_RETAINED",
+    "RESULT_EQUALS_CJSON_NORMALIZATION",
+    "FINDINGS_ARE_UNQUALIFIED_SUBMISSIONS"
+  ],
+  "mime_mapping": {
+    ".json": "application/json",
+    ".md": "text/markdown",
+    ".txt": "text/plain",
+    ".log": "text/plain",
+    ".png": "image/png",
+    "default": "application/octet-stream"
+  }
+}

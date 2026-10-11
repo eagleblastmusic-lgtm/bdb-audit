@@ -1,0 +1,800 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:canonical:command_envelope/3",
+  "type": "object",
+  "properties": {
+    "object_id": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+        },
+        {
+          "pattern": "^command_envelope_"
+        }
+      ]
+    },
+    "model_id": {
+      "const": "BDB_NF02_P0_LIMITED_1"
+    },
+    "command_id": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+        },
+        {
+          "pattern": "^command_envelope_"
+        }
+      ]
+    },
+    "operation": {
+      "enum": [
+        "INITIALIZE_P0_FROM_APPROVED_GIT",
+        "CREATE_ASSIGNMENT",
+        "BIND_PACKAGE",
+        "START_ATTEMPT",
+        "CONFIRM_DELIVERY",
+        "INGEST_EVIDENCE",
+        "ACCEPT_RESULT",
+        "ABORT_ATTEMPT"
+      ]
+    },
+    "actor_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "installation_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "grant_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "namespace_authority_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "mode": {
+      "enum": [
+        "QUALIFICATION_ONLY",
+        "PRODUCTION"
+      ]
+    },
+    "campaign_id": {
+      "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+    },
+    "expected_parent": {
+      "oneOf": [
+        {
+          "const": "EMPTY_HISTORY"
+        },
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/Head"
+        }
+      ]
+    },
+    "policy_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "policy_revision"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "spec_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "spec_revision"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "schema_registry_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "schema_registry"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "proposed_object_refs": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+          },
+          {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "artifact_contract_registry",
+                  "schema_registry",
+                  "policy_revision",
+                  "spec_revision",
+                  "trust_profile",
+                  "installation_bootstrap_profile",
+                  "nf02_p0_source_snapshot",
+                  "campaign_genesis",
+                  "attempt",
+                  "assignment_manifest",
+                  "assignment_package_binding",
+                  "nf02_p0_delivery",
+                  "lane_result_admission_evidence",
+                  "bdb_audit_lane_result",
+                  "nf02_p0_abort"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 15,
+      "uniqueItems": true
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/Event"
+      },
+      "minItems": 0,
+      "maxItems": 15,
+      "uniqueItems": true
+    },
+    "basis_refs": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+          },
+          {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "artifact_contract_registry",
+                  "schema_registry",
+                  "policy_revision",
+                  "spec_revision",
+                  "trust_profile",
+                  "installation_bootstrap_profile",
+                  "nf02_p0_source_snapshot",
+                  "campaign_genesis",
+                  "attempt",
+                  "assignment_manifest",
+                  "assignment_package_binding",
+                  "nf02_p0_delivery",
+                  "lane_result_admission_evidence",
+                  "bdb_audit_lane_result",
+                  "nf02_p0_abort"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 15,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "actor_ref",
+    "basis_refs",
+    "campaign_id",
+    "command_id",
+    "events",
+    "expected_parent",
+    "grant_digest",
+    "installation_digest",
+    "mode",
+    "model_id",
+    "namespace_authority_digest",
+    "object_id",
+    "operation",
+    "policy_ref",
+    "proposed_object_refs",
+    "schema_registry_ref",
+    "spec_ref"
+  ],
+  "additionalProperties": false,
+  "oneOf": [
+    {
+      "properties": {
+        "operation": {
+          "const": "INITIALIZE_P0_FROM_APPROVED_GIT"
+        },
+        "expected_parent": {
+          "const": "EMPTY_HISTORY"
+        },
+        "proposed_object_refs": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "artifact_contract_registry",
+                      "schema_registry",
+                      "policy_revision",
+                      "spec_revision",
+                      "trust_profile",
+                      "installation_bootstrap_profile",
+                      "nf02_p0_source_snapshot",
+                      "campaign_genesis"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "minItems": 8,
+          "maxItems": 8,
+          "uniqueItems": true
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "event_type": {
+                "const": "P0FactAccepted"
+              },
+              "artifact_ref": {
+                "allOf": [
+                  {
+                    "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "enum": [
+                          "artifact_contract_registry",
+                          "schema_registry",
+                          "policy_revision",
+                          "spec_revision",
+                          "trust_profile",
+                          "installation_bootstrap_profile",
+                          "nf02_p0_source_snapshot",
+                          "campaign_genesis"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "artifact_ref",
+              "event_type"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 8,
+          "maxItems": 8,
+          "uniqueItems": true
+        }
+      }
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "CREATE_ASSIGNMENT"
+        },
+        "expected_parent": {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/Head"
+        },
+        "proposed_object_refs": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "attempt",
+                      "assignment_manifest"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "uniqueItems": true
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "event_type": {
+                "const": "P0FactAccepted"
+              },
+              "artifact_ref": {
+                "allOf": [
+                  {
+                    "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "enum": [
+                          "attempt",
+                          "assignment_manifest"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "artifact_ref",
+              "event_type"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "uniqueItems": true
+        }
+      }
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "BIND_PACKAGE"
+        },
+        "expected_parent": {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/Head"
+        },
+        "proposed_object_refs": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "assignment_package_binding"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "event_type": {
+                "const": "P0FactAccepted"
+              },
+              "artifact_ref": {
+                "allOf": [
+                  {
+                    "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "enum": [
+                          "assignment_package_binding"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "artifact_ref",
+              "event_type"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "START_ATTEMPT"
+        },
+        "expected_parent": {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/Head"
+        },
+        "proposed_object_refs": {
+          "type": "array",
+          "items": {},
+          "minItems": 0,
+          "maxItems": 0,
+          "uniqueItems": true
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "event_type": {
+                "const": "P0AttemptStarted"
+              },
+              "attempt_ref": {
+                "allOf": [
+                  {
+                    "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "enum": [
+                          "attempt"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              "assignment_ref": {
+                "allOf": [
+                  {
+                    "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "enum": [
+                          "assignment_manifest"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              "binding_ref": {
+                "allOf": [
+                  {
+                    "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "enum": [
+                          "assignment_package_binding"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "assignment_ref",
+              "attempt_ref",
+              "binding_ref",
+              "event_type"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "CONFIRM_DELIVERY"
+        },
+        "expected_parent": {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/Head"
+        },
+        "proposed_object_refs": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "nf02_p0_delivery"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "event_type": {
+                "const": "P0FactAccepted"
+              },
+              "artifact_ref": {
+                "allOf": [
+                  {
+                    "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "enum": [
+                          "nf02_p0_delivery"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "artifact_ref",
+              "event_type"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "INGEST_EVIDENCE"
+        },
+        "expected_parent": {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/Head"
+        },
+        "proposed_object_refs": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "lane_result_admission_evidence"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "event_type": {
+                "const": "P0FactAccepted"
+              },
+              "artifact_ref": {
+                "allOf": [
+                  {
+                    "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "enum": [
+                          "lane_result_admission_evidence"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "artifact_ref",
+              "event_type"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "ACCEPT_RESULT"
+        },
+        "expected_parent": {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/Head"
+        },
+        "proposed_object_refs": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "bdb_audit_lane_result"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "event_type": {
+                "const": "P0FactAccepted"
+              },
+              "artifact_ref": {
+                "allOf": [
+                  {
+                    "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "enum": [
+                          "bdb_audit_lane_result"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "artifact_ref",
+              "event_type"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "ABORT_ATTEMPT"
+        },
+        "expected_parent": {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/Head"
+        },
+        "proposed_object_refs": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "nf02_p0_abort"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "event_type": {
+                "const": "P0FactAccepted"
+              },
+              "artifact_ref": {
+                "allOf": [
+                  {
+                    "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "enum": [
+                          "nf02_p0_abort"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "artifact_ref",
+              "event_type"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true
+        }
+      }
+    }
+  ]
+}

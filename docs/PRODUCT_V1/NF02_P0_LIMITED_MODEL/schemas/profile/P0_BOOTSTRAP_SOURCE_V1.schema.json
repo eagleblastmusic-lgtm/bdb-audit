@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:profile:P0_BOOTSTRAP_SOURCE_V1",
+  "const": {
+    "profile_id": "P0_BOOTSTRAP_SOURCE_V1",
+    "purpose": "New empty history from independently approved Git source",
+    "rules": [
+      "GIT_COMMIT_AND_TREE_VERIFIED_SEPARATELY",
+      "ACTUAL_SOURCE_MANIFEST_SHA256",
+      "OWNER_APPROVED_REPOSITORY_SOURCE_AND_VIEW",
+      "NO_LEGACY_ASSURANCE_TRANSFER",
+      "EXTERNAL_SCHEMA_ROOT_FIRST",
+      "EXACT_EIGHT_INITIAL_PINS",
+      "ONE_CONTENT_KAHN_SORT"
+    ]
+  }
+}

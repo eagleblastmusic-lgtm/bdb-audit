@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:external:PRINCIPAL_GRANT/1",
+  "type": "object",
+  "properties": {
+    "installation_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "actor_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "certificate_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "role": {
+      "enum": [
+        "COORDINATOR",
+        "AUDITOR",
+        "OWNER_RECOVERY"
+      ]
+    },
+    "campaign_id": {
+      "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+    },
+    "source_scope_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "view_task_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "assignment_scope_digest": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      ]
+    },
+    "operations": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "INITIALIZE_P0_FROM_APPROVED_GIT",
+          "CREATE_ASSIGNMENT",
+          "BIND_PACKAGE",
+          "START_ATTEMPT",
+          "CONFIRM_DELIVERY",
+          "INGEST_EVIDENCE",
+          "ACCEPT_RESULT",
+          "ABORT_ATTEMPT",
+          "RELEASE_PACKAGE",
+          "ACK_DELIVERY",
+          "RETURN_AUDIT"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 4096,
+      "uniqueItems": true
+    },
+    "not_before": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "not_after": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    }
+  },
+  "required": [
+    "actor_ref",
+    "assignment_scope_digest",
+    "campaign_id",
+    "certificate_sha256",
+    "installation_digest",
+    "not_after",
+    "not_before",
+    "operations",
+    "role",
+    "source_scope_digest",
+    "view_task_digest"
+  ],
+  "additionalProperties": false
+}

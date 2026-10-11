@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:canonical:commit_body/3",
+  "type": "object",
+  "properties": {
+    "object_id": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+        },
+        {
+          "pattern": "^commit_body_"
+        }
+      ]
+    },
+    "model_id": {
+      "const": "BDB_NF02_P0_LIMITED_1"
+    },
+    "command_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "command_envelope"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "command_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "actor_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "campaign_id": {
+      "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+    },
+    "commit_seq": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "previous_head": {
+      "oneOf": [
+        {
+          "const": "EMPTY_HISTORY"
+        },
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/Head"
+        }
+      ]
+    },
+    "policy_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "policy_revision"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "spec_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "spec_revision"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "schema_registry_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "schema_registry"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "authorization_trace_raw_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/RawRef"
+        },
+        {
+          "properties": {
+            "media_type": {
+              "const": "application/json"
+            },
+            "artifact_contract_ref": {
+              "allOf": [
+                {
+                  "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/ProfileRef"
+                },
+                {
+                  "properties": {
+                    "profile_id": {
+                      "const": "P0_AUTHORIZATION_V1"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "immutable_object_refs": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+          },
+          {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "command_envelope",
+                  "artifact_contract_registry",
+                  "schema_registry",
+                  "policy_revision",
+                  "spec_revision",
+                  "trust_profile",
+                  "installation_bootstrap_profile",
+                  "nf02_p0_source_snapshot",
+                  "campaign_genesis",
+                  "attempt",
+                  "assignment_manifest",
+                  "assignment_package_binding",
+                  "nf02_p0_delivery",
+                  "lane_result_admission_evidence",
+                  "bdb_audit_lane_result",
+                  "nf02_p0_abort"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 16,
+      "uniqueItems": true
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/Event"
+      },
+      "minItems": 0,
+      "maxItems": 15,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "actor_ref",
+    "authorization_trace_raw_ref",
+    "campaign_id",
+    "command_digest",
+    "command_ref",
+    "commit_seq",
+    "events",
+    "immutable_object_refs",
+    "model_id",
+    "object_id",
+    "policy_ref",
+    "previous_head",
+    "schema_registry_ref",
+    "spec_ref"
+  ],
+  "additionalProperties": false
+}

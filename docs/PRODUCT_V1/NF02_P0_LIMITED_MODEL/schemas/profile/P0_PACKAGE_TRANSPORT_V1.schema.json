@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:profile:P0_PACKAGE_TRANSPORT_V1",
+  "const": {
+    "profile_id": "P0_PACKAGE_TRANSPORT_V1",
+    "purpose": "Bound exact package; sole fixed approved input view",
+    "quotas": {
+      "archive_bytes": 67108864,
+      "members": 2048,
+      "member_bytes": 33554432,
+      "expanded_bytes": 67108864,
+      "json_bytes": 2097152,
+      "json_depth": 32
+    },
+    "rules": [
+      "ZIP_STORED_FIXED_METADATA",
+      "ASCII_SORTED_SAFE_MEMBER_PATHS",
+      "EXACT_MANIFEST_MEMBER_SHA256_AND_LENGTH",
+      "EXACT_APPROVED_VIEW_PLUS_TASK",
+      "NO_SEMANTIC_CHECKSUM_ALIAS",
+      "NO_REPACK_SUBSTITUTION"
+    ],
+    "mime_mapping": {
+      ".json": "application/json",
+      ".md": "text/markdown",
+      ".txt": "text/plain",
+      ".log": "text/plain",
+      ".png": "image/png",
+      "default": "application/octet-stream"
+    }
+  }
+}

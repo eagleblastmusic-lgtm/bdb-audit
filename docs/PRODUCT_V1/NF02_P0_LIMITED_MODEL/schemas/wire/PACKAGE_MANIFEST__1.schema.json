@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:wire:PACKAGE_MANIFEST/1",
+  "type": "object",
+  "properties": {
+    "scope": {
+      "type": "object",
+      "properties": {
+        "campaign_id": {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+        },
+        "attempt_ref": {
+          "allOf": [
+            {
+              "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "attempt"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "assignment_ref": {
+          "allOf": [
+            {
+              "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "assignment_manifest"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "source_ref": {
+          "allOf": [
+            {
+              "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "nf02_p0_source_snapshot"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "slot_id": {
+          "const": "EXTERNAL_AUDIT_RESULT"
+        }
+      },
+      "required": [
+        "assignment_ref",
+        "attempt_ref",
+        "campaign_id",
+        "slot_id",
+        "source_ref"
+      ],
+      "additionalProperties": false
+    },
+    "assignment_cut": {
+      "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/HistoryCut"
+    },
+    "members": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/Member"
+      },
+      "minItems": 1,
+      "maxItems": 4096,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "assignment_cut",
+    "members",
+    "scope"
+  ],
+  "additionalProperties": false
+}

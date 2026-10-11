@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:canonical:nf02_p0_abort/1",
+  "type": "object",
+  "properties": {
+    "object_id": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+        },
+        {
+          "pattern": "^nf02_p0_abort_"
+        }
+      ]
+    },
+    "model_id": {
+      "const": "BDB_NF02_P0_LIMITED_1"
+    },
+    "attempt_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "attempt"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "assignment_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "assignment_manifest"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "abort_cut": {
+      "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/HistoryCut"
+    },
+    "from_state": {
+      "enum": [
+        "ASSIGNED",
+        "BOUND",
+        "STARTED",
+        "DELIVERED",
+        "EVIDENCE_ACCEPTED"
+      ]
+    },
+    "reason": {
+      "enum": [
+        "OWNER_CANCELLED",
+        "DELIVERY_FAILED",
+        "EXECUTION_FAILED",
+        "AUTHORITY_WITHDRAWN",
+        "INVALID_RESULT"
+      ]
+    }
+  },
+  "required": [
+    "abort_cut",
+    "assignment_ref",
+    "attempt_ref",
+    "from_state",
+    "model_id",
+    "object_id",
+    "reason"
+  ],
+  "additionalProperties": false
+}

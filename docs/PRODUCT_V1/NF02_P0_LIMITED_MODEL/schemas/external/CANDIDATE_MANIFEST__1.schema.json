@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:external:CANDIDATE_MANIFEST/1",
+  "type": "object",
+  "properties": {
+    "model_id": {
+      "const": "BDB_NF02_P0_LIMITED_1"
+    },
+    "normative_files": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/FileEntry"
+      },
+      "minItems": 1,
+      "maxItems": 8192,
+      "uniqueItems": true
+    },
+    "machine_files": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/FileEntry"
+      },
+      "minItems": 1,
+      "maxItems": 8192,
+      "uniqueItems": true
+    },
+    "normative_set_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "machine_set_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "machine_files",
+    "machine_set_sha256",
+    "model_id",
+    "normative_files",
+    "normative_set_sha256"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:external:RUNTIME_QUALIFICATION/1",
+  "type": "object",
+  "properties": {
+    "candidate_manifest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "normative_set_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "machine_set_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "independent_freeze_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "implementation_files": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/FileEntry"
+      },
+      "minItems": 1,
+      "maxItems": 8192,
+      "uniqueItems": true
+    },
+    "environment_evidence_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "test_evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/FileEntry"
+      },
+      "minItems": 1,
+      "maxItems": 4096,
+      "uniqueItems": true
+    },
+    "real_external_run_evidence_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "qualification_namespace": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "qualified_auditor_certificate_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "executor_boundary_evidence_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "qualifier_actor_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "mandatory_case_ids": {
+      "const": [
+        "RQ-01",
+        "RQ-02",
+        "RQ-03",
+        "RQ-04",
+        "RQ-05",
+        "RQ-06",
+        "RQ-07",
+        "RQ-08",
+        "RQ-09",
+        "RQ-10",
+        "RQ-11",
+        "RQ-12",
+        "RQ-13",
+        "RQ-14",
+        "RQ-15",
+        "RQ-16",
+        "RQ-17",
+        "RQ-18",
+        "RQ-19",
+        "RQ-20",
+        "RQ-21",
+        "RQ-22",
+        "RQ-23",
+        "RQ-24",
+        "RQ-25",
+        "RQ-26",
+        "RQ-27",
+        "RQ-28",
+        "RQ-29",
+        "RQ-30",
+        "RQ-31",
+        "RQ-32"
+      ]
+    },
+    "verdict": {
+      "const": "P0_RUNTIME_READY"
+    }
+  },
+  "required": [
+    "candidate_manifest_sha256",
+    "environment_evidence_sha256",
+    "executor_boundary_evidence_sha256",
+    "implementation_files",
+    "independent_freeze_sha256",
+    "machine_set_sha256",
+    "mandatory_case_ids",
+    "normative_set_sha256",
+    "qualification_namespace",
+    "qualified_auditor_certificate_sha256",
+    "qualifier_actor_ref",
+    "real_external_run_evidence_sha256",
+    "test_evidence",
+    "verdict"
+  ],
+  "additionalProperties": false
+}

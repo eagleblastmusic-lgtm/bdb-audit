@@ -1,5 +1,13 @@
 # PRODUCT-V1 — aktualny stan NF02 runtime
 
+## Aktualna decyzja B — jeden ograniczony model do zatwierdzenia, 2026-10-11
+
+Po ujawnieniu pełnego closure 131 właściciel autoryzował **jedną iterację odrębnego modelu**, ze stopem po pakiecie decyzyjnym. Gotowy [MODEL.md](NF02_P0_LIMITED_MODEL/MODEL.md) zawiera całą normę M01–M18, wersje, pięć granic, ryzyka, nakład oraz konkretne brzmienie decyzji. [Graf](NF02_P0_LIMITED_MODEL/DEPENDENCY_GRAPH.json) jest domknięty do **18 canonical contracts, 7 profiles i 43 schemas (18+7+9 wire+9 external)**. Obowiązkowe są **3 kwalifikacje: fresh author Q1, independent Q2/freeze i runtime RQ** z rzeczywistym zewnętrznym audytorem. Exact propozycję wiąże [manifest](NF02_P0_LIMITED_MODEL/CANDIDATE_MANIFEST.json).
+
+To rzeczywiste usunięcie szerszych operacji i consumers, z nowym approved-Git-only bootstrap, jednym immutable source/view/task/slot, nonblind external-host audit i abort/retry. Auth/raw/chronology/CAS/replay/fail-closed zachowano jako pełne obowiązki. **Norma niezatwierdzona, kod nowego modelu niezaimplementowany, Q1/Q2/RQ nieuzyskane, real authority nieustanowiona, production import BLOCKED.** Lokalne 18 testów schema/closure propozycji nie są kwalifikacją. Produkcyjnych plików ani frozen R5.4.2 nie zmieniono; dotychczasowe code/test hashes zachowują historical checkpoint evidence, bez rozciągania jego PASS na nowy model.
+
+Zgodnie z poleceniem właściciela po tym pakiecie wymagane jest zatwierdzenie exact modelu/manifestu i jawnych limitów. Nie rozpoczynać następnego etapu formalizacji/implementacji ani aktywacji z samej strategicznej zgody B. Pełny R5.4.2/131/approval/checkpointy pozostają bez zmian; poprzednie ustalenie closure i implementacja poniżej są zachowaną pamięcią projektu. NF02 OPEN, P0 NOT_DELIVERED, E1–E6 NOT_COMPLETED, brak nowego qualification PASS.
+
 ## Decyzja o odrębnym successor P0 — 2026-10-11
 
 Właściciel wybrał przygotowanie strategii 2, z obowiązkiem powrotu po decyzję, jeśli transitive closure nadal obejmie 131 kontraktów. [Konkretny pakiet zakresu](NF02_P0_SUCCESSOR_SCOPE_PROPOSAL.md) i [exact dependency inventory](NF02_P0_SUCCESSOR_DEPENDENCIES.json) są gotowe. **Wynik: 131 kontraktów, 127 profili i 277 schematów; brak mniejszego Q1 przy zachowaniu obecnych target domains.** Zarówno zatwierdzony graf, jak i aktualny niezakwalifikowany Registry zostały prześledzone od rzeczywistych korzeni P0. Wskazano command/commit/receipt oraz retry/checkpoint jako konkretne zależności rozszerzające zakres.

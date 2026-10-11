@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:canonical:command_receipt/3",
+  "type": "object",
+  "properties": {
+    "object_id": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+        },
+        {
+          "pattern": "^command_receipt_"
+        }
+      ]
+    },
+    "model_id": {
+      "const": "BDB_NF02_P0_LIMITED_1"
+    },
+    "command_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "command_envelope"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "commit_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "commit_body"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "accepted_head": {
+      "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/Head"
+    },
+    "result_object_refs": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+          },
+          {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "artifact_contract_registry",
+                  "schema_registry",
+                  "policy_revision",
+                  "spec_revision",
+                  "trust_profile",
+                  "installation_bootstrap_profile",
+                  "nf02_p0_source_snapshot",
+                  "campaign_genesis",
+                  "attempt",
+                  "assignment_manifest",
+                  "assignment_package_binding",
+                  "nf02_p0_delivery",
+                  "lane_result_admission_evidence",
+                  "bdb_audit_lane_result",
+                  "nf02_p0_abort"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 15,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "accepted_head",
+    "command_ref",
+    "commit_ref",
+    "model_id",
+    "object_id",
+    "result_object_refs"
+  ],
+  "additionalProperties": false
+}

@@ -2,6 +2,12 @@
 
 2026-10-11. **NOT AUTHORITY; NOT QUALIFIED; DO NOT INSTALL AS ROOT.** Exact inputs/code/tests są w `NF02_P0_IMPLEMENTATION_EVIDENCE.json`. Nie wygenerowano certyfikatów, signatures, rootów, qualification PASS ani rzeczywistego accepted wyniku zewnętrznego.
 
+## Aktualna decyzja B i gotowy ograniczony model
+
+Właściciel po wyniku closure 131 autoryzował jedną iterację rzeczywiście odrębnego modelu. [Pakiet normy P0](NF02_P0_LIMITED_MODEL/MODEL.md), [zamknięty graf](NF02_P0_LIMITED_MODEL/DEPENDENCY_GRAPH.json), [exact manifest](NF02_P0_LIMITED_MODEL/CANDIDATE_MANIFEST.json) i [matrix kwalifikacji](NF02_P0_LIMITED_MODEL/QUALIFICATION_MATRIX.json) są gotowe do zatwierdzenia: **18 kontraktów, 7 profili, 43 schematy; fresh Q1 autora, Q2 independent freeze i RQ runtime**. Pakiet zawiera nowe version keys, legalny approved-Git-only bootstrap, finite operations/retry i jawny nonblind/one-task scope. Zachowuje independent authority i pełne wymagania pierwszego bezpiecznego przyjęcia wyniku.
+
+To propozycja nowej normy, nie aktywacja istniejącego kodu B/1→E/2→R/2. Obecny read-only authority adapter wymaga dostosowania nowych schemas/grants/non-admin service ACL/modes/transport/trace po zatwierdzeniu. Real root/pins/credentials i niezależni zatwierdzający nadal muszą być ustanowieni przez owner/installer/qualifier. Import pozostaje BLOCKED, bez nowego Q1/Q2/RQ PASS. Zgodnie z decyzją B następuje stop na **owner approval exact pakietu i limitów**, bez kolejnego samodzielnego etapu formalizacji. Poniższe wcześniejsze porównanie i proces konfiguracji dotyczą zachowanego checkpointu/full-model boundary; nie nadają authority nowemu modelowi.
+
 ## Decyzja właściciela
 
 **Aktualizacja po bezpośredniej odpowiedzi właściciela 2026-10-11:** wybrano strategię 2 wyłącznie do przygotowania i przedstawienia formalnego zakresu osobnego successor P0. To nie jest zatwierdzenie nowej normy ani waiver Q1/Q2/authority. Pełny R5.4.2, graph 131 i jego zatwierdzenie pozostają bez zmian. Odrębny proposal musi wyznaczyć exact transitive dependency closure, wersje, globalne zależności oraz nakład pracy; jeśli wymaga wszystkich 131 lub nie daje się kwalifikować osobno, potrzebna jest dalsza decyzja właściciela. Poniższe porównanie opcji pozostaje materiałem tej decyzji.

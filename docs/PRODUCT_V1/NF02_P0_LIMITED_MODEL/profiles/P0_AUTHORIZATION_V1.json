@@ -1,0 +1,12 @@
+{
+  "profile_id": "P0_AUTHORIZATION_V1",
+  "purpose": "Independent protected root and exact principal/operation/context rights",
+  "rules": [
+    "READ_ONLY_MACHINE_ROOT",
+    "OWNER_AND_QUALIFIER_DISTINCT_FROM_AUDITOR",
+    "CMS_SHA256_EXACT_CERTIFICATE_PIN",
+    "CURRENT_SCOPE_AND_REVOCATION_LEASE",
+    "SIGN_COMMAND_MODEL_INSTALLATION_NAMESPACE_SCOPE",
+    "NO_CALLER_ROOT_OR_ISSUER"
+  ]
+}

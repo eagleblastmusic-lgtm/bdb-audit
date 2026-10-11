@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:canonical:schema_registry/3",
+  "type": "object",
+  "properties": {
+    "object_id": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+        },
+        {
+          "pattern": "^schema_registry_"
+        }
+      ]
+    },
+    "model_id": {
+      "const": "BDB_NF02_P0_LIMITED_1"
+    },
+    "registry_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "artifact_contract_registry"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "bindings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "schema_id": {
+            "enum": [
+              "urn:bdb:p0:canonical:artifact_contract_registry/2",
+              "urn:bdb:p0:canonical:schema_registry/3",
+              "urn:bdb:p0:canonical:policy_revision/3",
+              "urn:bdb:p0:canonical:spec_revision/3",
+              "urn:bdb:p0:canonical:trust_profile/3",
+              "urn:bdb:p0:canonical:installation_bootstrap_profile/2",
+              "urn:bdb:p0:canonical:nf02_p0_source_snapshot/1",
+              "urn:bdb:p0:canonical:campaign_genesis/3",
+              "urn:bdb:p0:canonical:attempt/3",
+              "urn:bdb:p0:canonical:assignment_manifest/3",
+              "urn:bdb:p0:canonical:assignment_package_binding/3",
+              "urn:bdb:p0:canonical:nf02_p0_delivery/1",
+              "urn:bdb:p0:canonical:lane_result_admission_evidence/4",
+              "urn:bdb:p0:canonical:bdb_audit_lane_result/4",
+              "urn:bdb:p0:canonical:nf02_p0_abort/1",
+              "urn:bdb:p0:canonical:command_envelope/3",
+              "urn:bdb:p0:canonical:commit_body/3",
+              "urn:bdb:p0:canonical:command_receipt/3"
+            ]
+          },
+          "schema_raw_ref": {
+            "allOf": [
+              {
+                "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/RawRef"
+              },
+              {
+                "properties": {
+                  "media_type": {
+                    "const": "application/schema+json"
+                  },
+                  "artifact_contract_ref": {
+                    "allOf": [
+                      {
+                        "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/ProfileRef"
+                      },
+                      {
+                        "properties": {
+                          "profile_id": {
+                            "const": "BDB_CJSON_1"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "required": [
+          "schema_id",
+          "schema_raw_ref"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 18,
+      "maxItems": 18,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "bindings",
+    "model_id",
+    "object_id",
+    "registry_ref"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:canonical:trust_profile/3",
+  "type": "object",
+  "properties": {
+    "object_id": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+        },
+        {
+          "pattern": "^trust_profile_"
+        }
+      ]
+    },
+    "model_id": {
+      "const": "BDB_NF02_P0_LIMITED_1"
+    },
+    "authorization_profile_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/ProfileRef"
+        },
+        {
+          "properties": {
+            "profile_id": {
+              "const": "P0_AUTHORIZATION_V1"
+            }
+          }
+        }
+      ]
+    },
+    "isolation_profile_ref": {
+      "allOf": [
+        {
+          "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/ProfileRef"
+        },
+        {
+          "properties": {
+            "profile_id": {
+              "const": "P0_EXECUTION_ISOLATION_V1"
+            }
+          }
+        }
+      ]
+    },
+    "executor_write_boundary": {
+      "const": "SEPARATE_EXTERNAL_HOST_NO_COORDINATOR_ROOT_CODE_VAULT_WRITE"
+    },
+    "assurance": {
+      "const": "CONTROLLED_VIEW_NON_BLIND_PROVENANCE_ONLY"
+    },
+    "explicit_non_guarantees": {
+      "const": [
+        "NO_FINDING_TRUTH_QUALIFICATION",
+        "NO_BLINDNESS_OR_ZERO_KNOWLEDGE",
+        "FULL_HOST_ROLLBACK_NOT_DETECTED"
+      ]
+    }
+  },
+  "required": [
+    "assurance",
+    "authorization_profile_ref",
+    "executor_write_boundary",
+    "explicit_non_guarantees",
+    "isolation_profile_ref",
+    "model_id",
+    "object_id"
+  ],
+  "additionalProperties": false
+}

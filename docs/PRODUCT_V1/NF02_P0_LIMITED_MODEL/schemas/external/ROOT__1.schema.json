@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bdb:p0:external:ROOT/1",
+  "type": "object",
+  "properties": {
+    "model_id": {
+      "const": "BDB_NF02_P0_LIMITED_1"
+    },
+    "owner_certificate_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "qualifier_certificate_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "installation_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "root_id": {
+      "$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/LogicalId"
+    },
+    "namespace_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "namespace_authority_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "installation_sha256",
+    "model_id",
+    "namespace_authority_digest",
+    "namespace_id",
+    "owner_certificate_sha256",
+    "qualifier_certificate_sha256",
+    "root_id"
+  ],
+  "additionalProperties": false
+}
