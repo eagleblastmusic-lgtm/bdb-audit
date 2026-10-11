@@ -245,6 +245,10 @@ class Vectors:
                                 else "integer"
                             )
                             recipe = {"type": kind, "amount": amount}
+                            if abs(amount) > 2**53 - 1:
+                                # The negative test value is outside CJSON. Its
+                                # recipe transport must remain inside CJSON.
+                                recipe = {"type": kind, "amount_decimal": str(amount)}
                             constraint = {"type": kind, keyword: boundary}
                             expected = (
                                 amount >= boundary
@@ -312,7 +316,12 @@ class Vectors:
 
 
 def expand(recipe):
-    kind, amount = recipe["type"], recipe["amount"]
+    kind = recipe["type"]
+    amount = (
+        int(recipe["amount_decimal"])
+        if "amount_decimal" in recipe
+        else recipe["amount"]
+    )
     return (
         [None] * amount
         if kind == "array"
@@ -608,7 +617,8 @@ def generate(output):
     values = {
         "SCHEMA_VECTORS.json": {
             "status": "SHAPE_ONLY_LOCAL_CHECKS_NOT_QUALIFICATION",
-            "vectors": vectors,
+            "vector_count": len(vectors),
+            "shards": [],
             "intentional_uninhabited": unsatisfiable,
         },
         "PRIMITIVE_VECTORS.json": {
@@ -663,8 +673,42 @@ def generate(output):
             ],
         },
     }
+    # Qualification inputs keep the approved JSON quota; never enlarge M06.
+    chunks, chunk, size = [], [], 0
+    for vector in vectors:
+        amount = len(reference_a(vector)) + 1
+        if chunk and size + amount > 1024 * 1024:
+            chunks.append(chunk)
+            chunk, size = [], 0
+        chunk.append(vector)
+        size += amount
+    if chunk:
+        chunks.append(chunk)
+    offset = 0
+    for i, chunk in enumerate(chunks, 1):
+        name = f"SCHEMA_VECTORS_PART_{i:02}.json"
+        value = {
+            "status": "SHAPE_ONLY_LOCAL_CHECKS_NOT_QUALIFICATION",
+            "vectors": chunk,
+        }
+        raw = reference_a(value) + b"\n"
+        assert len(raw) <= 2 * 1024 * 1024
+        values[name] = value
+        values["SCHEMA_VECTORS.json"]["shards"].append(
+            {
+                "file": name,
+                "sha256": sha(raw),
+                "bytes": len(raw),
+                "first_vector_index": offset,
+                "vector_count": len(chunk),
+            }
+        )
+        offset += len(chunk)
+    assert offset == len(vectors)
     for name, value in values.items():
-        (output / name).write_bytes(reference_a(value) + b"\n")
+        raw = reference_a(value) + b"\n"
+        assert len(raw) <= 2 * 1024 * 1024
+        (output / name).write_bytes(raw)
     report = {
         "status": "LOCAL_Q1_INPUT_CHECKS_COMPLETE_NOT_Q1_PASS",
         "candidate_manifest_sha256": MANIFEST_SHA,
