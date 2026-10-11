@@ -1,5 +1,11 @@
 # PRODUCT-V1 — aktualny stan NF02 runtime
 
+## Decyzja o odrębnym successor P0 — 2026-10-11
+
+Właściciel wybrał przygotowanie strategii 2, z obowiązkiem powrotu po decyzję, jeśli transitive closure nadal obejmie 131 kontraktów. [Konkretny pakiet zakresu](NF02_P0_SUCCESSOR_SCOPE_PROPOSAL.md) i [exact dependency inventory](NF02_P0_SUCCESSOR_DEPENDENCIES.json) są gotowe. **Wynik: 131 kontraktów, 127 profili i 277 schematów; brak mniejszego Q1 przy zachowaniu obecnych target domains.** Zarówno zatwierdzony graf, jak i aktualny niezakwalifikowany Registry zostały prześledzone od rzeczywistych korzeni P0. Wskazano command/commit/receipt oraz retry/checkpoint jako konkretne zależności rozszerzające zakres.
+
+Nie rozpoczęto pełnego semantic review 131, nie zmieniono R5.4.2/owner approval i nie aktywowano importu. Potrzebna jest decyzja właściciela: kontynuacja pełnego Q1 obecnego modelu z pierwszym wynikiem jako milestone albo dodatkowe upoważnienie do opracowania rzeczywiście ograniczonego normatywnego modelu, wymagającego nowego closure i osobnego zatwierdzenia. Strategiczna zgoda na przygotowanie nie jest approval nowych normative bytes. Checkpoint implementacji: `7508d4fd5d0dc3e2f3cfa3fe5e07834c9e3b8298`.
+
 ## Checkpoint P0 — implementacja 2026-10-11
 
 **NF02 OPEN; P0 NOT_DELIVERED; produkcyjny import BLOCKED; E1–E6 NOT_COMPLETED; brak nowego Q1/Q2 PASS.** Powstał dodatni protokół przez istniejący Store/Coordinator i E1 inbox. Testy symulują authority na granicy OS; nie są niezależną kwalifikacją. Nie uzyskano rzeczywistego wyniku uprawnionego zewnętrznego audytora.
