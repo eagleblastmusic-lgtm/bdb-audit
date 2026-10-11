@@ -6,7 +6,7 @@ from pathlib import Path
 from ..core.canonical_json import canonical_bytes
 from ..core.errors import ValidationError
 from .installation_authority import (_machine_root, _locked_file, _relative_file,
-                                     _protected, _powershell, verify_cms)
+                                     _protected, _powershell, verify_cms as _verify_cms)
 from .limited_model import BASE, MODEL_ID, LimitedCorpus, sha, domain_hash, strict_json
 from .limited_environment import verify_environment
 
@@ -16,6 +16,10 @@ ROLE_OPERATIONS = {
     "AUDITOR": {"ACK_DELIVERY", "RETURN_AUDIT"},
     "OWNER_RECOVERY": {"ABORT_ATTEMPT"},
 }
+
+
+def verify_cms(raw, signature, certificate_sha256, *, at_time=None):
+    return _verify_cms(raw, signature, certificate_sha256, at_time=at_time, signature_limit=2 * 1024 * 1024)
 
 
 def instant(value):
@@ -120,7 +124,7 @@ class LimitedMachineAuthority:
                 raise ValidationError("P0_QUALIFIED_IMPLEMENTATION_DRIFT")
             leased = {"identity": sha(install_raw), "installation": installation, "files": files, "corpus": corpus,
                       "root": trust, "root_raw": root_raw, "installation_raw": install_raw, "installation_signature": install_sig}
-            self.verify_qualification(leased)
+            qualified = self.verify_qualification(leased)
             if "ENVIRONMENT.json" not in files:
                 raise ValidationError("P0_QUALIFIED_ENVIRONMENT_REQUIRED")
             verify_environment(strict_json(files["ENVIRONMENT.json"]), stack)
@@ -140,6 +144,9 @@ class LimitedMachineAuthority:
                 if grant["role"] != "OWNER_RECOVERY" and grant["certificate_sha256"] in {
                         trust["owner_certificate_sha256"], trust["qualifier_certificate_sha256"]}:
                     raise ValidationError("P0_PRODUCER_CANNOT_AUTHORIZE_SELF")
+                if (installation["mode"] == "PRODUCTION" and grant["role"] == "AUDITOR"
+                        and grant["certificate_sha256"] != qualified["qualified_auditor_certificate_sha256"]):
+                    raise ValidationError("P0_RQ_AUDITOR_IDENTITY_MISMATCH")
                 grants.append({"body": grant, "raw": raw, "signature": sig, "digest": sha(raw)})
             coordinators = {g["body"]["certificate_sha256"] for g in grants if g["body"]["role"] == "COORDINATOR"}
             auditors = {g["body"]["certificate_sha256"] for g in grants if g["body"]["role"] == "AUDITOR"}
@@ -197,6 +204,7 @@ class LimitedMachineAuthority:
                     raise ValidationError("P0_RQ_TEST_EVIDENCE_MISMATCH")
         if qualified["implementation_files"] != installation["implementation_files"]:
             raise ValidationError("P0_QUALIFIED_IMPLEMENTATION_DRIFT")
+        return qualified
 
     @contextmanager
     def storage_lease(self, path, leased):

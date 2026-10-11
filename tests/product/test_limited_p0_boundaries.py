@@ -132,6 +132,27 @@ def test_current_rights_lost_at_final_commit_roll_back(setup_p0):
     assert snapshot(store) == before
 
 
+def test_p0_cms_limit_matches_m06_without_changing_legacy_default(monkeypatch):
+    from bdb_audit.history import installation_authority, limited_authority
+
+    calls = []
+
+    def verified(script, data):
+        calls.append(data)
+        return "VERIFIED"
+
+    monkeypatch.setattr(installation_authority, "_powershell", verified)
+    limit = 2 * 1024 * 1024
+    signature = b"TEST_ONLY" * (limit // 9) + b"X" * (limit % 9)
+    limited_authority.verify_cms(b"TEST_ONLY", signature, "1" * 64)
+    assert len(calls) == 1
+    with pytest.raises(ValidationError):
+        installation_authority.verify_cms(b"TEST_ONLY", signature, "1" * 64)
+    with pytest.raises(ValidationError):
+        limited_authority.verify_cms(b"TEST_ONLY", signature + b"X", "1" * 64)
+    assert len(calls) == 1
+
+
 def test_abort_retry_and_terminal_release_denial(setup_p0):
     store, intake, authority, assignment, gd, grant, binding, _ = started(setup_p0)
     job = intake.release_job(binding_ref=binding.ref.as_dict(), grant_digest=gd)

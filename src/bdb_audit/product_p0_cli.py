@@ -92,7 +92,7 @@ def run_p0(argv):
             job = statement["job"]
             if statement != runtime.release_statement(job):
                 raise ValidationError("P0_SIGNED_RELEASE_CONTEXT_MISMATCH")
-            data = store.release_p0(job, authentication=read_bounded(args.signature, 65536))
+            data = store.release_p0(job, authentication=read_bounded(args.signature, 2 * 1024 * 1024))
         else:
             value = strict_json(read_bounded(args.input, 2 * 1024 * 1024))
             allowed = ({"operation", "objects", "raw_digests", "actor_ref", "grant_digest", "events", "command_id"}
@@ -112,7 +112,7 @@ def run_p0(argv):
             else:
                 command = LimitedCommand(value["command"], runtime)
                 request = LimitedRequest(command, objects, tuple(command.body()["events"]), raw)
-                result = intake.accept(request, read_bounded(args.signature, 65536))
+                result = intake.accept(request, read_bounded(args.signature, 2 * 1024 * 1024))
                 data = {"status": "ACCEPTED", "mode": runtime.installation["mode"], "accepted_head": result.head.as_dict(),
                         "receipt": result.receipt.body(), "already_accepted": result.already_accepted}
         data["model_id"] = MODEL_ID

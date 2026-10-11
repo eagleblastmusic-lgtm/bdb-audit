@@ -56,14 +56,16 @@ def _powershell(script, data):
         raise ValidationError("NF02_AUTHORITY_VERIFICATION_FAILED") from exc
 
 
-def verify_cms(raw: bytes, signature: bytes, certificate_sha256: str, *, at_time=None):
+def verify_cms(raw: bytes, signature: bytes, certificate_sha256: str, *, at_time=None, signature_limit=65536):
     """Check a detached CMS against an externally pinned certificate identity.
 
     CheckSignature(true) checks cryptography. Trust comes exclusively from the
     protected OS root pin, rather than a caller-provided certificate/chain.
     Current grants implement revocation; historical facts need no live token.
     """
-    if type(signature) is not bytes or not signature or len(signature) > 65536:
+    if type(signature_limit) is not int or not 1 <= signature_limit <= 2 * 1024 * 1024:
+        raise ValidationError("NF02_PRODUCER_SIGNATURE_REQUIRED")
+    if type(signature) is not bytes or not signature or len(signature) > signature_limit:
         raise ValidationError("NF02_PRODUCER_SIGNATURE_REQUIRED")
     script = r"""$ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.Security

@@ -1,6 +1,7 @@
 """Missing P0 transport and finite-entry-point regressions, without authority."""
 from dataclasses import replace
 import io
+import subprocess
 import zipfile
 
 import pytest
@@ -52,6 +53,25 @@ def test_source_snapshot_uses_actual_distinct_git_object_types(corpus):
     value = json.loads(manifest)
     assert (value["commit_oid"], value["tree_oid"]) == (identity.commit_object_id, identity.tree_object_id)
     assert LimitedTransport(corpus).archive(archive, "P0_BOOTSTRAP_SOURCE_V1")["MANIFEST.json"] == manifest
+
+
+def test_git_replace_cannot_change_the_tree_of_an_approved_commit(tmp_path):
+    def git(*args):
+        return subprocess.check_output(["git", "-C", str(tmp_path), *args], stderr=subprocess.DEVNULL).strip().decode("ascii")
+
+    git("init")
+    git("config", "user.name", "TEST ONLY")
+    git("config", "user.email", "test-only@example.invalid")
+    (tmp_path / "view.txt").write_bytes(b"original")
+    git("add", "view.txt")
+    git("commit", "-m", "original")
+    original = git("rev-parse", "HEAD")
+    (tmp_path / "view.txt").write_bytes(b"replacement")
+    git("commit", "-am", "replacement")
+    replacement = git("rev-parse", "HEAD")
+    git("replace", original, replacement)
+    with pytest.raises(ValidationError, match="ACTUAL_COMMIT_TREE_MISMATCH"):
+        approved_git_view(tmp_path, original, "TEST_ONLY_REPLACE_REPOSITORY", ["view.txt"])
 
 
 @pytest.mark.parametrize("mutation", ["generic_operation", "legacy_typed_event", "same_commit_start"])

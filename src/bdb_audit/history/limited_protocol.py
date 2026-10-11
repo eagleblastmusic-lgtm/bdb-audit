@@ -6,8 +6,7 @@ from typing import Any
 from ..core.canonical_json import canonical_bytes
 from ..core.errors import ValidationError
 from ..workflow.limited_transport import LimitedTransport, approved_git_view
-from .installation_authority import verify_cms
-from .limited_authority import LimitedMachineAuthority, instant
+from .limited_authority import LimitedMachineAuthority, instant, verify_cms
 from .limited_model import BASE, domain_hash, sha, strict_json
 from .limited_wire import (LimitedObject, LimitedCommand, LimitedRef, LimitedCommit, LimitedReceipt,
                            value_body, refs_in, sorted_refs, copy)

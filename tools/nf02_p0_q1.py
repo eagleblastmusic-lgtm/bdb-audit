@@ -322,6 +322,125 @@ def expand(recipe):
     )
 
 
+def finite_inputs(corpus):
+    """Manual M04/M05 expectations, independent of the runtime's dispatch table.
+
+    DAG probes use ordering-only stubs, never accepted objects/authority.
+    State cases are a qualification worklist, not executed admission tests.
+    """
+    from types import SimpleNamespace
+    from bdb_audit.core.errors import ValidationError
+    from bdb_audit.history.limited_protocol import LimitedProtocol
+
+    shapes = [
+        (
+            "assignment_manifest",
+            "assignment_manifest_00000000-0000-4000-8000-000000000001",
+            "1" * 64,
+        ),
+        ("attempt", "attempt_00000000-0000-4000-8000-000000000001", "2" * 64),
+        (
+            "command_envelope",
+            "command_envelope_00000000-0000-4000-8000-000000000001",
+            "3" * 64,
+        ),
+        ("attempt", "attempt_00000000-0000-4000-8000-000000000002", "4" * 64),
+        ("attempt", "attempt_00000000-0000-4000-8000-000000000001", "5" * 64),
+    ]
+    dags = []
+    # (label, nodes in input order, dependency edges, expected index sequence/error).
+    for label, indexes, edges, expected in (
+        ("EMPTY_FACTS", [], {}, []),
+        ("SINGLE", [1], {}, [1]),
+        ("KIND_TIE_BREAK", [2, 1, 0], {}, [0, 1, 2]),
+        ("LOGICAL_ID_TIE_BREAK", [3, 1], {}, [1, 3]),
+        ("DIGEST_TIE_BREAK", [4, 1], {}, [1, 4]),
+        ("FACTS_BEFORE_DEPENDENT_COMMAND", [2, 0, 1], {0: [1], 2: [0, 1]}, [1, 0, 2]),
+        ("CYCLE", [0, 1], {0: [1], 1: [0]}, "P0_CONTENT_CYCLE"),
+        ("SELF", [1], {1: [1]}, "P0_CONTENT_CYCLE"),
+        ("DUPLICATE", [1, 1], {}, "P0_DUPLICATE_OBJECT"),
+    ):
+        nodes = []
+        for i in indexes:
+            kind, logical, digest = shapes[i]
+            refs = []
+            for j in edges.get(i, []):
+                target_kind, target_logical, target_digest = shapes[j]
+                refs.append(
+                    {
+                        "kind": target_kind,
+                        "version": corpus.versions[target_kind],
+                        "logical_id": target_logical,
+                        "revision_digest": target_digest,
+                        "digest_profile": "BDB-OBJECT-DIGEST-1",
+                        "schema_revision_ref": corpus.schema_ref(target_kind),
+                    }
+                )
+            nodes.append(
+                SimpleNamespace(
+                    kind=kind, logical_id=logical, digest=digest, body={"refs": refs}
+                )
+            )
+        try:
+            actual = [n.digest for n in LimitedProtocol.order(None, nodes)]
+        except ValidationError as exc:
+            actual = exc.code
+        wanted = (
+            expected if isinstance(expected, str) else [shapes[i][2] for i in expected]
+        )
+        assert actual == wanted, label
+        dags.append(
+            {"case": label, "nodes": [vars(n) for n in nodes], "expected": wanted}
+        )
+    legal = {
+        "INITIALIZE_P0_FROM_APPROVED_GIT": {"EMPTY_HISTORY"},
+        "CREATE_ASSIGNMENT": {"GENESIS", "ABORTED"},
+        "BIND_PACKAGE": {"ASSIGNED"},
+        "START_ATTEMPT": {"BOUND"},
+        "CONFIRM_DELIVERY": {"STARTED"},
+        "INGEST_EVIDENCE": {"DELIVERED"},
+        "ACCEPT_RESULT": {"EVIDENCE_ACCEPTED"},
+        "ABORT_ATTEMPT": {
+            "ASSIGNED",
+            "BOUND",
+            "STARTED",
+            "DELIVERED",
+            "EVIDENCE_ACCEPTED",
+        },
+    }
+    assert set(legal) == {o["name"] for o in corpus.descriptor["operations"]}
+    states = [
+        "EMPTY_HISTORY",
+        "GENESIS",
+        "ASSIGNED",
+        "BOUND",
+        "STARTED",
+        "DELIVERED",
+        "EVIDENCE_ACCEPTED",
+        "ABORTED",
+        "RESULT_ACCEPTED",
+    ]
+    branches = [
+        {
+            "operation": op,
+            "input_state": state,
+            "state_precondition_allows": state in allowed,
+            "all_other_predicates": "REQUIRED_NOT_ESTABLISHED_BY_THIS_VECTOR",
+            "required_objects": next(
+                o["objects"] for o in corpus.descriptor["operations"] if o["name"] == op
+            ),
+        }
+        for op, allowed in legal.items()
+        for state in states
+    ]
+    return {
+        "dag_status": "LOCAL_ORDERING_PROBES_NOT_HISTORY_ACCEPTANCE",
+        "dag_vectors": dags,
+        "state_status": "ALL_FINITE_STATE_BRANCHES_REQUIRE_AUTHORIZED_EXECUTION",
+        "state_branches": branches,
+    }
+
+
 def generate(output):
     from bdb_audit.core.canonical_json import canonical_bytes
     from bdb_audit.core.hashing import object_digest, raw_digest
@@ -410,6 +529,81 @@ def generate(output):
             }
         )
     matrix = json.loads(files[BASE + "QUALIFICATION_MATRIX.json"])
+    from bdb_audit.history.limited_protocol import LimitedProtocol
+    from types import SimpleNamespace
+
+    ref_context = SimpleNamespace(schemas=corpus.schemas, schema_ref=corpus.schema_ref)
+    ref_vectors = []
+    for kind, version in corpus.versions.items():
+        valid = {
+            "kind": kind,
+            "version": version,
+            "logical_id": kind + "_00000000-0000-4000-8000-000000000000",
+            "revision_digest": ZERO,
+            "digest_profile": "BDB-OBJECT-DIGEST-1",
+            "schema_revision_ref": corpus.schema_ref(kind),
+        }
+        variants = [
+            ("EXACT_PIN_GRAMMAR_ONLY", valid, True, True),
+            ("WRONG_VERSION", {**valid, "version": "999"}, False, False),
+            ("UNKNOWN_KIND", {**valid, "kind": "generic_import"}, False, False),
+            (
+                "WRONG_LOGICAL_PREFIX",
+                {**valid, "logical_id": "other_00000000-0000-4000-8000-000000000000"},
+                False,
+                False,
+            ),
+            (
+                "CALLER_REF_CLASS",
+                {**valid, "ref_class": "CONTENT_OR_PRIOR"},
+                False,
+                False,
+            ),
+            (
+                "WRONG_SCHEMA_RAW_DIGEST",
+                {
+                    **valid,
+                    "schema_revision_ref": {
+                        **valid["schema_revision_ref"],
+                        "raw_digest": ZERO,
+                    },
+                },
+                True,
+                False,
+            ),
+        ]
+        for other in corpus.versions:
+            if other != kind:
+                variants.append(
+                    (
+                        "SCHEMA_OF_" + other,
+                        {**valid, "schema_revision_ref": corpus.schema_ref(other)},
+                        False,
+                        False,
+                    )
+                )
+        for label, value, grammar, pin in variants:
+            schema = {"$ref": "urn:bdb:p0:wire:COMMON/1#/$defs/TypedRef"}
+            assert Vectors(corpus.schemas.documents).valid(schema, value) == grammar
+            from bdb_audit.core.errors import ValidationError
+
+            try:
+                LimitedProtocol.ref(ref_context, value)
+                actual_pin = True
+            except ValidationError:
+                actual_pin = False
+            assert actual_pin == pin
+            ref_vectors.append(
+                {
+                    "kind": kind,
+                    "case": label,
+                    "value": value,
+                    "expected_schema": grammar,
+                    "expected_exact_pin": pin,
+                    "prior_resolution": "NOT_ESTABLISHED_BY_THIS_VECTOR",
+                }
+            )
+    finite = finite_inputs(corpus)
     output.mkdir(parents=True, exist_ok=True)
     values = {
         "SCHEMA_VECTORS.json": {
@@ -422,12 +616,51 @@ def generate(output):
             "vectors": primitive,
             "canonical_shape_goldens": canonical_goldens,
         },
+        "REF_VECTORS.json": {
+            "status": "GRAMMAR_AND_EXACT_SCHEMA_PINS_NOT_AUTHORITY",
+            "vectors": ref_vectors,
+        },
+        "DAG_AND_STATE_VECTORS.json": finite,
         "QUALIFICATION_WORKLIST.json": {
             "status": "REQUIRES_AUTHORIZED_REVIEW_AND_REAL_RUNTIME",
             "requirements": matrix["cases"],
             "contracts": definitions,
             "profiles": corpus.descriptor["profiles"],
             "schema_names": sorted(corpus.schemas.documents),
+            "finite_operation_branches": corpus.descriptor["operations"],
+            "required_material_target_mutations": [
+                {
+                    "contract": key,
+                    **ref,
+                    "mutations": [
+                        "ABSENT",
+                        "WRONG_KIND",
+                        "WRONG_VERSION",
+                        "WRONG_SCHEMA_RAW_DIGEST",
+                        "WRONG_LOGICAL_ID",
+                        "WRONG_REVISION",
+                        "SAME_COMMIT_PRIOR",
+                        "FUTURE",
+                        "WRONG_CAMPAIGN",
+                        "WRONG_ATTEMPT",
+                        "WRONG_SOURCE",
+                        "WRONG_SLOT",
+                        "WRONG_CUT",
+                    ],
+                }
+                for key, definition in corpus.descriptor["canonical_contracts"].items()
+                for ref in definition["material_refs"]
+            ],
+            "entry_points": [
+                "TransactionalHistoryStore.accept",
+                "Coordinator.accept",
+                "LimitedIntake.accept",
+                "E1ResultInbox.accept_p0_evidence",
+                "E1ResultInbox.accept_p0_result",
+                "product p0",
+                "p0_service.execute",
+                "installed standalone",
+            ],
         },
     }
     for name, value in values.items():
@@ -443,6 +676,9 @@ def generate(output):
             "profiles": 7,
             "schemas": len(corpus.schemas.documents),
             "schema_vectors": len(vectors),
+            "exact_ref_vectors": len(ref_vectors),
+            "dag_vectors": len(finite["dag_vectors"]),
+            "state_branches_to_qualify": len(finite["state_branches"]),
         },
         "readback_files": [
             {"file": n, "sha256": sha(files[n]), "bytes": len(files[n])} for n in names

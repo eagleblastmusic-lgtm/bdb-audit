@@ -1,6 +1,8 @@
 """Bounded exact-byte source/package/result transforms for approved P0."""
 import hashlib
+from concurrent.futures import ThreadPoolExecutor
 import io
+import os
 import re
 import subprocess
 import zipfile
@@ -149,14 +151,25 @@ def approved_git_view(repository, requested_ref, repository_id, paths):
     """Prepare actual Git bytes for independent approval, never approve them."""
     identity = resolve_local_repository(repository, requested_ref)
     repo = Path(repository).resolve()
+    env = {k: v for k, v in _git_env().items() if k not in {
+        "GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+        "GIT_NAMESPACE", "GIT_CONFIG_COUNT", "GIT_CONFIG_PARAMETERS"} and not k.startswith(("GIT_CONFIG_KEY_", "GIT_CONFIG_VALUE_"))}
+    env.update(GIT_NO_REPLACE_OBJECTS="1", GIT_NO_LAZY_FETCH="1", GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL=os.devnull)
 
     def git(args, limit):
         # Files are read from typed Git objects, never the worktree or filters.
         try:
             with subprocess.Popen(["git", "-C", str(repo), *args], stdout=subprocess.PIPE,
-                                  stderr=subprocess.DEVNULL, env=_git_env()) as process:
+                                  stderr=subprocess.DEVNULL, env=env) as process:
                 assert process.stdout is not None
-                raw = process.stdout.read(limit + 1)
+                with ThreadPoolExecutor(max_workers=1) as reader:
+                    pending = reader.submit(process.stdout.read, limit + 1)
+                    try:
+                        raw = pending.result(timeout=30)
+                    except TimeoutError as exc:
+                        process.kill()
+                        process.wait(timeout=5)
+                        raise ValidationError("P0_GIT_SOURCE_UNAVAILABLE") from exc
                 if len(raw) > limit:
                     process.kill()
                     raise ValidationError("P0_GIT_VIEW_RESOURCE_LIMIT")
@@ -166,28 +179,61 @@ def approved_git_view(repository, requested_ref, repository_id, paths):
         except (OSError, subprocess.TimeoutExpired) as exc:
             raise ValidationError("P0_GIT_SOURCE_UNAVAILABLE") from exc
 
-    tree_raw = git(["ls-tree", "-rz", identity.tree_object_id], 16 * 1024 * 1024)
-    tree = {}
-    for record in tree_raw.split(b"\0"):
-        if not record:
-            continue
-        metadata, path = record.split(b"\t", 1)
-        try:
-            path = path.decode("utf8", "strict")
-        except UnicodeDecodeError as exc:
-            raise ValidationError("P0_GIT_PATH_UTF8_REQUIRED") from exc
-        tree[path] = metadata.decode("ascii").split()
+    metadata_bytes = 0
+
+    def actual_object(kind, oid):
+        nonlocal metadata_bytes
+        raw = git(["cat-file", kind, oid], 32 * 1024 * 1024)
+        if kind != "blob":
+            metadata_bytes += len(raw)
+            if metadata_bytes > 16 * 1024 * 1024:
+                raise ValidationError("P0_GIT_VIEW_RESOURCE_LIMIT")
+        actual = hashlib.new(identity.object_format, kind.encode("ascii") + b" " + str(len(raw)).encode("ascii") + b"\0" + raw).hexdigest()
+        if actual != oid:
+            raise ValidationError("P0_GIT_OBJECT_BYTES_MISMATCH")
+        return raw
+
+    commit = actual_object("commit", identity.commit_object_id)
+    if commit.split(b"\n", 1)[0] != b"tree " + identity.tree_object_id.encode("ascii"):
+        raise ValidationError("P0_ACTUAL_COMMIT_TREE_MISMATCH")
+    trees: dict[str, dict[bytes, tuple[str, str]]] = {}
+
+    def tree_entries(oid):
+        if oid not in trees:
+            raw, entries, offset = actual_object("tree", oid), {}, 0
+            width = 20 if identity.object_format == "sha1" else 32
+            while offset < len(raw):
+                space = raw.find(b" ", offset)
+                end = raw.find(b"\0", space + 1)
+                if space < offset or end < 0 or end + 1 + width > len(raw):
+                    raise ValidationError("P0_MALFORMED_GIT_TREE")
+                name = raw[space + 1:end]
+                if not name or b"/" in name or name in entries:
+                    raise ValidationError("P0_MALFORMED_GIT_TREE")
+                entries[name] = (raw[offset:space].decode("ascii"), raw[end + 1:end + 1 + width].hex())
+                offset = end + 1 + width
+            trees[oid] = entries
+        return trees[oid]
     selected = sorted(set(paths), key=lambda n: n.encode("utf8"))
     if not 1 <= len(selected) <= 2044 or len(selected) != len(paths):
         raise ValidationError("P0_GIT_VIEW_MEMBERSHIP")
     entries, members, total = [], {}, 0
     for i, path in enumerate(selected):
-        if path not in tree:
+        segments, tree_oid = path.encode("utf8").split(b"/"), identity.tree_object_id
+        if any(s in {b"", b".", b".."} for s in segments):
             raise ValidationError("P0_GIT_PATH_NOT_IN_TREE", path)
-        mode, kind, oid = tree[path]
-        if mode not in {"100644", "100755"} or kind != "blob":
+        for index, segment in enumerate(segments):
+            entry = tree_entries(tree_oid).get(segment)
+            if entry is None:
+                raise ValidationError("P0_GIT_PATH_NOT_IN_TREE", path)
+            mode, oid = entry
+            if index < len(segments) - 1:
+                if mode != "40000":
+                    raise ValidationError("P0_UNSUPPORTED_GIT_ENTRY", path)
+                tree_oid = oid
+        if mode not in {"100644", "100755"}:
             raise ValidationError("P0_UNSUPPORTED_GIT_ENTRY", path)
-        raw = git(["cat-file", "blob", oid], 32 * 1024 * 1024)
+        raw = actual_object("blob", oid)
         total += len(raw)
         if total > 64 * 1024 * 1024 or raw.startswith(b"version https://git-lfs.github.com/spec/v1"):
             raise ValidationError("P0_UNSUPPORTED_GIT_VIEW")
