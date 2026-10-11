@@ -14,7 +14,38 @@ NF02_ACTIVATION_BLOCKERS = (
     "NEW_CAMPAIGN_PRIOR_PACKAGE_BINDING_AND_STARTED_CHRONOLOGY_NOT_IMPLEMENTED",
 )
 
+# These lifecycle claims require the unavailable qualified execution protocol,
+# even when the caller omits external-result objects from a generic command.
+# AttemptStarted itself needs a prior package binding in the successor (§192 E.4).
+_QUALIFIED_TRANSITION_TARGETS = {
+    "attempt": frozenset({"STARTED", "RESULT_RECEIVED", "RESULT_ACCEPTED"}),
+    "lane": frozenset({"COMPLETION_CANDIDATE", "COMPLETION_ACCEPTED"}),
+    "stage": frozenset({"COMPLETION_CANDIDATE", "COMPLETION_ACCEPTED"}),
+    "campaign": frozenset({"E6_REQUIRED", "E6_RUNNING", "CAMPAIGN_CONCLUDED", "CLOSED"}),
+}
+_QUALIFIED_EXECUTION_EVENTS = frozenset({
+    "AttemptStarted", "LaneCompletionAccepted", "StageCompletionAccepted", "CampaignConclusionAccepted",
+})
+
 
 def require_external_ingestion_authority() -> None:
     """Fail before raw retention, tickets, transactions, or completion writes."""
     raise ValidationError(NF02_BLOCK_CODE, NF02_BLOCK_DETAIL)
+
+
+def require_qualified_transition_authority(events) -> None:
+    """Prevent ordered events from bypassing PRODUCT-V1's activation boundary.
+
+    This is an activation guard, not a substitute for successor transition
+    predicates, independent producer authorization, or completion evidence.
+    """
+    for event in events:
+        if not isinstance(event, dict):
+            continue  # The commit schema validates all event bodies.
+        event_type = event.get("event_type")
+        if isinstance(event_type, str) and event_type in _QUALIFIED_EXECUTION_EVENTS:
+            require_external_ingestion_authority()
+        aggregate = str(event.get("aggregate", "")).lower()
+        target = event.get("to_state")
+        if isinstance(target, str) and target in _QUALIFIED_TRANSITION_TARGETS.get(aggregate, ()):
+            require_external_ingestion_authority()

@@ -2,6 +2,8 @@
 
 2026-10-11. Repo: `C:\Projekty\Audyty\BDB Audit`. Gałąź robocza: `work/nf02-runtime-completion`, utworzona od `e75f14ed443d6d6c7f60359687938c1fb6b062c0`. Zastane pliki untracked i historyczne materiały zachowano. Nie wykonano push, merge, release ani zmian frozen źródeł.
 
+Pierwszy lokalny checkpoint napraw: `b01eb89`. Dalsza delta zamyka obejście przez zdarzenia Store, potwierdzone testem regresji przed poprawką.
+
 **P0 nie jest dostarczone. NF02 OPEN; import BLOCKED; E1–E6 NOT_COMPLETED; brak nowego Q1/Q2 PASS.** To checkpoint napraw i działającej kontroli manualnej, nie aktywacja zaufanego przyjmowania wyników.
 
 ## Działający rezultat
@@ -20,6 +22,8 @@ Nie można przyjąć żadnego nowego wyniku zewnętrznego ani ukończyć E1 na t
 | Rzeczywiste bajty i kontekst | Read-only kontrola używa bounded snapshot, istniejących safe ZIP/strict JSON i raw derivation. Sprawdza hashe/length/members, faktycznie odczytaną paczkę, source commit, slot, executor/model, fazę, assignment i cut. Lokalny receipt paczki nie jest zaakceptowanym bindingiem z chwili przypisania. |
 | Odrzucenie bez mutacji | Testy porównują pełne bajty plików kampanii oraz brak accepted raw/admission/result/completion. Inspekcja nie używa staging vault ani writera. |
 | Bezpośredni Store / obejścia | Centralna blokada pozostaje dla obu kinds i komendy importu, także przez Coordinator i generic command. Same-commit i dwustopniowa próba laundering odrzucone atomowo. |
+| Obejście przez `ordered_events` | Test przed poprawką potwierdził przyjęcie generic command z CREATED → STARTED → RESULT_RECEIVED → RESULT_ACCEPTED bez wyników. Wspólna bramka Store odrzuca teraz STARTED, RESULT_RECEIVED/ACCEPTED, lane/stage completion candidate/accepted oraz E6/conclusion/closed campaign transitions wymagające nieaktywowanego protokołu. Obejmuje Coordinator, różną wielkość liter aggregate, alias `id`, pojedynczy event i generator. Osobny test przed poprawką potwierdził też przyjęcie `event_type=AttemptStarted` bez pól FSM; bramka obejmuje teraz nazwane AttemptStarted/LaneCompletionAccepted/StageCompletionAccepted/CampaignConclusionAccepted. Odrzucenie nie zmienia żadnego pliku kampanii ani receipt. To bramka aktywacji, nie dowód pozytywnych guardów binding/STARTED/evidence. |
+| Rozbieżność walidowanych i zapisanych zdarzeń | Store tworzy jedną głęboką kopię CJSON przed walidacją. Generator nie znika podczas wcześniejszego odczytu, a mutacja zachowanego przez wywołującego słownika po walidacji nie zmienia zapisanego commitu. Testuje się również dokładny receipt retry i restart. |
 | Izolacja | Raport jawnie podaje NOT_ESTABLISHED. Nie dodano żadnego ENFORCED. Zachowany hook dla ENFORCED odrzuca nierozwiązywalne material channels. |
 | CAS, crash, idempotencja, chronology | Weryfikacja istniejącego Store pozostaje oddzielna od NF02. Nie dowiedziono tych właściwości dla nowej pozytywnej ścieżki, bo jej nie aktywowano. |
 
@@ -30,6 +34,7 @@ Istniejący writer używa rozszerzeń `/1`, lokalnych schemas i starszego format
 Wymagania nie wynikają z nowego lokalnego planu:
 
 - `docs/R5_4_1/candidate/BDB_AUDIT_V2_DATA_AND_ARTIFACT_CONTRACTS_R5_4.md`, §15.1: „actor_ref ... nie ustanawia sam sobie authority”; authority wynika z prior accepted kontekstu lub niezależnego bootstrap root.
+- `F1_QUALIFICATION/inputs/BDB_AUDIT_V2_DATA_AND_ARTIFACT_CONTRACTS.md`, §14.2–14.4 oraz §16: każda zmiana state wymaga accepted transition fact z exact prior state/ref, governing transition policy i input HistoryCut; sama legalna krawędź FSM ani nazwa typed event nie dowodzi przyjęcia wyniku. Lokalny czysty projector FSM pozostaje validator/projector, a bramka działa w produkcyjnym Store przed transakcją.
 - Ten sam dokument, §192 D.2/D.3: closed binding/1, evidence/2, result/2, exact raw-backed SchemaRegistry/2 i niezależny zewnętrzny schema root. §192 E.1/E.4: unique prior binding, osobny późniejszy STARTED, serialized delivery, prior evidence i exact raw normalization. §192 H: nowa niezależna kampania, bez backfill ani in-place upgrade.
 - §187.2 i §192.2: kwalifikacja author-only jest poza historią i nie jest runtime capability; design approval nie zastępuje kwalifikacji exact candidate ani niezależnej instalacji.
 - `docs/R5_4_2/R5_4_2_Q1_QUALIFICATION_REPORT.md`: brak świeżego Q1 i brak runtime activation. Nie przypisano staremu raportowi statusu kwalifikacji nowego kodu.
@@ -43,6 +48,12 @@ Najmniejszy następny krok do P0: ustanowić rzeczywistą niezależną authority
 ## Weryfikacja
 
 Ruff, mypy i deterministyczny standalone build przeszły. Świeże wyniki, komendy i source/build hashes zapisane są w `RUNTIME_COMPLETION_EVIDENCE.json`. PASS isolated successor normalizer, PASS integration/product i PASS dostępnego rzeczywistego przepływu są rozdzielone; żaden nie jest Q1/Q2 lub kwalifikacją wydania.
+
+Końcowa regresja objęła F1/F2, runner, produkt, freeze/isolation E1 i standalone build/clean environment: **274 PASS**. Osobno **6 PASS** wybranych negative NF02, bez przypisywania PASS 22 pozostałym historycznym przypadkom. Mypy: 51 source files. Build preview: SHA-256 `7f80032369513a885cd09621aa6926e02ce5d8ec0db2e0bfd57dc34e17f3e4ad`, 1504429 bajtów. Poprzednie materiały checkpointu zachowano; evidence wiąże nowe wyniki z dokładnymi hashami źródeł.
+
+Nowa regresja `tests/product/test_transition_boundary.py` wiąże test z rzeczywistymi Attempt/LaneRun/StageRun kampanii. Obejście wykonano przed zmianą i uzyskano FAIL (Store nie odrzucił); po zmianie wymagany jest dokładny kod centralnej blokady oraz równość wszystkich bajtów kampanii. Nie oznaczono tego jako pozytywnego przyjęcia ani naprawy jeszcze niezaimplementowanego protokołu successor. Produkt nadal umożliwia operacje przygotowania, lokalny runner, odtworzenie i raport częściowy.
+
+Osobna próba `standalone_transition_probe.py`, uruchomiona z `-I`, importuje Store wyłącznie z weryfikowanego embedded payload. Cztery próby generic command przez eventy FSM i typed events odrzucono bez receipt i bez zmiany hashy wszystkich plików rzeczywistej kampanii smoke. Skrypt i jego wynik są w `runtime_completion_evidence/`; nie tworzą authority ani Q1/Q2.
 
 W testach użyto istniejącego `tools.product_test_tmp` zamiast Windows mkdir(mode=0700), który w sandboxie odmawia dostępu. Zamrożone self-testy legacy i sprawdzenie taskkill wymagają normalnego kontekstu hosta; ich udane przebiegi nie zmieniają źródeł ani kryteriów. Dwa negative tests oczekujące starego głębszego błędu zaktualizowano do dokładnego obecnego `PRODUCT_V1_EXTERNAL_INGESTION_BLOCKED`, zachowując atomowość i bez przypisania PASS głębszym guardom. Historyczne positive-control suites NF02 `/1` nie stanowią testów aktywnego produktu i nie otrzymują nowego PASS.
 

@@ -15,7 +15,10 @@ from ..core.canonical_json import canonical_bytes, parse
 from ..core.errors import ValidationError
 from ..core.hashing import object_digest
 from ..core.registry import ContractRegistry, canonical_reference_set
-from ..product_safety import EXTERNAL_RESULT_KINDS, require_external_ingestion_authority
+from ..product_safety import (
+    EXTERNAL_RESULT_KINDS, require_external_ingestion_authority,
+    require_qualified_transition_authority,
+)
 from ..schemas.foundation import ALL_EXECUTABLE_KINDS, F2_KINDS, F3_KINDS, M5_KINDS, foundation_schema_bindings
 from .closure import canonical_order, ClosureNode
 from .objects import (
@@ -776,6 +779,11 @@ class TransactionalHistoryStore:
                ordered_events=(), bootstrap_profile=None, expected_closure=None):
         if not isinstance(command, CommandEnvelope):
             raise ValidationError("COMMAND_REQUIRED")
+        # Consume generators once and validate/persist one private deep snapshot.
+        # A caller retaining its event dictionaries cannot change them after
+        # transition validation and before commit durability.
+        ordered_events = tuple(parse(canonical_bytes(list(ordered_events))))
+        require_qualified_transition_authority(ordered_events)
         objects = list(immutable_objects)
         if any(not isinstance(o, CanonicalObject) for o in objects):
             raise ValidationError("OBJECT_REQUIRED")

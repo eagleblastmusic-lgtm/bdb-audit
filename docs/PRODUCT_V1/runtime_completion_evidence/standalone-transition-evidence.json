@@ -1,0 +1,32 @@
+{
+  "status": "PASS_NEGATIVE_RUNTIME_ONLY",
+  "distribution": "standalone -I",
+  "artifact_sha256": "7f80032369513a885cd09621aa6926e02ce5d8ec0db2e0bfd57dc34e17f3e4ad",
+  "runtime_root": "C:\\Users\\Skarabeusz\\AppData\\Local\\Temp\\bdb_audit_v2_a7af87ff156ff163",
+  "store": ".product-smoke\\6937465a7a7543d6aa2286ac675d9902\\work\\campaign.sqlite",
+  "rejected_events": [
+    {
+      "aggregate": "Attempt",
+      "id": "negative-probe",
+      "from_state": "CREATED",
+      "to_state": "STARTED"
+    },
+    {
+      "aggregate": "Lane",
+      "id": "negative-probe",
+      "from_state": "COMPLETION_CANDIDATE",
+      "to_state": "COMPLETION_ACCEPTED"
+    },
+    {
+      "event_type": "AttemptStarted"
+    },
+    {
+      "event_type": "StageCompletionAccepted"
+    }
+  ],
+  "all_campaign_file_hashes_unchanged": true,
+  "receipt_created": false,
+  "producer_authority": "NOT_ESTABLISHED",
+  "full_audit": "NOT_COMPLETED",
+  "formal_Q1_Q2": "NO_NEW_PASS"
+}

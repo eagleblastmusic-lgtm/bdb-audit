@@ -16,6 +16,10 @@
       "sha256": "1ce0d959b2f4d9736b45514ecb59c98ee2eaf00d0c60aed4b36d6fac0d67ee87"
     },
     {
+      "path": "docs/PRODUCT_V1/runtime_completion_evidence/standalone_transition_probe.py",
+      "sha256": "28ce0525ee7d90c98c09a0894c1a0a0b6252d90044f2c87ccbcd06cbd47dc486"
+    },
+    {
       "path": "src/bdb_audit/__init__.py",
       "sha256": "a91245c311394aa4aa2af48233cb18101bc44e6ebe24ac834d76d87d0f47a843"
     },
@@ -357,7 +361,7 @@
     },
     {
       "path": "src/bdb_audit/history/store.py",
-      "sha256": "61b241480aaa89c8b4dedae74be6c96647822730d7f0a3d3a3fb772a3748fe92"
+      "sha256": "e6c8080f55528fcb9c416649f8c47b3660c8e6246d9eccc1841fefc946ed7c4a"
     },
     {
       "path": "src/bdb_audit/history/successor.py",
@@ -557,7 +561,7 @@
     },
     {
       "path": "src/bdb_audit/product_safety.py",
-      "sha256": "dcf24bcf52040fe23b9efacba93acae30ae266b35f8a78d80cbee72f7f2cf212"
+      "sha256": "1811fdeabbead66600cf812618c15d96a620e932d4c75001544f08672f7ddaca"
     },
     {
       "path": "src/bdb_audit/qualification/__init__.py",
@@ -1032,6 +1036,10 @@
       "sha256": "9d39ac8a35c8cd49a5ee090932edc8690526120bbdbc68fe7c6515c64a55caf9"
     },
     {
+      "path": "tests/product/test_transition_boundary.py",
+      "sha256": "0f7436158e3c6d70a15a4b389b87e1d1d1c6226d5cd666aede79b6652bd27c8c"
+    },
+    {
       "path": "tests/workflow/test_nf02_synthetic_lane_result_authority.py",
       "sha256": "d57c571c23902026291786b2b54b11f976f9e664ddc937dc2fd3b6d5c206ad56"
     },
@@ -1050,20 +1058,24 @@
       "result": "PASS; 51 source files"
     },
     {
-      "command": ".venv-f2/Scripts/python.exe -m pytest tests/f1 tests/f2 tests/runner tests/product tests/workflow/test_e1_freeze_and_isolation.py tests/f8/test_m46_build.py tests/f8/test_m46_standalone_clean_env.py -p no:tmpdir -p tools.product_test_tmp -q",
-      "result": "PASS; 253 cases; normal Windows host context"
+      "command": ".venv-f2/Scripts/python.exe -m pytest tests/f1 tests/f2 tests/runner tests/product tests/workflow/test_e1_freeze_and_isolation.py tests/f8/test_m46_build.py tests/f8/test_m46_standalone_clean_env.py -p no:tmpdir -p tools.product_test_tmp -q --junitxml .runtime-completion-tests/checkpoint-transition-final.xml --maxfail=1",
+      "result": "PASS; 274 cases; normal Windows host context; NOT Q1/Q2"
     },
     {
-      "command": ".venv-f2/Scripts/python.exe -m pytest tests/workflow/test_nf02_synthetic_lane_result_authority.py -k \"base_synthetic or bypass_b_fake or bypass_g_same or t2_full_laundering or t5_schema_binding_absent or t6_schema_binding_wrong\" -p no:tmpdir -p tools.product_test_tmp -q",
-      "result": "PASS; 6 cases; only central rejection/schema controls"
+      "command": ".venv-f2/Scripts/python.exe -m pytest tests/workflow/test_nf02_synthetic_lane_result_authority.py -k 'base_synthetic or bypass_b_fake or bypass_g_same or t2_full_laundering or t5_schema_binding_absent or t6_schema_binding_wrong' -p no:tmpdir -p tools.product_test_tmp -q --junitxml .runtime-completion-tests/nf02-negative-transition-final.xml --maxfail=1",
+      "result": "PASS; 6 selected cases; central rejection/schema controls only; 22 deselected"
     },
     {
       "command": ".venv-f2/Scripts/python.exe -m pytest docs/R5_4_2/autonomous_2026_10_07/tools/test_nf02_result_normalizer.py -p no:tmpdir -p tools.product_test_tmp -q",
-      "result": "PASS; 15 isolated candidate cases; NOT runtime acceptance"
+      "result": "PASS; 15 isolated candidate cases; reused unchanged predicates from b01eb89; NOT runtime acceptance"
     },
     {
-      "command": ".venv-f2/Scripts/python.exe tools/product_smoke.py --standalone dist/BDB_AUDIT_ASSISTANT_v2.0.3_NF02_RUNTIME_PREVIEW.py --output-dir .runtime-completion-tests/smoke-final",
+      "command": ".venv-f2/Scripts/python.exe tools/product_smoke.py --standalone dist/BDB_AUDIT_ASSISTANT_v2.0.3_NF02_RUNTIME_PREVIEW.py --output-dir .runtime-completion-tests/smoke-transition-final",
       "result": "PASS available real flow only; full audit NOT_COMPLETED"
+    },
+    {
+      "command": ".venv-f2/Scripts/python.exe -I docs/PRODUCT_V1/runtime_completion_evidence/standalone_transition_probe.py dist/BDB_AUDIT_ASSISTANT_v2.0.3_NF02_RUNTIME_PREVIEW.py .product-smoke/6937465a7a7543d6aa2286ac675d9902/work/campaign.sqlite .runtime-completion-tests/standalone-transition-evidence.json",
+      "result": "PASS_NEGATIVE_RUNTIME_ONLY; 4 event entrypoint rejections; all campaign file hashes unchanged; no receipt"
     }
   ],
   "test_suites": [
@@ -1076,7 +1088,8 @@
       "tests": "253",
       "time": "195.949",
       "timestamp": "2026-10-11T16:04:57.224175+02:00",
-      "hostname": "DESKTOP-99K5D30"
+      "hostname": "DESKTOP-99K5D30",
+      "source_checkpoint": "b01eb89"
     },
     {
       "evidence": "runtime_completion_evidence/nf02-negative.xml",
@@ -1087,18 +1100,97 @@
       "tests": "6",
       "time": "12.923",
       "timestamp": "2026-10-11T16:02:58.444664+02:00",
-      "hostname": "DESKTOP-99K5D30"
+      "hostname": "DESKTOP-99K5D30",
+      "source_checkpoint": "b01eb89"
+    },
+    {
+      "evidence": "runtime_completion_evidence/transition-checkpoint.xml",
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "274",
+      "time": "321.281",
+      "timestamp": "2026-10-11T16:26:16.155870+02:00",
+      "hostname": "DESKTOP-99K5D30",
+      "source_binding_set": "source_bindings"
+    },
+    {
+      "evidence": "runtime_completion_evidence/nf02-transition-negative.xml",
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "6",
+      "time": "14.044",
+      "timestamp": "2026-10-11T16:26:14.677806+02:00",
+      "hostname": "DESKTOP-99K5D30",
+      "source_binding_set": "source_bindings"
     }
   ],
   "artifact": {
     "path": "dist/BDB_AUDIT_ASSISTANT_v2.0.3_NF02_RUNTIME_PREVIEW.py",
-    "sha256": "fb07edaa809503cdaefd412e8c7f868975d294ba94ef1391f4e2bb9c2cf110b9",
-    "bytes": 1503499,
+    "sha256": "7f80032369513a885cd09621aa6926e02ce5d8ec0db2e0bfd57dc34e17f3e4ad",
+    "bytes": 1504429,
     "qualification": "UNQUALIFIED_LOCAL_PREVIEW"
   },
   "formal_Q1_Q2": "NO_NEW_PASS",
   "nf02": "OPEN",
   "external_ingestion": "BLOCKED",
   "full_audit": "NOT_COMPLETED",
-  "runtime_smoke": "runtime_completion_evidence/SMOKE_EVIDENCE.json"
+  "runtime_smoke": "runtime_completion_evidence/transition-SMOKE_EVIDENCE.json",
+  "previous_runtime_checkpoint": "b01eb89",
+  "verified_state": "EXACT_SOURCE_BINDINGS_AND_ARTIFACT; NO_RUNTIME_ACTIVATION",
+  "normative_and_candidate_inputs": [
+    {
+      "path": "F1_QUALIFICATION/inputs/BDB_AUDIT_V2_DATA_AND_ARTIFACT_CONTRACTS.md",
+      "sha256": "658f8866ca1a1330db9be582b13b47e87381de2208c53ee64ed9e47a8d3e15ee"
+    },
+    {
+      "path": "docs/R5_4_1/candidate/BDB_AUDIT_V2_DATA_AND_ARTIFACT_CONTRACTS_R5_4.md",
+      "sha256": "7d967707d8f7a0d77ab84484aeb4de0119dab85ed055c31473792c8528919f75"
+    },
+    {
+      "path": "docs/R5_4_2/R5_4_2_Q1_QUALIFICATION_REPORT.md",
+      "sha256": "65d4f48a9442f2ec3872e83bc6bdbbfa37934381afa4a66f632d1c64bc0ceeb5"
+    },
+    {
+      "path": "docs/R5_4_2/autonomous_2026_10_07/design/SOURCE_TRUST_BUILD_PARAMETERS.json",
+      "sha256": "e3e0f95205f3a9023876a6555d1f1917055d1d436e624ff975969c5b817478c9"
+    },
+    {
+      "path": "docs/R5_4_2/autonomous_2026_10_07/design/HISTORY_BOOTSTRAP_NF02_PARAGRAPH_REVIEW.md",
+      "sha256": "8dbd18183c19b3a0240dce385d77703c6bb0738c935e5b976193a414c37a2c12"
+    },
+    {
+      "path": "docs/R5_4_2/autonomous_2026_10_07/tools/transition_contract.py",
+      "sha256": "37714e634cfd968b6e52170da5ec993048c671f9453bf58b8e32c999778f031b"
+    },
+    {
+      "path": "docs/R5_4_2/autonomous_2026_10_07/tools/nf02_result_normalizer.py",
+      "sha256": "521f326bf08d3385a452c2f9654bb373893c63ca484c94d79e305a2da822e3e7"
+    },
+    {
+      "path": "docs/R5_4_2/autonomous_2026_10_07/tools/test_nf02_result_normalizer.py",
+      "sha256": "9885a3089d3d2c06285f3b966ecdb82c7f71aaa0198308df2f35a1d1964dc1a5"
+    }
+  ],
+  "runtime_entrypoint_probe": "runtime_completion_evidence/standalone-transition-evidence.json",
+  "regressions_observed_before_fix": [
+    {
+      "test": "test_events_cannot_launder_external_result_or_completion",
+      "observation": "FAIL: DID NOT RAISE ValidationError; generic Store accepted CREATED -> STARTED -> RESULT_RECEIVED -> RESULT_ACCEPTED without result facts"
+    },
+    {
+      "test": "test_typed_execution_event_cannot_substitute_for_qualified_fact[AttemptStarted]",
+      "observation": "FAIL: DID NOT RAISE ValidationError; generic Store accepted typed AttemptStarted without FSM fields"
+    }
+  ],
+  "verification_environment": {
+    "python": "3.14.4; .venv-f2/Scripts/python.exe",
+    "PYTHONUTF8": "1",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+    "temp_plugin": "tools.product_test_tmp",
+    "qualification": "NOT_A_QUALIFICATION_ENVIRONMENT"
+  }
 }
