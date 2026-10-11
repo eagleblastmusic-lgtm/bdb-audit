@@ -145,6 +145,7 @@ class AuditOperationApi:
             "completeness_state": "COMPLETE_SOURCE",
         }
         if has_real_git:
+            assert git_identity is not None
             source_identity_body["git_commit_object_id"] = git_identity.commit_object_id
             source_identity_body["git_tree_object_id"] = git_identity.tree_object_id
 

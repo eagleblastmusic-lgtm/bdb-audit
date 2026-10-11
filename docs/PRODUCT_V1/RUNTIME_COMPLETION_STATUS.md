@@ -1,5 +1,34 @@
 # PRODUCT-V1 — aktualny stan NF02 runtime
 
+## Checkpoint P0 — implementacja 2026-10-11
+
+**NF02 OPEN; P0 NOT_DELIVERED; produkcyjny import BLOCKED; E1–E6 NOT_COMPLETED; brak nowego Q1/Q2 PASS.** Powstał dodatni protokół przez istniejący Store/Coordinator i E1 inbox. Testy symulują authority na granicy OS; nie są niezależną kwalifikacją. Nie uzyskano rzeczywistego wyniku uprawnionego zewnętrznego audytora.
+
+| Część P0 | Aktualny rezultat |
+| --- | --- |
+| Authority | Read-only MachineAuthority: administrator-owned OS CommonAppData root, niezależny owner/qualifier, CMS, pełne pins plików/kodu, ograniczone czasowo granty producenta i exact command/scope signature. Bez publicznego issuera, własnego HMAC, tworzenia kluczy/certyfikatów i wyboru root przez caller/env. Chronione code/history locations, file/directory leases, ACL/reparse verification. **Rzeczywista authority nieustanowiona.** |
+| Nowa kampania | `open_nf02`, przygotowanie independently approved bootstrap/context packets, external raw schema root przed SchemaRegistry/2, exact initial pins. Brak upgrade/backfill; stare codecs pozostają oddzielne. Dodatni test tworzy nową historię na predecessor schemas jako jawnych danych testowych, bez promowania ich kwalifikacji. |
+| Binding/1 | Prior full Assignment, exact context/HistoryCut, source/run/executor/delivery/knowledge/grants/views join; bezpieczny ZIP i semantic rederivation. Exact raw ZIP zapisany przed obiektami/commitem w istniejącej transakcji Store. Jeden binding; operation retry zwraca pierwotny fact/receipt. |
+| STARTED/delivery | Osobna późniejsza komenda i exact event. Writer lock serializuje actual byte handoff z innymi zmianami historii. Bieżąca authority/cut/state i retained bytes sprawdzane przed callbackiem. Testowy synchroniczny odbiorca otrzymał exact package bytes; rzeczywisty transport audytora nie został wykonany. |
+| Evidence/2 | Oddzielne przyjęcie po STARTED, exact slot/profile/binding/campaign/source/attempt/HistoryCut, trwały oryginalny ZIP. Podpis wiąże dokładny fakt. E1 inbox przyjmuje evidence, a nie automatycznie wynik. |
+| Result/2 | Kolejna komenda z wcześniejszym accepted evidence, ponowna normalizacja retained bytes i byte-equal finite payload. Jeden produkcyjny writer; brak słabszego fallback importu. |
+| CAS/crash/restart | Testy obu rodzajów retry, concurrent one-winner binding, konfliktu różnych wyników jednego slotu, 7 crash hooks, restartu, ACK loss, brakującego raw, caller mutation i odwołania praw przed COMMIT. Odmowy porównują bajty wszystkich plików historii. |
+| Rzeczywisty audyt / assurance | Niewykonany. Wynik jest fixture, principal i protected storage są symulowane na granicy testu. Brak nowego ENFORCED, Lane/StageCompletion, STOP, NF02 closure lub full lifecycle PASS. |
+
+Dokładny pakiet decyzji/configuration: [NF02_P0_QUALIFICATION_REQUEST.md](NF02_P0_QUALIFICATION_REQUEST.md). Komendy, zakresy weryfikacji, source hashes i unqualified build: [NF02_P0_IMPLEMENTATION_EVIDENCE.json](NF02_P0_IMPLEMENTATION_EVIDENCE.json). Poprzedni evidence JSON pozostał bez zmian.
+
+Rzeczywisty source bug był w `AuditOperationApi.create_campaign`, gdzie kopiowano commit do tree. API używa teraz istniejącego verified resolvera przed tworzeniem DB. Test sprawdza oba polecenia Git i zaakceptowany SourceIdentity. Checkpoint poprawki `4e4554dd6ea955f8669e63ea8b6b982200691396` ma tree `f19d4f895377ccf5218af867d0cc87c77871c273`; historyczne raporty nie zostały zmienione.
+
+Zatwierdzenie `OWNER_R5_4_2_SEMANTIC_CLOSURE_APPROVAL.json` wymaga fresh Q1 exact R5.4.2 i graph 131. Aktualny autonomous checkpoint nadal nie ma materializowanego candidate, Q1/Q2 ani zakończonej semantic parity. Minimalny żądany wire protocol /1 → /2 → /2 nie jest aliasem późniejszych wersji w pełnym draft R5.4.2. Finalne compatible pins/codecs wymagają wskazanej w pakiecie decyzji o zakresie; nie należy ich zgadywać ani aktywować predecessor Q1. N4 oraz N5–N9 są częścią wymaganej aktywacji/guard proof. N10 zamyka NF02, N11 kwalifikuje całą aplikację; nie dodano N11 jako warunku pierwszego wyniku.
+
+Właściciel wybrał strategię 2: przygotowanie konkretnej formalnej propozycji osobnego minimalnego successor P0 z pełnym dependency closure, wersjami, wpływem i porównaniem nakładu. Ta decyzja strategiczna nie zatwierdza nowej normy. Pełny R5.4.2/131 pozostaje bez zmian. Najmniejszy następny krok to przedstawić ten zakres do zatwierdzenia; potem potrzebne są finalne compatible candidate/pins, dopasowanie codeców, fresh Q1/Q2, niezależny kwalifikator/producent i chroniona podpisana instalacja. Samo utworzenie root.json lub podpisanie request nie włącza importu.
+
+Szersza affected regresja istniejącego produktu: **274 PASS**, w tym Store/F1/F2, runner, product, E1 freeze/isolation i standalone clean environment. Dodatnia ścieżka ma własne targeted evidence, oddzielone od tych wyników. Zamrożone legacy self-testy potrzebowały normalnego kontekstu Windows po potwierdzonym WinError 5 w sandboxie; kodu i kryteriów nie zmieniano. Nie wykonano merge, push, release ani zmian frozen materiałów.
+
+## Historyczny checkpoint 00ef7b0 — zachowany opis poprzedniego stanu
+
+Poniższy zapis dotyczy stanu sprzed implementacji dodatniego adaptera. Bieżący stan i ograniczenia są w sekcji powyżej; historyczne dowody nie otrzymują nowego zakresu PASS.
+
 2026-10-11. Repo: `C:\Projekty\Audyty\BDB Audit`. Gałąź robocza: `work/nf02-runtime-completion`, utworzona od `e75f14ed443d6d6c7f60359687938c1fb6b062c0`. Zastane pliki untracked i historyczne materiały zachowano. Nie wykonano push, merge, release ani zmian frozen źródeł.
 
 Pierwszy lokalny checkpoint napraw: `b01eb89`. Dalsza delta zamyka obejście przez zdarzenia Store, potwierdzone testem regresji przed poprawką.

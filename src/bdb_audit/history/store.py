@@ -31,6 +31,10 @@ class InjectedCrash(RuntimeError):
     """Named deterministic test-only persistence-boundary fault."""
 
 
+def copy_body(value):
+    return parse(canonical_bytes(value))
+
+
 TARGET_CLASS_MEMBERS = {
     "materiality_subject_ref": {"surface_record", "surface_key", "invariant_revision", "materiality_subject_ref"},
     "typed_scope_ref": {"surface_record", "surface_key", "invariant_revision", "finding_claim_revision", "scope_state_record", "typed_scope_ref"},
@@ -69,6 +73,14 @@ class TransactionalHistoryStore:
 
     def __init__(self, path, *, schema_bindings=None, registry=None, crash_hook=None):
         self.path = str(path)
+        self._nf02 = None
+        from pathlib import Path
+        if Path(path).is_file():
+            with sqlite3.connect(self.path) as existing:
+                table = existing.execute("SELECT name FROM sqlite_master WHERE name='immutable_objects'").fetchone()
+                row = existing.execute("SELECT schema_ref FROM immutable_objects LIMIT 1").fetchone() if table else None
+                if row and isinstance(row[0], bytes):
+                    raise ValidationError("NF02_INSTALLED_READER_REQUIRED")
         self.registry = registry or ContractRegistry()
         # Bind every foundation kind up front.  This is still a prerequisite
         # substrate (M10 qualification is separate), but no accepted closure
@@ -78,6 +90,42 @@ class TransactionalHistoryStore:
         if crash_hook is not None and not callable(crash_hook):
             raise TypeError("crash_hook must be callable")
         self._initialize()
+
+    @classmethod
+    def open_nf02(cls, path, *, crash_hook=None):
+        """Open only through the independently installed machine authority.
+
+        No public registry, profile, token issuer or injected authority option
+        can activate this path. Missing authority fails before touching SQLite.
+        """
+        from .nf02_protocol import NF02Protocol
+        runtime = NF02Protocol.installed()
+        store = cls.__new__(cls)
+        store.path, store._nf02 = str(path), runtime
+        store.registry, store.schemas, store.crash_hook = runtime.registry, runtime.schemas, crash_hook
+        if crash_hook is not None and not callable(crash_hook):
+            raise TypeError("crash_hook must be callable")
+        from pathlib import Path
+        if Path(path).is_file():
+            with sqlite3.connect(store.path) as existing:
+                table = existing.execute("SELECT name FROM sqlite_master WHERE name='immutable_objects'").fetchone()
+                row = existing.execute("SELECT schema_ref FROM immutable_objects LIMIT 1").fetchone() if table else None
+                if row and not isinstance(row[0], bytes):
+                    raise ValidationError("NF02_NEW_CAMPAIGN_REQUIRED")
+        with runtime.lease(store.path):
+            store._initialize()
+        return store
+
+    def _decode_object(self, row):
+        if self._nf02 is not None:
+            return self._nf02.object_from_row(row)
+        return CanonicalObject(row[0], json.loads(row[4]), row[2], row[3], row[1])
+
+    def _decode_commit(self, body):
+        return self._nf02.commit(body) if self._nf02 else _commit_from_body(body)
+
+    def _decode_receipt(self, body):
+        return self._nf02.receipt(body) if self._nf02 else _receipt_from_body(body)
 
     def _connect(self):
         con = sqlite3.connect(self.path, isolation_level=None, timeout=30)
@@ -147,7 +195,7 @@ class TransactionalHistoryStore:
             row = con.execute("SELECT body FROM receipts WHERE command_id=?", (command_id,)).fetchone()
             if not row:
                 return None
-            return _receipt_from_body(json.loads(row[0]))
+            return self._decode_receipt(json.loads(row[0]))
         finally:
             con.close()
 
@@ -164,7 +212,7 @@ class TransactionalHistoryStore:
             row = con.execute("SELECT kind,version,schema_ref,logical_id,body FROM immutable_objects WHERE digest=?", (digest,)).fetchone()
             if not row:
                 return None
-            return {"kind": row[0], "version": row[1], "schema_revision_ref": row[2],
+            return {"kind": row[0], "version": row[1], "schema_revision_ref": parse(row[2]) if isinstance(row[2], bytes) else row[2],
                     "logical_id": row[3], "revision_digest": digest, "body": json.loads(row[4])}
         finally:
             con.close()
@@ -176,6 +224,30 @@ class TransactionalHistoryStore:
         commit chain, cut context and complete typed identity before returning.
         This read creates no grant or other authority.
         """
+        from .objects import ObjectRef
+        if self._nf02:
+            con = self._connect()
+            try:
+                con.execute("BEGIN")
+                head_row = con.execute("SELECT campaign_id,seq,commit_hash FROM accepted_head WHERE singleton=1").fetchone()
+                if not head_row:
+                    raise ValidationError("ACCEPTED_HISTORY_CUT_NOT_FOUND")
+                head = AcceptedHead(*head_row)
+                records, _, commits = self._nf02.history(con, head)
+                seq = cut.get("accepted_head_seq")
+                if type(seq) is not int or not 1 <= seq <= head.commit_seq:
+                    raise ValidationError("ACCEPTED_HISTORY_CUT_NOT_FOUND")
+                selected = commits[seq - 1]
+                expected = self._nf02.cut(AcceptedHead(head.campaign_id, seq, self._nf02.commit(selected).digest), selected)
+                if cut != expected or require_current and seq != head.commit_seq:
+                    raise ValidationError("HISTORY_CUT_INPUT_MISMATCH")
+                record = self._nf02.resolve(records, ref.as_dict() if isinstance(ref, ObjectRef) else ref)
+                if record["seq"] > seq:
+                    raise ValidationError("OBJECT_NOT_ACCEPTED_AT_CUT")
+                self._nf02.retained(con, record["object"])
+                return {"body": copy_body(record["object"].body), "accepted_seq": record["seq"], "ref": copy_body(record["ref"])}
+            finally:
+                con.close()
         from .objects import ObjectRef
         ref = ref.as_dict() if isinstance(ref, ObjectRef) else ref
         typed = ObjectRef.from_dict(ref)
@@ -231,12 +303,15 @@ class TransactionalHistoryStore:
     def read_accepted_raw(self, ref, cut):
         """Read exact retained bytes only through an accepted typed object ref."""
         record = self.resolve_accepted(ref, cut)
-        obj = CanonicalObject(record["ref"]["kind"], record["body"],
-                              record["ref"]["schema_revision_ref"], record["ref"].get("logical_id"))
+        if self._nf02:
+            stored = self.object_record(record["ref"]["revision_digest"])
+            obj = self._nf02.object(stored["kind"], stored["body"], stored["version"], stored["logical_id"], stored["schema_revision_ref"])
+        else:
+            obj = CanonicalObject(record["ref"]["kind"], record["body"], record["ref"]["schema_revision_ref"], record["ref"].get("logical_id"))
         con = self._connect()
         try:
             from .raw_artifacts import retained_raw_for_object
-            artifacts = retained_raw_for_object(con, obj)
+            artifacts = self._nf02.retained(con, obj) if self._nf02 else retained_raw_for_object(con, obj)
             if not artifacts:
                 raise ValidationError("RAW_ARTIFACT_REFERENCE_REQUIRED")
             return artifacts
@@ -773,28 +848,57 @@ class TransactionalHistoryStore:
                 raise ValidationError("OBJECT_REQUIRED")
             rows.append((obj.digest, obj.kind, obj.version, obj.schema_revision_ref,
                          obj.logical_id, canonical_bytes(obj.body)))
+        if self._nf02:
+            rows = [(d, k, v, canonical_bytes(s), lid, raw) for d, k, v, s, lid, raw in rows]
         return rows
 
     def accept(self, command: CommandEnvelope, expected_head=None, *, immutable_objects=(),
-               ordered_events=(), bootstrap_profile=None, expected_closure=None):
+               ordered_events=(), bootstrap_profile=None, expected_closure=None,
+               authentication=None, raw_artifacts=None):
+        if self._nf02:
+            from .successor_wire import SuccessorCommand
+            if not isinstance(command, SuccessorCommand) or command.runtime is not self._nf02:
+                raise ValidationError("NF02_INSTALLED_COMMAND_REQUIRED")
+            # Frozen dataclasses can still contain caller-owned mutable dicts.
+            # Pin the command before crossing the independently verified lease.
+            command = SuccessorCommand(**command.body(), runtime=self._nf02)
+            with self._nf02.lease(self.path) as leased:
+                return self._accept(command, expected_head, immutable_objects=immutable_objects, ordered_events=ordered_events,
+                                    bootstrap_profile=bootstrap_profile, expected_closure=expected_closure,
+                                    authentication=authentication, raw_artifacts=raw_artifacts, leased=leased)
+        if authentication is not None or raw_artifacts:
+            require_external_ingestion_authority()
+        return self._accept(command, expected_head, immutable_objects=immutable_objects, ordered_events=ordered_events,
+                            bootstrap_profile=bootstrap_profile, expected_closure=expected_closure)
+
+    def _accept(self, command, expected_head=None, *, immutable_objects=(), ordered_events=(),
+                bootstrap_profile=None, expected_closure=None, authentication=None, raw_artifacts=None, leased=None):
         if not isinstance(command, CommandEnvelope):
             raise ValidationError("COMMAND_REQUIRED")
         # Consume generators once and validate/persist one private deep snapshot.
         # A caller retaining its event dictionaries cannot change them after
         # transition validation and before commit durability.
         ordered_events = tuple(parse(canonical_bytes(list(ordered_events))))
-        require_qualified_transition_authority(ordered_events)
+        if self._nf02 is None:
+            require_qualified_transition_authority(ordered_events)
         objects = list(immutable_objects)
         if any(not isinstance(o, CanonicalObject) for o in objects):
             raise ValidationError("OBJECT_REQUIRED")
-        if command.command_kind == "INGEST_EXTERNAL_LANE_RESULT" or any(
+        if self._nf02 is None and (command.command_kind == "INGEST_EXTERNAL_LANE_RESULT" or any(
             obj.kind in EXTERNAL_RESULT_KINDS for obj in objects
-        ):
+        )):
             require_external_ingestion_authority()
+        if self._nf02:
+            from .successor_wire import SuccessorObject
+            if any(not isinstance(obj, SuccessorObject) or obj.runtime is not self._nf02 for obj in objects):
+                raise ValidationError("NF02_INSTALLED_OBJECT_REQUIRED")
+            objects = [self._nf02.object(obj.kind, obj.body, obj.version, obj.logical_id, obj.schema_revision_ref) for obj in objects]
+            raw_artifacts = dict(raw_artifacts or {})
         command_obj = command.as_object()
         if not any(isinstance(o, CanonicalObject) and o.digest == command_obj.digest for o in objects):
             objects.insert(0, command_obj)
-        self._check_schema_bindings(objects, command)
+        if not self._nf02:
+            self._check_schema_bindings(objects, command)
         self._validate_object_schemas(objects)
         con = self._connect()
         try:
@@ -806,9 +910,18 @@ class TransactionalHistoryStore:
                 receipt_row = con.execute("SELECT body FROM receipts WHERE command_id=?", (command.command_id,)).fetchone()
                 if receipt_row is None:
                     raise ValidationError("RECEIPT_MISSING_FOR_INDEX")
-                receipt = _receipt_from_body(json.loads(receipt_row[0]))
+                receipt = self._decode_receipt(json.loads(receipt_row[0]))
+                if receipt.command_ref.revision_digest != command.digest or receipt.command_id != command.command_id or receipt.digest != row[1]:
+                    raise ValidationError("RECEIPT_INTEGRITY_BLOCKED")
                 commit_body = json.loads(con.execute("SELECT body FROM commits WHERE commit_hash=?", (receipt.accepted_head.commit_hash,)).fetchone()[0])
-                commit = _commit_from_body(commit_body)
+                commit = self._decode_commit(commit_body)
+                if commit.digest != receipt.accepted_head.commit_hash:
+                    raise ValidationError("RECEIPT_INTEGRITY_BLOCKED")
+                if self._nf02:
+                    head_row = con.execute("SELECT campaign_id,seq,commit_hash FROM accepted_head WHERE singleton=1").fetchone()
+                    self._nf02.validate(con=con, current=AcceptedHead(*head_row), command=command, objects=objects,
+                                        events=list(ordered_events), raw_artifacts=raw_artifacts, leased=leased,
+                                        authentication=authentication, retry=True)
                 from .raw_artifacts import retained_raw_for_object
                 for ref in commit.immutable_object_refs:
                     if ref.kind not in {"lane_result_admission_evidence", "bdb_audit_lane_result"}:
@@ -819,18 +932,30 @@ class TransactionalHistoryStore:
                     ).fetchone()
                     if stored is None:
                         raise ValidationError("VAULT_INTEGRITY_BLOCKED", "Missing accepted result/evidence")
-                    obj = CanonicalObject(stored[0], json.loads(stored[4]), stored[2], stored[3], stored[1])
+                    obj = self._decode_object(stored)
                     if obj.ref.as_dict(ref_class=ref.ref_class) != ref.as_dict():
                         raise ValidationError("VAULT_INTEGRITY_BLOCKED", "Corrupt accepted result/evidence")
-                    retained_raw_for_object(con, obj)
+                    if self._nf02:
+                        self._nf02.retained(con, obj)
+                    else:
+                        retained_raw_for_object(con, obj)
                 con.rollback()
                 return AcceptanceResult(commit, receipt, receipt.accepted_head, True)
 
             current_row = con.execute("SELECT campaign_id,seq,commit_hash FROM accepted_head WHERE singleton=1").fetchone()
             current = AcceptedHead(*current_row) if current_row else None
-            seq, parent = self._expected(expected_head, current)
-            self._validate_semantic_authority(objects, command, bootstrap_profile, current, con)
-            if command.command_kind == "INITIALIZE_CAMPAIGN_FROM_LEGACY":
+            if self._nf02:
+                seq, parent = (current.commit_seq + 1, current.as_dict()) if current else (1, "EMPTY_HISTORY")
+                expected = expected_head.as_dict() if isinstance(expected_head, AcceptedHead) else expected_head
+                if expected is not None and expected != parent:
+                    raise ValidationError("EXPECTED_HEAD_CONFLICT")
+                verified_raw, authorization_scope = self._nf02.validate(con=con, current=current, command=command, objects=objects,
+                                                  events=list(ordered_events), raw_artifacts=raw_artifacts,
+                                                  leased=leased, authentication=authentication)
+            else:
+                seq, parent = self._expected(expected_head, current)
+                self._validate_semantic_authority(objects, command, bootstrap_profile, current, con)
+            if not self._nf02 and command.command_kind == "INITIALIZE_CAMPAIGN_FROM_LEGACY":
                 if seq != 1 or parent != EMPTY_HISTORY:
                     raise ValidationError("INITIALIZATION_ALREADY_COMPLETED")
                 if bootstrap_profile is None:
@@ -838,26 +963,27 @@ class TransactionalHistoryStore:
                 if command.bootstrap_profile_ref != bootstrap_profile.profile_ref:
                     raise ValidationError("BOOTSTRAP_PROFILE_BINDING_MISMATCH")
                 self._validate_bootstrap_closure(objects, bootstrap_profile)
-            elif seq == 1:
+            elif not self._nf02 and seq == 1:
                 raise ValidationError("INITIALIZATION_REQUIRED")
             if any(obj.kind == "lane_result_admission_evidence" for obj in objects):
                 if command.command_kind != "INGEST_EXTERNAL_LANE_RESULT":
                     raise ValidationError("LANE_RESULT_ADMISSION_COMMAND_REQUIRED")
-            if command.command_kind == "INGEST_EXTERNAL_LANE_RESULT":
+            if not self._nf02 and command.command_kind == "INGEST_EXTERNAL_LANE_RESULT":
                 if any(obj.kind != "lane_result_admission_evidence" for obj in objects if obj.kind != "command_envelope"):
                     raise ValidationError("UNAUTHORIZED_PRODUCER_AUTHORITY")
             if command.expected_parent_head != parent:
                 raise ValidationError("COMMAND_BINDING_CONFLICT")
             if current is not None and command.campaign_ref != current.campaign_id:
                 raise ValidationError("CAMPAIGN_NOT_PRIOR_ACCEPTED")
-            self._validate_history_cuts(objects, seq=seq, current=current,
-                                        profile=bootstrap_profile, con=con)
+            if not self._nf02:
+                self._validate_history_cuts(objects, seq=seq, current=current, profile=bootstrap_profile, con=con)
             campaign_id = command.proposed_campaign_id if seq == 1 else command.campaign_ref
             if not campaign_id:
                 raise ValidationError("CAMPAIGN_ID_REQUIRED")
-            self._validate_content_refs(objects, con)
-            verified_raw = {}
-            for obj in objects:
+            if not self._nf02:
+                self._validate_content_refs(objects, con)
+                verified_raw = {}
+            for obj in objects if not self._nf02 else ():
                 raw_snapshot = self._validate_material_ref_contracts(
                     obj,
                     current=current,
@@ -872,38 +998,45 @@ class TransactionalHistoryStore:
                     self._validate_stop_snapshot_binding(obj, objects, con)
                     from ..stop.authority import validate_stop_input_accepted_authority
                     validate_stop_input_accepted_authority(obj, current=current, con=con)
-            self._validate_stop_evaluation_outcomes(objects, con)
+            if not self._nf02:
+                self._validate_stop_evaluation_outcomes(objects, con)
             from ..orchestration.fsm import project_states
             prior_events = [event for (raw,) in con.execute("SELECT body FROM commits ORDER BY seq")
                             for event in json.loads(raw)["ordered_event_bodies"]]
             transition_events = [event for event in prior_events + list(ordered_events)
                                  if isinstance(event, dict) and any(key in event for key in ("aggregate", "from_state", "to_state"))]
-            project_states(transition_events)
+            if not self._nf02:
+                project_states(transition_events)
             closure_nodes = [ClosureNode.from_object(o, node_id=o.digest) for o in objects]
             ordered_ids = canonical_order(
                 closure_nodes, command_kind=command.command_kind, commit_seq=seq,
-                expected_parent="EMPTY_HISTORY" if parent == EMPTY_HISTORY else ACCEPTED_HEAD_REF,
+                expected_parent="EMPTY_HISTORY" if seq == 1 else ACCEPTED_HEAD_REF,
                 expected=expected_closure, registry=self.registry)
             ordered_refs = tuple(next(o.as_ref(ref_class="CONTENT_OBJECT") for o in objects if o.digest == d) for d in ordered_ids)
             if command_obj.digest not in ordered_ids:
                 raise ValidationError("COMMAND_NOT_IN_CLOSURE")
             if seq == 1 and ordered_ids.index(command_obj.digest) != 0:
                 raise ValidationError("COMMAND_MUST_PRECEDE_DOMAIN_OBJECTS")
-            commit = CommitBody(
+            from .successor_wire import SuccessorCommit, SuccessorReceipt
+            commit_cls = SuccessorCommit if self._nf02 else CommitBody
+            commit = commit_cls(
                 campaign_id=campaign_id, commit_seq=seq,
                 prev_history_ref=parent, command_ref=command_obj.as_ref(ref_class="CONTENT_OBJECT"),
                 command_digest=command.digest, actor_ref=command.actor_ref,
                 expected_parent_head=parent,
                 governing_policy_ref=command.governing_policy_ref,
                 governing_spec_refs=tuple(command.governing_spec_refs),
-                ordered_event_bodies=tuple(ordered_events), immutable_object_refs=ordered_refs)
+                ordered_event_bodies=tuple(ordered_events), immutable_object_refs=ordered_refs,
+                **({"runtime": self._nf02} if self._nf02 else {}))
             commit_digest = commit.digest
             head = AcceptedHead(campaign_id, seq, commit_digest)
-            receipt = CommandReceipt(command.command_id, command_obj.as_ref(ref_class="CONTENT_OBJECT"), ordered_refs,
+            receipt_cls = SuccessorReceipt if self._nf02 else CommandReceipt
+            receipt = receipt_cls(command.command_id, command_obj.as_ref(ref_class="CONTENT_OBJECT"), ordered_refs,
                                      {"kind": "commit_body", "revision_digest": commit_digest,
                                       "digest_profile": "BDB-OBJECT-DIGEST-1",
-                                     "schema_revision_ref": self.registry.contract("commit_body")["schema_ref"],
-                                      "ref_class": "POST_ACCEPTANCE_SIDECAR"}, head)
+                                     "schema_revision_ref": self._nf02.schema_ref("commit_body") if self._nf02 else self.registry.contract("commit_body")["schema_ref"],
+                                      **({} if self._nf02 else {"ref_class": "POST_ACCEPTANCE_SIDECAR"})}, head,
+                                  **({"runtime": self._nf02} if self._nf02 else {}))
             self.schemas.validate_schema("commit_body", canonical_bytes(commit.body()))
             self.schemas.validate_schema("command_receipt", canonical_bytes(receipt.body()))
             self._hook("before_object_durability")
@@ -935,6 +1068,8 @@ class TransactionalHistoryStore:
                 if updated != 1:
                     raise ValidationError("EXPECTED_HEAD_CONFLICT")
             self._hook("after_head_durability")
+            if self._nf02:
+                self._nf02.authority.authenticate(leased, command, authentication, authorization_scope)
             con.commit()
             self._hook("after_commit_durability_before_ack")
             return AcceptanceResult(commit, receipt, head)
@@ -946,7 +1081,19 @@ class TransactionalHistoryStore:
 
     def rebuild_projection(self):
         """Rebuild a derived sequence solely from canonical commits."""
-        result = {"campaign_id": None, "state": "CREATED", "events": []}
+        if self._nf02:
+            con = self._connect()
+            try:
+                head = self.head()
+                if head is None:
+                    return {"campaign_id": None, "state": "CREATED", "events": []}
+                records, events, commits = self._nf02.history(con, head)
+                projected = self._nf02.projected_events(events, records)
+                return {"campaign_id": head.campaign_id,
+                        "state": self._nf02.state(projected, "Campaign", head.campaign_id, "CREATED"), "events": events}
+            finally:
+                con.close()
+        result: dict[str, Any] = {"campaign_id": None, "state": "CREATED", "events": []}
         for body in self.commits():
             if result["campaign_id"] is None:
                 result["campaign_id"] = body["campaign_id"]

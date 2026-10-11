@@ -1,7 +1,7 @@
 """One deterministic Kahn ordering for typed plus order-only bootstrap edges."""
 from dataclasses import dataclass, field
 import heapq
-from typing import Any
+from typing import Any, cast
 
 from ..core.errors import ValidationError
 from ..core.registry import ContractRegistry
@@ -46,7 +46,7 @@ def _node(value):
             raise ValidationError("TYPED_REF_INCOMPLETE")
         return ClosureNode(node_id=node_id, kind=value.get("kind", ""),
                            logical_id=value.get("logical_id", ""),
-                           revision_digest=value.get("revision_digest", value.get("digest", "")),
+                           revision_digest=cast(str, value.get("revision_digest", value.get("digest", ""))),
                            depends_on=deps, value=value)
     raise ValidationError("CLOSURE_NODE_INVALID")
 
@@ -119,6 +119,11 @@ def typed_dependencies(nodes):
                 code,
                 f"{n.kind} consumes same-commit {ref.kind} through PRIOR_ACCEPTED_ONLY",
             )
+        # Successor wire refs carry reference classes in the exact schema,
+        # not as caller-editable fields inside the typed identity.
+        for ref in getattr(n.value, "prior_content_refs", ()):
+            if (ref.kind, ref.revision_digest) in by_ref:
+                raise ValidationError("BACKWARD_REF_NOT_PRIOR_ACCEPTED", n.kind)
     return prepared, edges
 
 
@@ -134,7 +139,7 @@ def canonical_order(nodes, *, command_kind=None, commit_seq=None,
             raise ValidationError("DUPLICATE_CONTENT_REFERENCE", n.node_id)
         if not n.kind:
             raise ValidationError("UNREGISTERED_CONTRACT_KIND")
-        registry.contract(n.kind)
+        registry.contract(n.kind, n.value.version if isinstance(n.value, CanonicalObject) else "1")
         by_id[n.node_id] = n
     if command_kind is not None:
         if commit_seq is None or expected_parent is None:
@@ -143,7 +148,7 @@ def canonical_order(nodes, *, command_kind=None, commit_seq=None,
             prepared, command_kind=command_kind, commit_seq=commit_seq,
             expected_parent=expected_parent, profile_name=profile_name)
         edges.update(order_edges)
-    adjacency = {n.node_id: set() for n in prepared}
+    adjacency: dict[str, set[str]] = {n.node_id: set() for n in prepared}
     indegree = {n.node_id: 0 for n in prepared}
     for dep, consumer in edges:
         if dep not in by_id or consumer not in by_id:

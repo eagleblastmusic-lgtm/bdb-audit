@@ -1,0 +1,59 @@
+# NF02 P0 — unsigned implementation / qualification decision packet
+
+2026-10-11. **NOT AUTHORITY; NOT QUALIFIED; DO NOT INSTALL AS ROOT.** Exact inputs/code/tests są w `NF02_P0_IMPLEMENTATION_EVIDENCE.json`. Nie wygenerowano certyfikatów, signatures, rootów, qualification PASS ani rzeczywistego accepted wyniku zewnętrznego.
+
+## Decyzja właściciela
+
+**Aktualizacja po bezpośredniej odpowiedzi właściciela 2026-10-11:** wybrano strategię 2 wyłącznie do przygotowania i przedstawienia formalnego zakresu osobnego successor P0. To nie jest zatwierdzenie nowej normy ani waiver Q1/Q2/authority. Pełny R5.4.2, graph 131 i jego zatwierdzenie pozostają bez zmian. Odrębny proposal musi wyznaczyć exact transitive dependency closure, wersje, globalne zależności oraz nakład pracy; jeśli wymaga wszystkich 131 lub nie daje się kwalifikować osobno, potrzebna jest dalsza decyzja właściciela. Poniższe porównanie opcji pozostaje materiałem tej decyzji.
+
+Żądany protokół binding/1 → osobny STARTED → evidence/2 → result/2, SchemaRegistry/2 jest zaimplementowany przez istniejący writer. Pełne późniejsze drafty R5.4.2 przewidują kolejne wersje, CommandEnvelope/2, bootstrap precedence V2 oraz rozszerzone source/trust/build contracts. Nie są zakwalifikowanymi drop-in zamiennikami obecnych danych. Nie zastosowano aliasów ani automatycznej reinterpretacji.
+
+Wiążąca zależność pełnego Q1: `docs/R5_4_2/OWNER_R5_4_2_SEMANTIC_CLOSURE_APPROVAL.json`, `approved_graph_counts.reachable_canonical_kinds=131`, `approved_scope`, `runtime_start_condition=Successful fresh Q1 for exact R5.4.2`. `autonomous_2026_10_07/design/CANDIDATE_QUALIFICATION_ORDER_REVIEW.md` rozdziela construction od activation; nie zwalnia z complete semantic parity. Aktualny `RESUMED_WORK_CHECKPOINT.json` nadal ma 131 pending semantic nodes, candidate NOT_MATERIALIZED i Q1/Q2/N5–N11 NOT_STARTED. Historyczny raport SPEC_CONFLICT z 6 października nie jest finalnym raportem późniejszego candidate; późniejsze draft PASS także go nie zastępują.
+
+Właściciel wybiera:
+
+1. **Zachowanie zatwierdzonego pełnego R5.4.2 (rekomendacja bez zmiany wcześniejszej decyzji).** Obowiązuje pełny graph 131 i jego finalne exact wersje/pins. Obecne authority/raw/writer/chronology/delivery/test components są przygotowane do wykorzystania; wymagają dopasowania do frozen successor codecs i jego pełnych predicates. Nie wykonano ponownie ogólnego audytu 131 kontraktów.
+2. **Jawny osobny minimalny successor dla pierwszego P0.** Wymaga formalnej zmiany zakresu/wersji, dokładnego impact/dependency closure, nowego manifest/readback i fresh qualification. Nie wolno pominąć zależnych bootstrap/source/knowledge/authority obligations ani przenieść starego Q1. Ta decyzja nie została podjęta samowolnie.
+
+To kompletny pakiet do wskazanej decyzji, a nie nieistniejący pełny candidate Q1. Po decyzji można przygotować dokładnie wybraną kwalifikację/integrację pins; dopiero po jej pomyślnym niezależnym wykonaniu i instalacji możliwy jest pierwszy rzeczywiście autoryzowany wynik. Nie istnieje uczciwe pojedyncze polecenie „włącz import” dla obecnego niekwalifikowanego draftu.
+
+## Podstawa, evidence i zatwierdzający
+
+| Obowiązek | Exact wejście / istniejący dowód | Brak i wymagany zatwierdzający |
+| --- | --- | --- |
+| Data §15.1, §9.1 — independent actor/installation authority | Production OS/CMS adapter, scoped grants, code/history ACL/lease guards, rzeczywiste negative CMS/ACL tests. Actor_ref/request/manifest nie wybierają root. | Właściciel niezależnie identyfikuje instalatora, kwalifikatora i producenta, wiąże rzeczywiste certyfikaty i OS boundary. Brak dostępnych credentials/ustanowionej instalacji. |
+| Data §187.2 i §192.2 — fresh Q1 | Dokładny source/test/normative inventory, zachowane stare qualification bytes; verifier odrzuca historyczny R5.4.1 jako fresh Q1. | Final exact candidate pełnego zatwierdzonego closure, oba set digests, immutable readback/final audit, external AuthorBaselineQualificationRecord/2 i nowa rzeczywista decyzja właściciela o expanded author-only risk. Author-only nie jest independent freeze ani runtime authority. |
+| Data §192 D.3 kroki 1–8; roadmap N1–N4 / Q2 | External schema root przed samowalidacją, bound raw schema bytes, exact initial pins i nowy genesis w teście. | Exact Registry/SchemaRegistry/Golden/profiles, truthful source/legacy/build admission i niezależna foundation governance/Q2. Kwalifikator sprawdza wszystkie obowiązkowe inputs; właściciel zatwierdza exact installation. |
+| Data §192 E.1/E.2; roadmap N5 | Binding/1, full Assignment/context/HistoryCut join, uniqueness/CAS/retry/crash tests. | Niezależne sprawdzenie obowiązkowych vectors na finalnych kwalifikowanych inputs. Fixture principal nie jest authority. |
+| Data §192 E.3–E.5; roadmap N6 | ZIP/raw/semantic rederivation, retained bytes, późniejszy STARTED, serialized synchronous byte handoff, concurrency controls. | Rzeczywisty transport audytora, rzeczywiste source/legacy admission, truthful knowledge/disclosure/isolation. Test używa DECLARED i nie dowodzi ENFORCED. |
+| Data §192 D.2.2/D.2.3/E.2/E.6; roadmap N7 | Późniejsze E/2, następnie R/2 z wcześniejszego E, byte-equal payload, real Store/Coordinator/E1 inbox. | Actual auditor execution/delivery i podpis uprawnionego producenta. Completion/STOP pozostają pod swoimi pełnymi predykatami. |
+| Data §192 H; roadmap N8 | Legacy import BLOCKED, explicit codecs, no upgrade/backfill/alias. | Finalny compatibility/migration review wybranego successor; zachowanie historical readers/pins. |
+| Roadmap N9 | Targeted safety/restart/atomicity/race/crash evidence + 274 affected legacy regressions; exact hashes. | Independent adversarial review wszystkich frozen vectors, packaged/direct/production entry points i obowiązkowych process/environment controls. Lokalny pytest nie jest N9 qualification. |
+| Roadmap N10/N11 | Bez nowego PASS. N10 zamyka NF02; N11 kwalifikuje pełny lifecycle E1–E6/report/recovery. | Oddzielna późniejsza kwalifikacja. N11 nie jest dodatkowym warunkiem pierwszego P0 result. |
+
+Full Q1 denominator wynika z zatwierdzonego graph 131. Local implementation proof ma denominator rzeczywiście uruchomionych testów. Źródłowe wymagania: `docs/R5_4_1/candidate/BDB_AUDIT_V2_DATA_AND_ARTIFACT_CONTRACTS_R5_4.md` §187.2/§192 oraz odpowiadający roadmap N1–N11; późniejsze owner-approved decisions pozostają binding i unqualified aż do fresh exact qualification.
+
+## Rzeczywisty punkt ustanowienia authority
+
+Adapter jest wyłącznie czytnikiem. Po niezależnej kwalifikacji rzeczywisty właściciel/instalator ustanawia administrator-owned pliki w OS CommonAppData, odczytanym przez SHGetFolderPathW(CSIDL_COMMON_APPDATA):
+
+- `BDB Audit/NF02/root.json`: exact schema `BDB_NF02_MACHINE_ROOT/1`, `owner_certificate_sha256`, `qualifier_certificate_sha256`, `installation_sha256`. Fingerprints to SHA-256 rzeczywistych DER certificates uzyskanych niezależnym kanałem. Owner i qualifier mają być faktycznie niezależni, z różnymi certyfikatami; certyfikat producenta nie może być żadnym z nich.
+- `installation.json` + detached `installation.p7s`: właściciel podpisuje oryginalne bytes przez CMS/SHA-256. Exact fields: `schema=BDB_NF02_INSTALLATION/1`, `activation=QUALIFIED_NEW_CAMPAIGNS_ONLY`, `files`, `candidate_manifest`, `pin_bundle`, `qualification`, `grants`, `implementation`, `bootstrap_packets`, `context_packets`.
+- `files`: relative POSIX path → `{sha256,bytes}` wszystkich candidate/schema/profile/governance/evidence assets. Nie może obejmować własnego root/installation preimage lub tworzyć cyklu własnego hasha. Loader ponownie odczytuje oba candidate sets i actual schema/root bytes.
+- `qualification`: relative path do independent external attestation i osobnego `<path>.p7s`. Binds `candidate_manifest_sha256`, `normative_candidate_set_digest`, `machine_candidate_set_digest`, `implementation`, `gates`. Wymagane pierwszemu wynikowi: `Q1,Q2,N4,N5,N6,N7,N8,N9`; każda gate podaje actual `verdict,evidence_file,evidence_sha256`. Q1 evidence musi być external record/2 pod exact governance schema, z kompletnym readback/retained final audit/owner decision; sam PASS label nie wystarcza. Full successor schema bindings muszą pokrywać pełny Registry.
+- `implementation`: wszystkie rzeczywiste `.py`/`.json` wdrożonego `bdb_audit`, relative paths → SHA-256. HEAD nie zastępuje tych bytes. Kod, root i historia wykluczają executor-write; loader sprawdza owner/ACL/reparse i trzyma file/directory handles przeciw write/delete/rename. Full-host rollback nie jest gwarantowany przez lokalny mechanizm.
+- `grants`: dokładnie `actor_ref,campaign_id,operations,scope,not_before,not_after,certificate_sha256`. Ograniczony przedział z timezone. Scope normalnych facts/start/delivery: pełny `assignment_ref` i exact `result_slot_contract_refs`; bootstrap/context: `{campaign_id,purpose}`. Inny actor/campaign/slot/operation lub utrata praw powoduje odmowę. Przed COMMIT i wydaniem bytes authority jest sprawdzana ponownie.
+- `bootstrap_packets`/`context_packets`: campaign ID → exact SHA-256 `NF02Intake.packet_bytes(request)`. Niezależne whitelisty są poza canonical bodies. Finalne legacy/source/trust/build/DAG/knowledge inputs muszą być sprawdzone przed ich zatwierdzeniem. Producent nie dopisuje do nich swoich packets.
+- Historie: wyłącznie chronione `BDB Audit/Campaigns/.../*.sqlite`, przez uprawnioną usługę Coordinator. Nieufny audytor otrzymuje tylko transport; nie uruchamia dowolnego Python kodu w procesie Coordinator i nie zapisuje DB/root/kodu. Caller path do zwykłego writable katalogu nie aktywuje Store.
+
+Nie utworzono tych rootów, kluczy, certificates, CMS ani qualification PASS. Właściciel nie powinien przekazywać sekretów w czacie. Podpisanie samego request nie tworzy brakujących dowodów.
+
+Windows adapter używa [SignedCms](https://learn.microsoft.com/dotnet/api/system.security.cryptography.pkcs.signedcms) i [CreateFileW](https://learn.microsoft.com/windows/win32/api/fileapi/nf-fileapi-createfilew). Te mechanizmy dostarczają signature verification/locking; same nie są qualification authority.
+
+## Użycie po spełnieniu warunków
+
+1. Finalne compatible successor codecs/pins, kwalifikacja i rzeczywista instalacja poprzedzają uruchomienie nowej chronionej kampanii przez `open_nf02`. `prepare_initialization`/`prepare_context` tworzą requests do niezależnego zatwierdzenia/signing; niczego nie kwalifikują. Allowed initialization nadal wymaga qualified legacy/source admission; brak nowego no-legacy profile.
+2. `IntakeRequest.signing_bytes()` zawiera domain `BDB_NF02_AUTHENTICATED_COMMAND/1`, installation identity, exact command digest/scope. Detached CMS jest runtime input poza canonical bodies. Manifest, actor_ref, własny HMAC/certyfikat ani callback nie zastępują grant.
+3. `bind`/`accept` → durable exact raw readback → osobny `start`/`accept` → `delivery_request`/`deliver`, synchronicznie wydający retained bytes pod writer lock. STARTED i CommandReceipt nie dowodzą actual receipt audytora.
+4. Rzeczywisty audytor wykonuje zadanie. E1 `prepare_nf02_ingest` i `ingest_zip(request=...,authentication=...)` przyjmują E/2 z exact dostarczonego ZIP. Następnie `result(evidence_ref=...)` i `accept_nf02_result` wymagają nowej podpisanej komendy i późniejszego commitu.
+5. Dopiero actual execution/retention/restart trace i pełne subordinate checks mogą być niezależnym qualification evidence. Bez automatycznego Lane/StageCompletion, NF02 CLOSED, full audit lub release PASS.

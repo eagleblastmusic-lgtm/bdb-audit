@@ -26,6 +26,7 @@ from ..core.ids import deterministic_id
 from ..core.registry import canonical_reference_set
 from ..history.objects import CanonicalObject, CommandEnvelope, HistoryCut
 from ..history.store import TransactionalHistoryStore
+from .nf02_intake import NF02Intake
 from ..orchestration.native_ensemble import E1_LANE_SLOTS, E1CompletionResult, execute_e1_ensemble
 from ..schemas.foundation import F3_KINDS, foundation_schema_bindings
 from ..schemas.identity import LayeredValidator
@@ -147,7 +148,27 @@ def _translate_zip_error(exc: ValidationError) -> ValidationError:
 
 
 class E1ResultInbox:
+    _nf02_intake: NF02Intake
     """Strict result staging, validation, durable acceptance, and restart recovery."""
+
+    @classmethod
+    def for_nf02(cls, store):
+        """Use the qualified successor Store; no ticket or alternate writer."""
+        inbox = cls.__new__(cls)
+        inbox.store = store
+        inbox._nf02_intake = NF02Intake(store)
+        return inbox
+
+    def prepare_nf02_ingest(self, zip_path, *, actor_ref, assignment_ref, binding_ref, slot_ref, command_id=None):
+        from ..assurance.zip_safety import snapshot, Limits
+        raw = snapshot(zip_path, limits=Limits(input_bytes=64 * 1024 * 1024)).raw
+        return self._nf02_intake.evidence(actor_ref=actor_ref, assignment_ref=assignment_ref, binding_ref=binding_ref,
+                                          slot_ref=slot_ref, result_zip=raw, command_id=command_id)
+
+    def accept_nf02_result(self, request, *, authentication):
+        if len(request.objects) != 1 or request.objects[0].kind != "bdb_audit_lane_result":
+            raise ValidationError("NF02_RESULT_REQUEST_REQUIRED")
+        return self._nf02_intake.accept(request, authentication)
 
     def __init__(self, store: TransactionalHistoryStore, e1_batch: E1Batch):
         self.store = store
@@ -296,8 +317,18 @@ class E1ResultInbox:
             })
         return raw, receipt.raw_digest, members, evidence
 
-    def ingest_zip(self, zip_path: Path | str) -> tuple[str, str, str | None]:
+    def ingest_zip(self, zip_path: Path | str, *, request=None, authentication=None) -> tuple[str, str, str | None]:
         """Stage raw bytes, validate proposal, and accept one result idempotently."""
+        if hasattr(self, "_nf02_intake"):
+            from ..assurance.zip_safety import snapshot, Limits
+            if request is None or authentication is None or len(request.objects) != 1 or request.objects[0].kind != "lane_result_admission_evidence":
+                raise ValidationError("NF02_AUTHENTICATED_EVIDENCE_REQUEST_REQUIRED")
+            raw = snapshot(zip_path, limits=Limits(input_bytes=64 * 1024 * 1024)).raw
+            digest = hashlib.sha256(raw).hexdigest()
+            if request.raw != {digest: raw}:
+                raise ValidationError("NF02_BOUND_RAW_UNAVAILABLE_OR_CHANGED")
+            accepted = self._nf02_intake.accept(request, authentication)
+            return (request.objects[0].body["result_slot_contract_ref"]["profile_id"], "EVIDENCE_ACCEPTED", accepted.commit.digest)
         return self._reject(
             Path(zip_path).resolve(), "UNKNOWN", NF02_BLOCK_CODE,
             NF02_BLOCK_DETAIL, None, "QUALIFIED_ACTIVATION_REQUIRED",

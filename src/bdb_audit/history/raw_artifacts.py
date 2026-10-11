@@ -17,9 +17,11 @@ from .objects import CanonicalObject, ObjectRef
 class AdmissionRawReader:
     """Read and retain one immutable snapshot for an admission's validation."""
 
-    def __init__(self, con, *, require_retained: bool = False):
+    def __init__(self, con, *, require_retained: bool = False, proposed=None, allow_staged: bool = True):
         self.con = con
         self.require_retained = require_retained
+        self.proposed = proposed or {}
+        self.allow_staged = allow_staged
         self.verified: dict[str, bytes] = {}
 
     def read_bytes(self, digest: str) -> bytes:
@@ -34,7 +36,11 @@ class AdmissionRawReader:
             raw = row[1]
             if type(raw) is not bytes or len(raw) != row[0] or hashlib.sha256(raw).hexdigest() != digest:
                 raise ValidationError("VAULT_INTEGRITY_BLOCKED", "Corrupt retained raw artifact: " + digest)
-        elif self.require_retained:
+        elif digest in self.proposed and not self.require_retained:
+            raw = self.proposed[digest]
+            if type(raw) is not bytes or hashlib.sha256(raw).hexdigest() != digest:
+                raise ValidationError("VAULT_INTEGRITY_BLOCKED", "Invalid proposed raw artifact")
+        elif self.require_retained or not self.allow_staged:
             raise ValidationError("VAULT_INTEGRITY_BLOCKED", "Missing retained raw artifact: " + digest)
         else:
             db = self.con.execute("PRAGMA database_list").fetchone()
