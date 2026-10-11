@@ -1,5 +1,34 @@
 # PRODUCT-V1 — aktualny stan NF02 runtime
 
+## BDB_NF02_P0_LIMITED_1 — zatwierdzona norma i implementacja, 2026-10-12
+
+Właściciel zatwierdził **exact model 18 canonical / 7 profiles / 43 schemas, M01–M18 i limity §9**, wraz z przejściem do implementacji oraz Q1/Q2/RQ. Przed niepodpisanym [zapisem otrzymanej decyzji](NF02_P0_LIMITED_MODEL/OWNER_APPROVAL_RECEIVED.md) sprawdzono actual manifest bytes, graf, oba set digests i każdy plik względem `63256bf`: **0 rozbieżności**. Manifest SHA-256 nadal `278d45caa8fe3a814c2d16c3706c93454cdd04676207b3159f57166a611d7ee9`. Zatwierdzenie rozmową nie zostało zamienione w fikcyjny podpis właściciela lub runtime authority.
+
+**Kod dodatniej ścieżki jest zaimplementowany w istniejącej aplikacji.** Checkpointy: `39b2309101b3a5b3528de4aef25ae5e7db55006c` i `6c79aa049ab84cc1d22c53ac4e595947702d0e68`; harness i final Q1 inputs `a2c1a4bc974cd88956c9492c3b48a37562024b1b`. Jeden Store/Coordinator obsługuje approved-Git-only INIT → CREATE → Binding/3 → osobny START → installed release/ACK Delivery → Evidence/4 → późniejszy Result/4. E1 inbox używa tego samego writera. OS authority jest read-only i niezależnie instalowana; exact signed grants, owner/qualifier pins, code/dependency readback, non-admin service/storage, namespace/mode i current rights recheck są obowiązkowe. Producent nie otrzymał publicznego issuera ani fallback importu.
+
+Source resolver P0 dodatkowo sprawdza rzeczywiste typed commit/tree/blob hashes i commit→tree relation; `git replace` nie może podmienić przydzielonego content. Wcześniejsza poprawka pomylenia commit/tree w `AuditOperationApi` pozostaje zachowana. Historycznych raportów nie zmieniono.
+
+| Część P0 | Aktualny status |
+| --- | --- |
+| Norma / exact closure | Zatwierdzona przez właściciela; frozen candidate bytes i R5.4.2/131 nienaruszone |
+| Authority / service / grants | Production adapters i SCM host gotowe; real osoby/klucze/piny i chroniona instalacja **nieustanowione** |
+| Bootstrap / binding / STARTED | Działają przez istniejący centralny Store w lokalnej symulacji authority |
+| Delivery / ACK / raw / E / R | Pełny lokalny przebieg i restart działają; original ZIP retained, ACK/return i E/R joins weryfikowane; real external delivery/audit **niewykonane** |
+| Atomicity / concurrency / recovery | Lokalnie sprawdzone CAS, exact retry, competing binding, final Co/auditor revocation, transaction faults i real subprocess exit/replay |
+| Q1 | Exact 18/7/43 input corpus, vectors, target/predicate/branch inventory i dowody implementacji przygotowane; **formalny author record/PASS niewystawiony** |
+| Q2 / RQ | Pełne wymagane materiały i procedury przekazane; **niezależne review/freeze i real runtime qualification nieuzyskane** |
+| Produkcja / NF02 / lifecycle | **Import BLOCKED; P0 NOT_DELIVERED produkcyjnie; NF02 OPEN; E1–E6 NOT_COMPLETED** |
+
+Affected regresja implementacji: **333 PASS**, następnie celowane kontrole nowych guardów: **5 PASS**, **2 PASS** oraz **15 PASS** qualification-chain probes. Po commicie `a2c1a4b`: **18 PASS / 63 deselected**, w tym pełny E/R/E1/restart i końcowe gates. Wyniki nakładają się; nie sumować ich jako liczby unikatowych przypadków. Ruff PASS; skonfigurowany mypy **56 source files PASS**, dodatkowo wszystkie dziewięć wskazanych modułów history/authority/CLI/service **PASS**. Lokalny Q1 input checker sprawdził 8100 schema vectors, 414 exact-ref vectors oraz 9 DAG ordering probes; Wszystkie 72 finite operation/state cases wykonano lokalnie: **13 accepted / 59 denied bez mutation**, 1 pytest case PASS; OS/CMS/transport nadal symulowane. Nie jest to niezależna kwalifikacja. Pełne komendy, exact source/test/material hashes i granice tych dowodów zawiera [IMPLEMENTATION_EVIDENCE.json](nf02_p0_runtime_qualification/IMPLEMENTATION_EVIDENCE.json).
+
+Kompletny pakiet konfiguracji, wszystkie M01–M18/Q1-01–11/Q2-01–06/RQ-01–32, pliki produkcyjne i rzeczywiste punkty działania właściciela/kwalifikatora/administratora: [QUALIFICATION_HANDOFF.md](nf02_p0_runtime_qualification/QUALIFICATION_HANDOFF.md). Niepodpisany offline installation generator nie aktywuje importu. Kwalifikator i audytor oraz oddzielne hosty nie zostali wskazani; powtórzenie pytania nie ustanowiło tych danych.
+
+Najmniejszy zewnętrzny krok to wskazać rzeczywiste osoby/hosty i ustanowić tożsamości/piny oraz kontrolę kluczy, następnie owner-signed Q1 i niezależne Q2. Pozwoli to wydać dual-signed, czasowy QUALIFICATION_ONLY mandate, wykonać pierwszy legalny rzeczywisty audyt i RQ. Produkcja wymaga później osobnej podpisanej instalacji, nowego namespace i pustej kampanii; nie przenosi qualification receipts/history. Nie wykonano service installation, produkcyjnej aktywacji, push, merge ani release.
+
+## Zachowane archiwum ustaleń poprzednich checkpointów
+
+Poniższe sekcje zachowują ówczesny stan i decyzje. Ich stwierdzenia o niezatwierdzonej normie/niezaimplementowanym modelu oraz dalszym oczekiwaniu na wybór strategii zostały zastąpione aktualnym statusem powyżej; historycznych dowodów ani wcześniejszych approvals nie przepisano.
+
 ## Aktualna decyzja B — jeden ograniczony model do zatwierdzenia, 2026-10-11
 
 Po ujawnieniu pełnego closure 131 właściciel autoryzował **jedną iterację odrębnego modelu**, ze stopem po pakiecie decyzyjnym. Gotowy [MODEL.md](NF02_P0_LIMITED_MODEL/MODEL.md) zawiera całą normę M01–M18, wersje, pięć granic, ryzyka, nakład oraz konkretne brzmienie decyzji. [Graf](NF02_P0_LIMITED_MODEL/DEPENDENCY_GRAPH.json) jest domknięty do **18 canonical contracts, 7 profiles i 43 schemas (18+7+9 wire+9 external)**. Obowiązkowe są **3 kwalifikacje: fresh author Q1, independent Q2/freeze i runtime RQ** z rzeczywistym zewnętrznym audytorem. Exact propozycję wiąże [manifest](NF02_P0_LIMITED_MODEL/CANDIDATE_MANIFEST.json).
