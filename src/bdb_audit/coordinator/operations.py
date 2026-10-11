@@ -77,6 +77,13 @@ class AuditOperationApi:
         commit_sha: str | None = None,
     ) -> dict[str, Any]:
         """Initialize a new campaign with genesis objects in a transactional store."""
+        git_identity = None
+        if target_repo and commit_sha:
+            from ..source.git_resolver import resolve_local_repository, resolve_remote_repository
+            # Prove both object types before creating any campaign files. A
+            # commit-shaped string is not a tree identity.
+            resolver = resolve_local_repository if Path(target_repo).exists() else resolve_remote_repository
+            git_identity = resolver(target_repo, explicit_sha=commit_sha)
         path = Path(store_path).resolve()
         if path.exists() and path.stat().st_size > 0:
             try:
@@ -138,8 +145,8 @@ class AuditOperationApi:
             "completeness_state": "COMPLETE_SOURCE",
         }
         if has_real_git:
-            source_identity_body["git_commit_object_id"] = commit_id
-            source_identity_body["git_tree_object_id"] = commit_id
+            source_identity_body["git_commit_object_id"] = git_identity.commit_object_id
+            source_identity_body["git_tree_object_id"] = git_identity.tree_object_id
 
         source_identity = make("source_identity", source_identity_body)
 

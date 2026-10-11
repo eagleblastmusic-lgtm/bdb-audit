@@ -42,7 +42,13 @@ def _bytes(root: Path):
 def test_start_resume_and_report_bind_real_commit(campaign, capsys):
     store, repo, created = campaign
     sha = subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"], text=True).strip()
+    tree = subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD^{tree}"], text=True).strip()
     assert created["source"]["exact_commit_sha"] == sha
+    from bdb_audit.coordinator.operations import AuditOperationApi
+    identity = AuditOperationApi().get_campaign_source_identity(store)
+    assert identity["git_commit_object_id"] == sha
+    assert identity["git_tree_object_id"] == tree
+    assert sha != tree
     before = _bytes(store.parent)
     assert run_cli(["product", "resume", "--store", str(store), "--json"]) == 0
     resumed = json.loads(capsys.readouterr().out)
