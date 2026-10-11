@@ -116,6 +116,9 @@ def _execute(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def run_product(argv: Sequence[str]) -> int:
+    if argv and argv[0] == "p0":
+        from .product_p0_cli import run_p0
+        return run_p0(list(argv[1:]))
     try:
         args = _parser().parse_args(list(argv))
     except SystemExit as exc:

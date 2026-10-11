@@ -56,7 +56,7 @@ def _powershell(script, data):
         raise ValidationError("NF02_AUTHORITY_VERIFICATION_FAILED") from exc
 
 
-def verify_cms(raw: bytes, signature: bytes, certificate_sha256: str):
+def verify_cms(raw: bytes, signature: bytes, certificate_sha256: str, *, at_time=None):
     """Check a detached CMS against an externally pinned certificate identity.
 
     CheckSignature(true) checks cryptography. Trust comes exclusively from the
@@ -76,7 +76,7 @@ $s=$cms.SignerInfos[0]
 if($s.DigestAlgorithm.Value -ne '2.16.840.1.101.3.4.2.1'){throw 'digest algorithm'}
 $cms.CheckSignature($true)
 $cert=$s.Certificate
-$now=[DateTime]::UtcNow
+$now=if($d.at_time){[DateTime]::ParseExact($d.at_time,'yyyy-MM-ddTHH:mm:ssZ',[Globalization.CultureInfo]::InvariantCulture,([Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal))}else{[DateTime]::UtcNow}
 if($now -lt $cert.NotBefore.ToUniversalTime() -or $now -gt $cert.NotAfter.ToUniversalTime()){throw 'certificate expired'}
 $hash=[Security.Cryptography.SHA256]::Create().ComputeHash($cert.RawData)
 $pin=([BitConverter]::ToString($hash)).Replace('-','').ToLowerInvariant()
@@ -85,7 +85,7 @@ if($pin -cne $d.pin){throw 'certificate pin'}
 """
     if _powershell(script, {"content": base64.b64encode(raw).decode("ascii"),
                             "signature": base64.b64encode(signature).decode("ascii"),
-                            "pin": certificate_sha256}) != "VERIFIED":
+                            "pin": certificate_sha256, "at_time": at_time}) != "VERIFIED":
         raise ValidationError("NF02_AUTHORITY_VERIFICATION_FAILED")
 
 
@@ -120,7 +120,7 @@ foreach($rule in $acl.GetAccessRules($true,$true,[Security.Principal.SecurityIde
 
 
 @contextmanager
-def _locked_file(path, *, directory=False, check_acl=True):
+def _locked_file(path, *, directory=False, check_acl=True, digest_only=False):
     """Deny write/delete until acceptance/delivery has finished (Windows)."""
     kernel = ctypes.WinDLL("kernel32", use_last_error=True)
     kernel.CreateFileW.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD,
@@ -136,10 +136,20 @@ def _locked_file(path, *, directory=False, check_acl=True):
     try:
         if check_acl:
             _protected(path)
-        raw = b"" if directory else path.read_bytes()
-        if len(raw) > 16 * 1024 * 1024:
-            raise ValidationError("NF02_INSTALLATION_RESOURCE_LIMIT")
-        yield raw
+        if digest_only and not directory:
+            digest, size = hashlib.sha256(), 0
+            with path.open("rb") as stream:
+                while chunk := stream.read(1024 * 1024):
+                    size += len(chunk)
+                    if size > 512 * 1024 * 1024:
+                        raise ValidationError("NF02_INSTALLATION_RESOURCE_LIMIT")
+                    digest.update(chunk)
+            yield {"sha256": digest.hexdigest(), "bytes": size}
+        else:
+            raw = b"" if directory else path.read_bytes()
+            if len(raw) > 16 * 1024 * 1024:
+                raise ValidationError("NF02_INSTALLATION_RESOURCE_LIMIT")
+            yield raw
     finally:
         kernel.CloseHandle(handle)
 

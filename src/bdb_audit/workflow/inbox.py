@@ -16,7 +16,9 @@ from ..product_safety import NF02_BLOCK_CODE, NF02_BLOCK_DETAIL
 from dataclasses import dataclass, field
 import hashlib
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Sequence, TYPE_CHECKING
+if TYPE_CHECKING:
+    from .limited_intake import LimitedIntake
 
 from ..assurance.zip_safety import read_bytes as read_zip_bytes
 from ..coordinator import Coordinator
@@ -148,7 +150,7 @@ def _translate_zip_error(exc: ValidationError) -> ValidationError:
 
 
 class E1ResultInbox:
-    _nf02_intake: NF02Intake
+    _nf02_intake: NF02Intake | LimitedIntake
     """Strict result staging, validation, durable acceptance, and restart recovery."""
 
     @classmethod
@@ -159,7 +161,37 @@ class E1ResultInbox:
         inbox._nf02_intake = NF02Intake(store)
         return inbox
 
+    @classmethod
+    def for_p0(cls, store):
+        """Use the same qualified limited-model Store and central predicates."""
+        from .limited_intake import LimitedIntake
+        inbox = cls.__new__(cls)
+        inbox.store = store
+        inbox._nf02_intake = LimitedIntake(store)
+        return inbox
+
+    def prepare_p0_ingest(self, zip_path, *, actor_ref, grant_digest, assignment_ref, binding_ref, delivery_ref,
+                          return_bytes, return_signature, command_id=None):
+        from ..assurance.zip_safety import snapshot, Limits
+        from .limited_intake import LimitedIntake
+        if not isinstance(self._nf02_intake, LimitedIntake):
+            raise ValidationError("P0_INSTALLED_STORE_REQUIRED")
+        raw = snapshot(zip_path, limits=Limits(input_bytes=32 * 1024 * 1024)).raw
+        return self._nf02_intake.evidence(actor_ref=actor_ref, grant_digest=grant_digest, assignment_ref=assignment_ref,
+            binding_ref=binding_ref, delivery_ref=delivery_ref, result_zip=raw, return_bytes=return_bytes,
+            return_signature=return_signature, command_id=command_id)
+
+    def accept_p0_evidence(self, request, *, authentication):
+        if len(request.objects) != 1 or request.objects[0].kind != "lane_result_admission_evidence":
+            raise ValidationError("P0_EVIDENCE_REQUEST_REQUIRED")
+        return self._nf02_intake.accept(request, authentication)
+
+    def accept_p0_result(self, request, *, authentication):
+        return self.accept_nf02_result(request, authentication=authentication)
+
     def prepare_nf02_ingest(self, zip_path, *, actor_ref, assignment_ref, binding_ref, slot_ref, command_id=None):
+        if not isinstance(self._nf02_intake, NF02Intake):
+            raise ValidationError("NF02_INSTALLED_STORE_REQUIRED")
         from ..assurance.zip_safety import snapshot, Limits
         raw = snapshot(zip_path, limits=Limits(input_bytes=64 * 1024 * 1024)).raw
         return self._nf02_intake.evidence(actor_ref=actor_ref, assignment_ref=assignment_ref, binding_ref=binding_ref,
