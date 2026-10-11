@@ -6,6 +6,8 @@ assignment-time authority. Those remain separate admission requirements.
 from __future__ import annotations
 
 import hashlib
+from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 from ..assurance.zip_safety import Limits as ZipLimits, read_bytes as read_zip_bytes
@@ -66,6 +68,10 @@ def derive_result_proposal(
         raise ValidationError("STALE_CUT", "conflicting history context")
     if "admission_evidence_ref" in manifest:
         raise ValidationError("UNAUTHORIZED_PRODUCER_AUTHORITY", "External manifest supplies admission authority")
+    from ..history.authority_hooks import _typed_ref_identity
+    for field, expected in (("assignment_ref", assignment_ref), ("attempt_ref", attempt_ref)):
+        if field in manifest and _typed_ref_identity(manifest[field]) != _typed_ref_identity(expected):
+            raise ValidationError("RESULT_CONTEXT_CLAIM_MISMATCH", field)
 
     if manifest.get("stage_id") == "E1":
         if "findings" in manifest:
@@ -141,3 +147,78 @@ def verify_admission_bytes(body: dict[str, Any], *, vault, assignment: dict[str,
     if not isinstance(source, dict) or str(source.get("exact_commit_sha", "")).lower() != str(body.get("source_commit_sha", "")).lower():
         raise ValidationError("PACKAGE_SOURCE_COMMIT_MISMATCH")
     return proposal
+
+
+def inspect_result_zip(store, batch, path: str | Path) -> dict[str, Any]:
+    """Inspect transport/context without issuing authority, retaining raw or writing history.
+
+    A successful inspection is explicitly untrusted. The package hash is the
+    current product's local receipt, not an accepted assignment-time binding.
+    Stage-specific output semantics and isolation enforcement remain unproved.
+    """
+    from .read_models import current_accepted_cut
+    from ..history.authority_hooks import _typed_ref_identity
+
+    path = Path(path).resolve()
+    with path.open("rb") as handle:
+        raw = handle.read(RESULT_ZIP_LIMITS.input_bytes + 1)
+    members = read_zip_bytes(raw, limits=RESULT_ZIP_LIMITS)
+    manifest = parse(members.get("MANIFEST.json", b"null"))
+    if not isinstance(manifest, dict):
+        raise ValidationError("MISSING_MANIFEST")
+    slot = manifest.get("lane_slot")
+    if not isinstance(slot, str) or slot not in batch.jobs:
+        raise ValidationError("UNKNOWN_LANE")
+    job = batch.get_job(slot)
+    for field, expected in (
+        ("campaign_id", batch.campaign_id), ("stage_id", batch.stage_id),
+        ("phase_id", getattr(batch, "phase_id", None)),
+        ("input_package_digest", job.package_digest),
+        ("executor_profile", job.executor_profile), ("executor_model", job.model),
+        ("source_commit_sha", job.source_commit_sha),
+    ):
+        if manifest.get(field) != expected:
+            raise ValidationError("RESULT_CONTEXT_CLAIM_MISMATCH", field)
+    cut = current_accepted_cut(store)
+    assignment = store.resolve_accepted(job.assignment_ref, cut)["body"]
+    store.resolve_accepted(job.attempt_ref, cut)
+    if _typed_ref_identity(assignment.get("attempt_ref")) != _typed_ref_identity(job.attempt_ref):
+        raise ValidationError("ASSIGNMENT_ATTEMPT_BINDING_MISMATCH")
+    if assignment.get("assignment_input_history_cut") != batch.frozen_history_cut:
+        raise ValidationError("ASSIGNMENT_CUT_MISMATCH")
+    # These references come from accepted history, never from the result ZIP.
+    for field in ("source_generation_ref", "stage_spec_ref", "lane_spec_ref"):
+        store.resolve_accepted(assignment[field], cut)
+    lane_spec = store.resolve_accepted(assignment["lane_spec_ref"], cut)["body"]
+    proposal = derive_result_proposal(
+        raw, members, history_cut=assignment["assignment_input_history_cut"],
+        assignment_ref=job.assignment_ref, attempt_ref=job.attempt_ref,
+    )
+    with job.package_zip_path.open("rb") as handle:
+        package_raw = handle.read(RESULT_ZIP_LIMITS.input_bytes + 1)
+    if hashlib.sha256(package_raw).hexdigest() != job.package_zip_sha256:
+        raise ValidationError("ASSIGNED_PACKAGE_TAMPERED")
+    digest = proposal["raw_result_digest"]
+    snapshots = {digest: raw, job.package_zip_sha256: package_raw}
+    evidence = {
+        **proposal, "package_zip_sha256": job.package_zip_sha256,
+        "result_proposal_digest": hashlib.sha256(canonical_bytes(proposal)).hexdigest(),
+    }
+    verify_admission_bytes(evidence, vault=SimpleNamespace(read_bytes=snapshots.__getitem__), assignment=assignment)
+    return {
+        "status": "INSPECTED_UNTRUSTED", "path": str(path),
+        "accepted": False, "producer_authorization": "NOT_ESTABLISHED",
+        "campaign_id": batch.campaign_id, "stage_id": batch.stage_id,
+        "phase_id": getattr(batch, "phase_id", None), "lane_slot": slot,
+        "assignment_ref": job.assignment_ref, "attempt_ref": job.attempt_ref,
+        "accepted_history_cut": cut, "assignment_input_history_cut": batch.frozen_history_cut,
+        "raw_result_digest": digest, "raw_result_byte_length": len(raw),
+        "package_zip_sha256": job.package_zip_sha256,
+        "package_binding": "LOCAL_RECEIPT_ONLY; NO_ACCEPTED_ASSIGNMENT_TIME_BINDING",
+        "result_proposal_digest": evidence["result_proposal_digest"],
+        "byte_context_checks": "MATCH", "output_semantics": "NOT_QUALIFIED",
+        "required_isolation_assurance": lane_spec.get("required_isolation_assurance"),
+        "isolation_enforcement": "NOT_ESTABLISHED",
+        "findings": proposal["findings"], "outputs": proposal.get("outputs", {}),
+        "evidence_files": proposal["evidence_files"],
+    }

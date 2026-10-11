@@ -10,11 +10,13 @@ from typing import Any, Sequence
 
 from .core.errors import ValidationError
 from .history.store import TransactionalHistoryStore
-from .product_safety import NF02_BLOCK_CODE, NF02_BLOCK_DETAIL
+from .product_safety import NF02_BLOCK_CODE, NF02_BLOCK_DETAIL, NF02_ACTIVATION_BLOCKERS
 from .report import ReportBuilder, render_markdown
 from .runner.verification import verify_run_evidence
 from .workflow.orchestrator import FullAuditOrchestrator
 from .workflow.read_models import current_accepted_cut
+from .workflow.package_resume import load_e1_batch
+from .workflow.result_proposal import inspect_result_zip
 from .workflow.settings import SettingsManager
 
 
@@ -28,15 +30,16 @@ def _parser() -> argparse.ArgumentParser:
         sub.add_argument("--target-type", choices=("local", "github"), default="local")
         sub.add_argument("--store", required=True)
         sub.add_argument("--json", action="store_true")
-    for action in ("status", "resume", "import", "report"):
-        sub = subs.add_parser(action, help={"status": "Zweryfikuj utrwalony stan", "resume": "Odtwórz istniejące paczki i stan", "import": "Pokaż blokadę przyjmowania wyników NF02", "report": "Eksportuj raport częściowy"}[action])
+    for action in ("status", "resume", "inspect-result", "import", "report"):
+        sub = subs.add_parser(action, help={"status": "Zweryfikuj utrwalony stan", "resume": "Odtwórz istniejące paczki i stan", "inspect-result": "Sprawdź ZIP i kontekst E1 bez przyjęcia wyniku", "import": "Pokaż blokadę przyjmowania wyników NF02", "report": "Eksportuj raport częściowy"}[action])
         sub.add_argument("--store", required=True)
         sub.add_argument("--json", action="store_true")
-        if action == "import":
+        if action in {"import", "inspect-result"}:
             sub.add_argument("--zip", required=True)
         if action == "report":
             sub.add_argument("--output", required=True)
             sub.add_argument("--run-evidence", action="append", default=[])
+            sub.add_argument("--result-zip", action="append", default=[], help="Niezaufany ZIP E1 do kontroli i jawnego raportowania bez importu")
     return parser
 
 
@@ -50,7 +53,7 @@ def _orchestrator(store: Path) -> FullAuditOrchestrator:
 
 
 def _scope() -> dict[str, Any]:
-    return {"profile": "PRODUCT-V1_PREPARATION_AND_LOCAL_CHECKS", "external_ingestion": "BLOCKED", "nf02": "OPEN", "audit_completion": "NOT_COMPLETED", "qualification": "NO_NEW_Q1_Q2_CLAIM", "isolation": "DECLARED; host/network runner NOT_ENFORCED", "next_action": NF02_BLOCK_DETAIL}
+    return {"profile": "PRODUCT-V1_PREPARATION_AND_LOCAL_CHECKS", "external_ingestion": "BLOCKED", "nf02": "OPEN", "audit_completion": "NOT_COMPLETED", "qualification": "NO_NEW_Q1_Q2_CLAIM", "isolation": "DECLARED; host/network runner NOT_ENFORCED", "activation_blockers": list(NF02_ACTIVATION_BLOCKERS), "next_action": NF02_BLOCK_DETAIL}
 
 
 def _status(store: Path, *, resume: bool) -> dict[str, Any]:
@@ -74,6 +77,12 @@ def _execute(args: argparse.Namespace) -> dict[str, Any]:
     if args.action == "import":
         raise ValidationError(NF02_BLOCK_CODE, NF02_BLOCK_DETAIL)
     store = Path(args.store).resolve()
+    if args.action == "inspect-result":
+        if not store.is_file() or store.stat().st_size == 0:
+            raise ValidationError("CAMPAIGN_NOT_FOUND", str(store))
+        history = TransactionalHistoryStore(store)
+        batch, _ = load_e1_batch(history, store.parent / "artifacts")
+        return {**inspect_result_zip(history, batch, args.zip), "action": "product.inspect-result", **_scope()}
     if args.action in {"preflight", "start"}:
         if args.action == "start" and store.exists():
             raise ValidationError("CAMPAIGN_ALREADY_EXISTS", "Użyj product resume --store zamiast nadpisywać kampanię.")
@@ -93,7 +102,12 @@ def _execute(args: argparse.Namespace) -> dict[str, Any]:
         return data
     runs = [{"path": str(Path(path).resolve()), "verification": verify_run_evidence(path), "authority": "LOCAL_RECEIPT_INTEGRITY_ONLY; NOT_ACCEPTED_AUDITOR_RESULT"} for path in args.run_evidence]
     model = ReportBuilder(TransactionalHistoryStore(store)).build_current()
-    text = ("# BDB Audit PRODUCT-V1 — raport częściowy\n\nAudyt E1-E6: **NOT_COMPLETED**. NF02: **OPEN**. Import wyników: **BLOCKED**.\n\n" + NF02_BLOCK_DETAIL + "\n\nLokalne komendy dowodzą wyłącznie wykonania wskazanych kontroli. Integralność receipt nie ustanawia autoryzacji producenta ani związania z kampanią. Nie są kwalifikacją ani wynikiem zewnętrznego audytora.\n\n```json\n" + json.dumps({"campaign": data, "local_runs": runs}, ensure_ascii=False, indent=2) + "\n```\n\n" + render_markdown(model))
+    inspections = []
+    if args.result_zip:
+        history = TransactionalHistoryStore(store)
+        batch, _ = load_e1_batch(history, store.parent / "artifacts")
+        inspections = [inspect_result_zip(history, batch, path) for path in args.result_zip]
+    text = ("# BDB Audit PRODUCT-V1 — raport częściowy\n\nAudyt E1-E6: **NOT_COMPLETED**. NF02: **OPEN**. Import wyników: **BLOCKED**.\n\n" + NF02_BLOCK_DETAIL + "\n\nLokalne komendy dowodzą wyłącznie wykonania wskazanych kontroli. Integralność receipt nie ustanawia autoryzacji producenta ani związania z kampanią. Nie są kwalifikacją ani wynikiem zewnętrznego audytora.\n\nKontrole ZIP poniżej mają status INSPECTED_UNTRUSTED. Ich ustalenia są nieprzyjętymi deklaracjami; zgodność bajtów i kontekstu nie dowodzi autorstwa ani prawdziwości.\n\n```json\n" + json.dumps({"campaign": data, "local_runs": runs, "untrusted_result_inspections": inspections}, ensure_ascii=False, indent=2) + "\n```\n\n" + render_markdown(model))
     output = Path(args.output).resolve()
     # Refuse overwriting a campaign, package, raw evidence or existing export.
     with output.open("x", encoding="utf-8", newline="\n") as handle:

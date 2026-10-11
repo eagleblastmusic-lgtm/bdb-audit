@@ -1578,12 +1578,6 @@ def prepare_stage_phase_batch(
             ),
         )
 
-    batch_ticket = store.issue_batch_ticket(
-        campaign_id=assignments.campaign_id,
-        stage_id=stage_id,
-        cut=frozen_cut,
-    )
-
     return StageBatch(
         campaign_id=assignments.campaign_id,
         stage_id=stage_id,
@@ -1593,12 +1587,16 @@ def prepare_stage_phase_batch(
         assignment_accepted_history_cut=dict(
             assignments.accepted_history_cut
         ),
-        batch_ticket=batch_ticket,
     )
 
 
 class StageResultInbox:
     """Raw-first result inbox for one external E2+ stage phase."""
+
+    def inspect_zip(self, zip_path: Path | str) -> dict[str, Any]:
+        """Inspect Stage transport without accepting evidence or outputs."""
+        from .result_proposal import inspect_result_zip
+        return inspect_result_zip(self.store, self.batch, zip_path)
 
     def __init__(
         self,

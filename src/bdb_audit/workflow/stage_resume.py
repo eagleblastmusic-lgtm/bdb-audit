@@ -390,9 +390,6 @@ def load_stage_phase_batch(
             frozen_history_cut=dict(assignment_input),
             jobs=jobs,
             assignment_accepted_history_cut={},
-            batch_ticket=store.issue_batch_ticket(
-                campaign_id=cut["campaign_id"], stage_id=stage_id, cut=assignment_input,
-            ),
         ),
         source,
     )

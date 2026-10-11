@@ -110,11 +110,13 @@ def test_resume_rejects_tampered_package(campaign, capsys):
 
 
 def test_store_cannot_self_authorize_or_accept_external_result(campaign):
-    path, _, _ = campaign
+    path, _, created = campaign
     store = TransactionalHistoryStore(path)
     before = _bytes(path.parent)
     with pytest.raises(ValidationError, match=NF02_BLOCK_CODE):
         store.issue_ingestion_capability({}, batch_ticket="self-granted")
+    with pytest.raises(ValidationError, match=NF02_BLOCK_CODE):
+        store.issue_batch_ticket(campaign_id=store.head().campaign_id, stage_id="E1", cut=created["assignment_input_history_cut"])
     for kind in ("bdb_audit_lane_result", "lane_result_admission_evidence"):
         prior = store.commits()[-1]
         command = CommandEnvelope(command_id="command_11111111-1111-4111-8111-111111111111", command_kind="RECORD_FOUNDATION_FACT", actor_ref="installation-owner", expected_parent_head={"tag": "ACCEPTED_HEAD_REF", **store.head().as_dict()}, governing_policy_ref=prior["governing_policy_ref"], governing_spec_refs=tuple(prior["governing_spec_refs"]), idempotency_scope="product-disabled-import", campaign_ref=store.head().campaign_id)

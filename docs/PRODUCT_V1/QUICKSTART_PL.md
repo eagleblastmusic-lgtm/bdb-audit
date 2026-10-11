@@ -83,3 +83,17 @@ Powtórzenie demonstracji ze źródeł:
 ```
 
 Odzyskanie usuniętych kopii: `CLEANUP_PLAN.md` i `CLEANUP_REMOVAL_MANIFEST.json`. Oryginały pozostają w commicie `f23dbedccb6dca9d23f41830e282e814e550bca1`. Nie wykonano push, merge, release ani przepisania historii.
+
+## Kontrola otrzymanego ZIP bez importu
+
+W gałęzi `work/nf02-runtime-completion` dostępne jest sprawdzenie formatu, rzeczywistych bajtów ZIP/paczki oraz powiązań E1. Build do weryfikacji lokalnej: `dist/BDB_AUDIT_ASSISTANT_v2.0.3_NF02_RUNTIME_PREVIEW.py`. Nie jest kwalifikowanym wydaniem.
+
+```powershell
+$bdb = '.\dist\BDB_AUDIT_ASSISTANT_v2.0.3_NF02_RUNTIME_PREVIEW.py'
+py -3.14 -I $bdb product inspect-result --store '.\work\moja-kampania\campaign.sqlite' --zip '.\wynik.zip' --json
+py -3.14 -I $bdb product report --store '.\work\moja-kampania\campaign.sqlite' --output '.\work\moja-kampania\raport-manualny.md' --result-zip '.\wynik.zip' --json
+```
+
+`INSPECTED_UNTRUSTED` oznacza wyłącznie zgodność sprawdzonych bajtów i kontekstu. Nie dowodzi wykonawcy, poprawności ustaleń, kwalifikacji izolacji ani kompletności outputów etapu. `inspect-result` nie zapisuje raw, admission, wyniku ani completion; import pozostaje BLOCKED. Raport oznacza te ustalenia jako nieprzyjęte deklaracje. `--result-zip` dotyczy istniejących paczek E1; API `StageResultInbox.inspect_zip` sprawdza transport przygotowanej fazy, bez kwalifikacji jej outputów.
+
+Przygotowanie i wznowienie nie wystawiają już lokalnych ticketów ani kluczy. Historyczne klucze pozostają odczytywalne, ale nie można wytworzyć nowej authority przez publiczny Store. Status i dokładne wymagania aktywacji: `RUNTIME_COMPLETION_STATUS.md`.

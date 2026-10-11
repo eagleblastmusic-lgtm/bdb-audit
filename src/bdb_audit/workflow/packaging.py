@@ -430,19 +430,12 @@ def prepare_e1_batch(
             prompt_sha256=prompt_sha,
         )
 
-    batch_ticket = store.issue_batch_ticket(
-        campaign_id=campaign_id,
-        stage_id="E1",
-        cut=frozen_cut,
-    )
-
     return E1Batch(
         campaign_id=campaign_id,
         stage_id="E1",
         frozen_history_cut=dict(frozen_cut),
         jobs=jobs,
         assignment_accepted_history_cut=dict(assignments.accepted_history_cut),
-        batch_ticket=batch_ticket,
     )
 
 

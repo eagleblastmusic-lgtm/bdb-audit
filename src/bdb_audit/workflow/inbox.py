@@ -509,6 +509,11 @@ class E1ResultInbox:
         except Exception as exc:
             return self._reject(path, "UNKNOWN", "UNEXPECTED_INGESTION_ERROR", type(exc).__name__, raw_digest, "REVIEW_IMPORT_ERROR")
 
+    def inspect_zip(self, zip_path: Path | str) -> dict[str, Any]:
+        """Read-only inspection; never calls the admission or completion path."""
+        from .result_proposal import inspect_result_zip
+        return inspect_result_zip(self.store, self.batch, zip_path)
+
     def _accept_result(
         self,
         *,

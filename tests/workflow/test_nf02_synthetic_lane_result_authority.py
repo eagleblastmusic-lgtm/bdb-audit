@@ -20,6 +20,7 @@ from bdb_audit.core.errors import ValidationError
 from bdb_audit.core.ids import deterministic_id
 from bdb_audit.history.objects import CanonicalObject, CommandEnvelope, HistoryCut
 from bdb_audit.history.store import TransactionalHistoryStore
+from bdb_audit.product_safety import NF02_BLOCK_CODE
 from bdb_audit.orchestration.native_ensemble import E1_LANE_SLOTS
 from bdb_audit.vault.raw_store import RawArtifactVault
 from bdb_audit.workflow.inbox import E1ResultInbox
@@ -423,7 +424,9 @@ def test_adversarial_bypass_b_fake_ingestion_receipt_via_generic_command(e1_setu
         )
         coordinator.accept(cmd, immutable_objects=[obj], expected_head=head)
 
-    assert "LANE_RESULT_ADMISSION_COMMAND_REQUIRED" in str(exc.value)
+    # PRODUCT-V1 rejects at the earlier central activation boundary. This
+    # proves rejection/atomicity only, not the unreachable admission predicate.
+    assert exc.value.code == NF02_BLOCK_CODE
     _assert_atomicity(store, snapshot)
 
 
@@ -737,7 +740,7 @@ def test_t2_full_laundering_chain_blocked(e1_setup):
             campaign_ref=head.campaign_id,
         )
         coordinator.accept(cmd2, immutable_objects=[evidence_obj], expected_head=head)
-    assert "LANE_RESULT_ADMISSION_COMMAND_REQUIRED" in str(exc.value)
+    assert exc.value.code == NF02_BLOCK_CODE
     _assert_atomicity(store, snapshot)
 
 

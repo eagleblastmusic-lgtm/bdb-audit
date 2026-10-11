@@ -7,7 +7,6 @@ authority or recovery state.
 """
 from dataclasses import dataclass
 import hashlib
-import hmac
 import json
 import sqlite3
 from typing import Any, Callable, Iterable
@@ -49,19 +48,11 @@ class AcceptanceResult:
 
 
 def _get_or_create_ingestion_authority_key(con) -> bytes:
+    """Historical key reader; despite the legacy name it never creates authority."""
     row = con.execute("SELECT secret_bytes FROM _store_private_authority WHERE key_name='ingestion_authority'").fetchone()
     if row is not None:
         return row[0]
-    import secrets
-    key = secrets.token_bytes(32)
-    con.execute("INSERT OR IGNORE INTO _store_private_authority(key_name, secret_bytes) VALUES('ingestion_authority', ?)", (key,))
-    row = con.execute("SELECT secret_bytes FROM _store_private_authority WHERE key_name='ingestion_authority'").fetchone()
-    return row[0]
-
-
-def _compute_batch_ticket(secret: bytes, campaign_id: str, stage_id: str, cut_hash: str) -> str:
-    msg = f"BATCH_TICKET:{campaign_id}:{stage_id}:{cut_hash}".encode("utf-8")
-    return hmac.new(secret, msg, hashlib.sha256).hexdigest()
+    raise ValidationError("UNAUTHORIZED_PRODUCER_AUTHORITY", "No historical ingestion key is installed")
 
 
 class TransactionalHistoryStore:
@@ -122,149 +113,14 @@ class TransactionalHistoryStore:
             con.close()
 
     def issue_batch_ticket(self, *, campaign_id: str, stage_id: str, cut: dict[str, Any]) -> str:
-        cut_hash = cut.get("accepted_head_hash") if isinstance(cut, dict) else ""
-        if not cut_hash or not isinstance(cut_hash, str):
-            raise ValidationError("INVALID_HISTORY_CUT", "Cannot issue batch ticket for cut without accepted_head_hash")
-        con = self._connect()
-        try:
-            row = con.execute("SELECT seq,campaign_id,body FROM commits WHERE commit_hash=?", (cut_hash,)).fetchone()
-            if row is None:
-                raise ValidationError("INVALID_HISTORY_CUT", f"Cut {cut_hash} not found in store commits")
-            commit = _commit_from_body(json.loads(row[2]))
-            expected_cut = HistoryCut.accepted(
-                AcceptedHead(row[1], row[0], cut_hash),
-                commit.governing_policy_ref, commit.governing_spec_refs,
-            ).as_dict()
-            if commit.digest != cut_hash or cut != expected_cut or campaign_id != row[1]:
-                raise ValidationError("INVALID_HISTORY_CUT", "Ticket context differs from accepted commit")
-            current = self.head()
-            if current is None or current.campaign_id != campaign_id:
-                raise ValidationError("CAMPAIGN_BINDING_MISMATCH")
-            current_commit = self.commits()[-1]
-            current_cut = HistoryCut.accepted(current, current_commit["governing_policy_ref"], current_commit["governing_spec_refs"]).as_dict()
-            assignments = self.accepted_records("assignment_manifest", current_cut)
-            if not any(
-                a["body"].get("assignment_input_history_cut") == cut
-                and self.resolve_accepted(a["body"]["stage_spec_ref"], current_cut)["body"].get("stage_key") == stage_id
-                for a in assignments
-            ):
-                raise ValidationError("ASSIGNMENT_CONTEXT_NOT_FOUND", stage_id)
-            secret = _get_or_create_ingestion_authority_key(con)
-            return _compute_batch_ticket(secret, campaign_id, stage_id, cut_hash)
-        finally:
-            con.close()
+        """Legacy API retained for callers; a local ticket cannot grant authority."""
+        require_external_ingestion_authority()
+        raise AssertionError("External authority gate returned without authorization")
 
     def issue_ingestion_capability(self, body: dict[str, Any], *, batch_ticket: str | None = None) -> str:
+        """No caller-selected body or locally issued ticket can authorize intake."""
         require_external_ingestion_authority()
-        if not batch_ticket or not isinstance(batch_ticket, str):
-            raise ValidationError("UNAUTHORIZED_PRODUCER_AUTHORITY", "Valid batch ticket required to issue ingestion capability")
-
-        campaign_id = body.get("campaign_id")
-        stage_id = body.get("stage_id")
-        cut = body.get("history_cut")
-        cut_hash = cut.get("accepted_head_hash") if isinstance(cut, dict) else ""
-        if not cut_hash or not isinstance(cut_hash, str):
-            raise ValidationError("UNAUTHORIZED_PRODUCER_AUTHORITY", "Missing cut hash in admission body")
-
-        con = self._connect()
-        try:
-            con.execute("BEGIN IMMEDIATE")
-            secret = _get_or_create_ingestion_authority_key(con)
-            expected_ticket = _compute_batch_ticket(secret, campaign_id, stage_id, cut_hash)
-            if not hmac.compare_digest(batch_ticket, expected_ticket):
-                raise ValidationError("UNAUTHORIZED_PRODUCER_AUTHORITY", "Batch ticket does not match campaign, stage, and cut")
-
-            # Reference validation against accepted history in store
-            assignment_ref = body.get("assignment_ref")
-            attempt_ref = body.get("attempt_ref")
-            source_gen_ref = body.get("source_generation_ref")
-            if not isinstance(assignment_ref, dict) or not isinstance(attempt_ref, dict) or not isinstance(source_gen_ref, dict):
-                raise ValidationError("UNAUTHORIZED_PRODUCER_AUTHORITY", "Missing required references in admission body")
-
-            # One verified locked cut, including complete typed identities.
-            # Immutable table presence alone does not confer acceptance.
-            from ..stop.authority import _accepted_index, _resolve
-            head_row = con.execute("SELECT campaign_id,seq,commit_hash FROM accepted_head WHERE singleton=1").fetchone()
-            if head_row is None or head_row[0] != campaign_id:
-                raise ValidationError("UNAUTHORIZED_PRODUCER_AUTHORITY", "Campaign not accepted")
-            index = _accepted_index(AcceptedHead(*head_row), con)
-            resolved = {}
-            for field, ref, kind in (
-                ("assignment_ref", assignment_ref, "assignment_manifest"),
-                ("attempt_ref", attempt_ref, "attempt"),
-                ("source_generation_ref", source_gen_ref, "source_generation"),
-            ):
-                if ref.get("kind") != kind:
-                    raise ValidationError("UNAUTHORIZED_PRODUCER_AUTHORITY", field)
-                try:
-                    resolved[field] = _resolve(ref, index, con)
-                except ValidationError as exc:
-                    if exc.code in {"STOP_INPUT_REFERENCE_NOT_ACCEPTED", "STOP_INPUT_REFERENCE_IDENTITY_MISMATCH"}:
-                        raise ValidationError("UNAUTHORIZED_PRODUCER_AUTHORITY", field) from exc
-                    raise
-            assignment_body = resolved["assignment_ref"]["body"]
-
-            from .authority_hooks import _typed_ref_identity
-            if _typed_ref_identity(assignment_body.get("attempt_ref")) != _typed_ref_identity(attempt_ref):
-                raise ValidationError("UNAUTHORIZED_PRODUCER_AUTHORITY", "Attempt ref mismatch")
-            if _typed_ref_identity(assignment_body.get("source_generation_ref")) != _typed_ref_identity(source_gen_ref):
-                raise ValidationError("UNAUTHORIZED_PRODUCER_AUTHORITY", "Source generation ref mismatch")
-            if canonical_bytes(assignment_body.get("assignment_input_history_cut")) != canonical_bytes(cut):
-                raise ValidationError("UNAUTHORIZED_PRODUCER_AUTHORITY", "History cut mismatch")
-
-            # Validate raw result in vault
-            raw_digest = body.get("raw_result_digest")
-            if not isinstance(raw_digest, str) or len(raw_digest) != 64:
-                raise ValidationError("INVALID_RAW_DIGEST")
-            from .raw_artifacts import AdmissionRawReader
-            vault = AdmissionRawReader(con)
-            try:
-                raw_bytes = vault.read_bytes(raw_digest)
-            except ValidationError:
-                raise
-            except Exception as exc:
-                raise ValidationError("RAW_ARTIFACT_NOT_FOUND", str(exc)) from exc
-
-            if len(raw_bytes) != body.get("raw_result_byte_length"):
-                raise ValidationError("RAW_RESULT_BYTE_LENGTH_MISMATCH")
-
-            from ..assurance.zip_safety import read_bytes as read_zip_bytes
-            from ..core.canonical_json import parse
-            try:
-                members = read_zip_bytes(raw_bytes)
-            except Exception as exc:
-                raise ValidationError("INVALID_ZIP", str(exc)) from exc
-            if "MANIFEST.json" not in members:
-                raise ValidationError("MISSING_MANIFEST")
-            manifest = parse(members["MANIFEST.json"])
-            if not isinstance(manifest, dict):
-                raise ValidationError("MALFORMED_MANIFEST")
-
-            for field in (
-                "campaign_id",
-                "stage_id",
-                "lane_slot",
-                "input_package_digest",
-                "executor_profile",
-                "executor_model",
-            ):
-                if manifest.get(field) != body.get(field):
-                    raise ValidationError("MANIFEST_FIELD_MISMATCH", field)
-            if str(manifest.get("source_commit_sha", "")).lower() != str(body.get("source_commit_sha", "")).lower():
-                raise ValidationError("SOURCE_COMMIT_MISMATCH")
-
-            from ..workflow.result_proposal import verify_admission_bytes
-            verify_admission_bytes(body, vault=vault, assignment=assignment_body)
-
-            from .authority_hooks import compute_ingestion_capability
-            capability = compute_ingestion_capability(secret, body)
-            con.commit()
-            return capability
-        except Exception:
-            con.rollback()
-            raise
-        finally:
-            con.close()
+        raise AssertionError("External authority gate returned without authorization")
 
     def _hook(self, name):
         if name not in self.HOOKS:
