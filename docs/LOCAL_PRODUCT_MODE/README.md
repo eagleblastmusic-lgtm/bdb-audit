@@ -1,5 +1,10 @@
 # BDB Audit — LOCAL PRODUCT MODE
 
+Bieżący interfejs prowadzonego audytu, instrukcja i dowody AC-01–AC-12:
+[GUIDED_UX](../GUIDED_UX/README.md). Menu LOCAL ma teraz cztery działania;
+status, paczki, import/decyzje i przejścia są dostępne na ekranie kampanii.
+Pozostała część tego dokumentu zachowuje opis istniejącego silnika i wcześniejszego checkpointu.
+
 Osobny workflow użytkowy bez certyfikatów i Q1/Q2/RQ. Jego historia nie jest
 kwalifikowaną historią NF02. Deklaracje modeli i tożsamości producentów pozostają
 niezweryfikowane nawet po ręcznej akceptacji. HIGH ASSURANCE zachowuje swoje blokady.

@@ -1,0 +1,406 @@
+{
+  "abandoned_checks": [],
+  "available_tasks": [],
+  "campaign_directory": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć",
+  "campaign_id": "local-8d3d7ceb8a3d4cc285935413e399e28a",
+  "completed_stages": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E6"
+  ],
+  "history_events": 90,
+  "history_head": "8a577a2eca2b6c8b17fe9d20fdc63bcd5d5b2ad67e3306c919ed495f47c3b1cc",
+  "local_checks": [
+    {
+      "context": {
+        "campaign_id": "local-8d3d7ceb8a3d4cc285935413e399e28a",
+        "input_package_digest": "5a6f7d7492dbe7e7a2df9a684676452c9e4d30e108642b6076c4ca390ed82230",
+        "source_commit": "2df70942b30e927fe85bcf06a056fe54bf030f18",
+        "source_tree": "3f9e49e6bd9a35d8dc6d3dbce8cb076ae4a023a5",
+        "stage_id": "E1",
+        "task_id": "E1-A"
+      },
+      "files": {
+        "RUN_MANIFEST.json": {
+          "already_present": false,
+          "byte_length": 862,
+          "media_type": "application/octet-stream",
+          "raw_digest": "d5cd729356719bdded64cac38e6e1e4cca42fccb174391b3e6ca2389ee7ed007"
+        },
+        "RUN_RECEIPT.json": {
+          "already_present": false,
+          "byte_length": 1278,
+          "media_type": "application/octet-stream",
+          "raw_digest": "dabd2050dacee3852b9110388c2812f1c52e90705c31ff70f5d170b168858772"
+        },
+        "stderr.bin": {
+          "already_present": false,
+          "byte_length": 2247,
+          "media_type": "application/octet-stream",
+          "raw_digest": "7934436214e6adeece62edb6e3bbc87806a85d61d2cbd2db717233976ab329d5"
+        },
+        "stdout.bin": {
+          "already_present": false,
+          "byte_length": 0,
+          "media_type": "application/octet-stream",
+          "raw_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "result": {
+        "capability_profile_digest": "0feff10f2c86ffef892eae49a7290ff43396ad803cc85e12d2d646e9cbee33e5",
+        "cleanup_status": "CLEAN",
+        "detail": null,
+        "evidence_files": [
+          "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\checks\\local-run-911408a4657b4dddb01a55ad2f6792a8\\RUN_MANIFEST.json",
+          "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\checks\\local-run-911408a4657b4dddb01a55ad2f6792a8\\stdout.bin",
+          "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\checks\\local-run-911408a4657b4dddb01a55ad2f6792a8\\stderr.bin"
+        ],
+        "limitations": [
+          "HOST_FILESYSTEM_ISOLATION_NOT_ENFORCED",
+          "NETWORK_EGRESS_NOT_ENFORCED"
+        ],
+        "output_limit_exceeded": false,
+        "run_id": "local-run-911408a4657b4dddb01a55ad2f6792a8",
+        "spec_digest": "f3c9f85c6285531ef9d45af930056290c27b73bd8c597ce525c5b81932766d52",
+        "stderr_bytes": 2247,
+        "stderr_sha256": "7934436214e6adeece62edb6e3bbc87806a85d61d2cbd2db717233976ab329d5",
+        "stdout_bytes": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "supervisor_status": "TARGET_NONZERO",
+        "target_exit_code": 1,
+        "timed_out": false
+      },
+      "run_id": "local-run-911408a4657b4dddb01a55ad2f6792a8",
+      "task_id": "E1-A"
+    },
+    {
+      "context": {
+        "campaign_id": "local-8d3d7ceb8a3d4cc285935413e399e28a",
+        "input_package_digest": "fa4201488ca307dc558a7b2082c9bf0bce6cb5b786e1c1e014b8b2ae1d87fea2",
+        "source_commit": "2df70942b30e927fe85bcf06a056fe54bf030f18",
+        "source_tree": "3f9e49e6bd9a35d8dc6d3dbce8cb076ae4a023a5",
+        "stage_id": "E1",
+        "task_id": "E1-E"
+      },
+      "files": {
+        "RUN_MANIFEST.json": {
+          "already_present": false,
+          "byte_length": 1085,
+          "media_type": "application/octet-stream",
+          "raw_digest": "f33eec5f43b367cb676b24b1d773c5189a6de27bad3e62099e49a0bf563d371b"
+        },
+        "RUN_RECEIPT.json": {
+          "already_present": false,
+          "byte_length": 1269,
+          "media_type": "application/octet-stream",
+          "raw_digest": "583ed8003e2338957b2e1bd20cc77f88caaac52db328aaa148074b6cb9d1ce79"
+        },
+        "stderr.bin": {
+          "already_present": true,
+          "byte_length": 0,
+          "media_type": "application/octet-stream",
+          "raw_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout.bin": {
+          "already_present": false,
+          "byte_length": 88,
+          "media_type": "application/octet-stream",
+          "raw_digest": "80bb14f8007ee29ee753e217e750c0344222f9521e25d8c647fbdfd13fedfbe9"
+        }
+      },
+      "result": {
+        "capability_profile_digest": "0feff10f2c86ffef892eae49a7290ff43396ad803cc85e12d2d646e9cbee33e5",
+        "cleanup_status": "CLEAN",
+        "detail": null,
+        "evidence_files": [
+          "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\checks\\local-run-ba4644b2d4554b77afa012a05d46a455\\RUN_MANIFEST.json",
+          "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\checks\\local-run-ba4644b2d4554b77afa012a05d46a455\\stdout.bin",
+          "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\checks\\local-run-ba4644b2d4554b77afa012a05d46a455\\stderr.bin"
+        ],
+        "limitations": [
+          "HOST_FILESYSTEM_ISOLATION_NOT_ENFORCED",
+          "NETWORK_EGRESS_NOT_ENFORCED"
+        ],
+        "output_limit_exceeded": false,
+        "run_id": "local-run-ba4644b2d4554b77afa012a05d46a455",
+        "spec_digest": "29d46a10863bf6a232085a26c7b50db327f919ae93242308e0527e3abd395781",
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_bytes": 88,
+        "stdout_sha256": "80bb14f8007ee29ee753e217e750c0344222f9521e25d8c647fbdfd13fedfbe9",
+        "supervisor_status": "SUCCESS",
+        "target_exit_code": 0,
+        "timed_out": false
+      },
+      "run_id": "local-run-ba4644b2d4554b77afa012a05d46a455",
+      "task_id": "E1-E"
+    }
+  ],
+  "missing_results": [],
+  "mode": "LOCAL_PRODUCT",
+  "notice": "LOCAL PRODUCT MODE: manual acceptance permits use in this local audit only. Producer identities and AI claims are unverified. No PKI, independent qualification, qualified Evidence/4, Result/4 or HIGH ASSURANCE completion is established.",
+  "packages": [
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\packages\\E1-A.zip",
+      "raw_sha256": "92cb42cb907902bc8a783caca7b83aa79de9a5a767c5c5345016684955bc248d",
+      "task_id": "E1-A"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\packages\\E1-B.zip",
+      "raw_sha256": "fd8b804f8605df917785d7c24718ca9e4108c4bc95643f4c1a6949501b336a5c",
+      "task_id": "E1-B"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\packages\\E1-C.zip",
+      "raw_sha256": "263b104e8fa83cd585ea083354e7e5010f407718cf2f1eba5b828eb693270ef6",
+      "task_id": "E1-C"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\packages\\E1-D.zip",
+      "raw_sha256": "99b0708bb36aecb694eeedfeb74f0320787db865cba8907d0bfc1fa5b56a2e69",
+      "task_id": "E1-D"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\packages\\E1-E.zip",
+      "raw_sha256": "4bb8b542720f8ded2dbd1c3009fd2e284af24915420e6050ff029797c23c7dba",
+      "task_id": "E1-E"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\packages\\E2-CONVERGENCE.zip",
+      "raw_sha256": "a76bc8d3537c3a01f858487ae835035ae4fb41d806ae8f6f1bfd1a1dc634d476",
+      "task_id": "E2-CONVERGENCE"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\packages\\E2-ADJUDICATION.zip",
+      "raw_sha256": "93078d8f5783e1a88c0f72736d8464b396d1ec2efb5ba44c2148015d77155f0b",
+      "task_id": "E2-ADJUDICATION"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\packages\\E3-X.zip",
+      "raw_sha256": "47c29e0d549b0d6fcbc133fc45025633f0012f439ced7ef630fcfb745611e594",
+      "task_id": "E3-X"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\packages\\E3-Y.zip",
+      "raw_sha256": "d3b74640df22623ca7a9a803d0cf91b1d7b9a4a2f9514169e470a2e7c680e5e1",
+      "task_id": "E3-Y"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\packages\\E3-Z.zip",
+      "raw_sha256": "372ac7778225b4d1d42bf93db278a5fe3c6cf61f731824c59f2221cd110a9e76",
+      "task_id": "E3-Z"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\packages\\E4-MODEL.zip",
+      "raw_sha256": "fb68bca0cd89b02797ac366a60036fb4a3e6fc23187618418b749233d137c075",
+      "task_id": "E4-MODEL"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\packages\\E4-RESILIENCE.zip",
+      "raw_sha256": "ab909cc4b078804de165c4560a67f5479e13bc06b17b994211846eca761d873c",
+      "task_id": "E4-RESILIENCE"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\packages\\E4-CAUSAL.zip",
+      "raw_sha256": "0106318f42ed7a843b2e52c439a1937024cd271e1771ed0a0794c874d6fc335d",
+      "task_id": "E4-CAUSAL"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\packages\\E5-A-INTERACTION.zip",
+      "raw_sha256": "e17e797c1968bf6c8a2cb79c7357d144c1f243b4a9486b2c1624fadc7ac647a3",
+      "task_id": "E5-A-INTERACTION"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\packages\\E5-A-MUTATION.zip",
+      "raw_sha256": "c0cb649cae917aeb0ddbcf932c08aade1dc7110950ec4c0eb6f16a8dab9a74bc",
+      "task_id": "E5-A-MUTATION"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\packages\\E5-A-CALIBRATION.zip",
+      "raw_sha256": "2641e52f7036d32ab70e2510f6f8390447d74a71043c0c83c1a052ee556fc7ef",
+      "task_id": "E5-A-CALIBRATION"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\packages\\E5-B1.zip",
+      "raw_sha256": "9b465177b4d0990377405c487b1b6f7a495fad38b4a15d9872385ecd90cb0221",
+      "task_id": "E5-B1"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\packages\\E5-B2.zip",
+      "raw_sha256": "9b11485f3f5c119bdddedb147d5b11587c03d6fa9e2bed34370eb176808a9243",
+      "task_id": "E5-B2"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\campaign ze spacją żółć\\packages\\E6-FOLLOWUP.zip",
+      "raw_sha256": "d0761cda85ab344c4ade0e6bc6029846ecc8066eade3b1c144a003834e5b0947",
+      "task_id": "E6-FOLLOWUP"
+    }
+  ],
+  "pending_checks": [],
+  "profile": "BDB_LOCAL_WORKFLOW_1",
+  "results": [
+    {
+      "issues": [],
+      "result_id": "local-result-6b538244a68fd105e03fb240dc817a9fc12b1f65faf106cafd697a8ecc563148",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E1-A"
+    },
+    {
+      "issues": [
+        "Draft requires further review"
+      ],
+      "result_id": "local-result-658f31a7f7ff690fe7699b6a73eef1d51c23837680bf95145ec9b9253cb15dd7",
+      "state": "REJECTED",
+      "superseded_by": null,
+      "task_id": "E1-B"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-93145dade0110ac68c35b0c8c679ff2412894da8de85991fc37b3bde33d1d12f",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E1-B"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-58302568c597797439ffc5d282ddb6a5c1817e5a3aa665b08ea129dc7258fe4b",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E1-C"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-e98e3d12d287f38ebc01d3b25ad340b2c85bfd107b0f57e444fcd4ed650153e2",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E1-D"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-120835f45821373a42f4c6e7fb754126e6a01a5677fe7f1500c2747311d9707e",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E1-E"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-ca598328c3a3574c8b54a47e9d66d4275e86755192e392216969bc6d0158881e",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E2-CONVERGENCE"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-f2062ab60c5779a99e15ae10e3cc4f9ecf24402b48eff3e6b1521979dfba8ed8",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E2-ADJUDICATION"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-5703f6dc5c62c7a7aa223a0ce3ab538a5fd62a6b1f7d71f4b1dc8c9fc894d330",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E3-X"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-1b2c274e817987d150ab2612a7c4fc4a59083782fa660267661db2e3af73d9c4",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E3-Y"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-81278fccc6b2b3aa62469926f71558a17d5bb752f2ef1d426925b12f1aede5b2",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E3-Z"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-d545cacead483b38c6322b34bb403bee332ae2abeeb9802a39d809e086704af8",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E4-MODEL"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-994ec540c99c765cba2fd48be2841442c0ce14e3fd0b5e8ee517d28c9cf7dbb5",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E4-RESILIENCE"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-bc761d67cdb60b28e5baccbf68a0f43de113321703a9f449a2c46c3629b552ca",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E4-CAUSAL"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-b4d493d777fea3bd4a39ae5d9c652e66dd2fef2e772e0e411278ac25d20bb803",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E5-A-INTERACTION"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-6ba265c814ee8ecc58765b1e4e23e3aa2764263df453181787dd3ee3a603e469",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E5-A-MUTATION"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-f7bb7f732d383f975b26b81ae0aeee3702b0fb622c3f3b6883c1f68cde1d1973",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E5-A-CALIBRATION"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-8310320b37fecd5d82c6490806bc5db754ac652b99684631f5e34c7b95e2706b",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E5-B1"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-c14f7ba778510bf7cbe150026bbca33e094ed7e75623dd50d127e316555131cd",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E5-B2"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-2579c7873b481ea2ba18ea9bc40cc9c479e4ef11420fcfb97020fb81b36f42ad",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E6-FOLLOWUP"
+    }
+  ],
+  "source": {
+    "commit": "2df70942b30e927fe85bcf06a056fe54bf030f18",
+    "location": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v4\\known-defects-repository",
+    "manifest_sha256": "8f1f0c84a20a1e986c4d826a216c9bf3ad845dfbdd17a2e582ed6723506fbe7c",
+    "object_format": "sha1",
+    "paths": [
+      "README.md",
+      "app.py",
+      "test_app.py"
+    ],
+    "requested_ref": "HEAD",
+    "scope": "ALL_REGULAR_FILES",
+    "snapshot_sha256": "1ef597589d3dd718852bb733aa38a46c106c492dbc6fc02b205a7965f1b2d391",
+    "target_type": "local",
+    "tree": "3f9e49e6bd9a35d8dc6d3dbce8cb076ae4a023a5"
+  },
+  "stage": "COMPLETE",
+  "status": "LOCAL_COMPLETED"
+}

@@ -1,0 +1,40 @@
+{
+  "cwd": "C:\\Projekty\\Audyty\\BDB Audit",
+  "env": {
+    "PYTHONPATH": "C:\\Projekty\\Audyty\\BDB Audit\\src",
+    "PYTHONUTF8": "1"
+  },
+  "sandbox": "ordinary user execution outside restricted sandbox; no ACL/security configuration changes",
+  "groups": [
+    {
+      "log": "local-interface.xml",
+      "paths": "tests/product/test_guided_local_ui.py tests/product/test_local_product.py tests/product/test_product_v1.py tests/product/test_nf02_protocol.py tests/product/test_nf02_machine_authority.py tests/product/test_result_inspection.py tests/product/test_transition_boundary.py tests/product/test_runner_real_git.py",
+      "command": ".\\.venv-f2\\Scripts\\python.exe -m pytest -q -p no:tmpdir -p tools.product_test_tmp tests/product/test_guided_local_ui.py tests/product/test_local_product.py tests/product/test_product_v1.py tests/product/test_nf02_protocol.py tests/product/test_nf02_machine_authority.py tests/product/test_result_inspection.py tests/product/test_transition_boundary.py tests/product/test_runner_real_git.py --junitxml=docs/GUIDED_UX/evidence/local-interface.xml"
+    },
+    {
+      "log": "formal-regression.xml",
+      "paths": "tests/product/test_limited_content_identity.py tests/product/test_limited_installation_packet.py tests/product/test_limited_p0.py tests/product/test_limited_p0_boundaries.py tests/product/test_limited_p0_state_matrix.py tests/product/test_limited_p0_transport.py",
+      "command": ".\\.venv-f2\\Scripts\\python.exe -m pytest -q -p no:tmpdir -p tools.product_test_tmp tests/product/test_limited_content_identity.py tests/product/test_limited_installation_packet.py tests/product/test_limited_p0.py tests/product/test_limited_p0_boundaries.py tests/product/test_limited_p0_state_matrix.py tests/product/test_limited_p0_transport.py --junitxml=docs/GUIDED_UX/evidence/formal-regression.xml"
+    },
+    {
+      "log": "qualification-boundaries.xml",
+      "paths": "tests/product/test_limited_q1_closure.py tests/product/test_limited_qualification.py tests/product/test_limited_service.py tests/product/test_limited_windows_readiness.py",
+      "command": ".\\.venv-f2\\Scripts\\python.exe -m pytest -q -p no:tmpdir -p tools.product_test_tmp tests/product/test_limited_q1_closure.py tests/product/test_limited_qualification.py tests/product/test_limited_service.py tests/product/test_limited_windows_readiness.py --junitxml=docs/GUIDED_UX/evidence/qualification-boundaries.xml"
+    },
+    {
+      "log": "source-runtime.xml",
+      "paths": "tests/stage2 tests/stage3/test_ru03_assignment_vault.py tests/f1/test_zip.py tests/runner tests/workflow/test_ui_v2_0_3.py tests/f8/test_m46_build.py tests/f8/test_runtime_build_input_closure.py",
+      "command": ".\\.venv-f2\\Scripts\\python.exe -m pytest -q -p no:tmpdir -p tools.product_test_tmp tests/stage2 tests/stage3/test_ru03_assignment_vault.py tests/f1/test_zip.py tests/runner tests/workflow/test_ui_v2_0_3.py tests/f8/test_m46_build.py tests/f8/test_runtime_build_input_closure.py --junitxml=docs/GUIDED_UX/evidence/source-runtime.xml"
+    },
+    {
+      "log": "final-guided-ui.xml",
+      "paths": "tests/product/test_guided_local_ui.py tests/product/test_local_product.py",
+      "command": ".\\.venv-f2\\Scripts\\python.exe -m pytest -q -p no:tmpdir -p tools.product_test_tmp tests/product/test_guided_local_ui.py tests/product/test_local_product.py --junitxml=docs/GUIDED_UX/evidence/final-guided-ui.xml"
+    },
+    {
+      "log": "final-report-and-ui.xml",
+      "paths": "tests/product/test_guided_local_ui.py",
+      "command": ".\\.venv-f2\\Scripts\\python.exe -m pytest -q -p no:tmpdir -p tools.product_test_tmp tests/product/test_guided_local_ui.py --junitxml=docs/GUIDED_UX/evidence/final-report-and-ui.xml"
+    }
+  ]
+}

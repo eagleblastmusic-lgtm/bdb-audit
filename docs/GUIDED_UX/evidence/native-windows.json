@@ -1,0 +1,21 @@
+{
+  "format": "BDB_GUIDED_UX_NATIVE_WINDOWS_OBSERVATION_1",
+  "fixture": ".product-smoke/guided-ux-20261012-v3",
+  "production_tui_sessions": "TUI_SESSIONS.json",
+  "native_actions_session": "actual Windows folder, clipboard, verified copy and Explorer selection",
+  "result": "REAL_CALLS_COMPLETED_WITHOUT_REFUSAL",
+  "path_validation": "Retained package identity and exact bytes verified before every action",
+  "observed_explorer_folder": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\guided-ux-20261012-v3\\campaign ze spacją żółć\\packages",
+  "observed_explorer_window_id": 137686,
+  "observed_markdown_window": {
+    "app": "process:C:\\Windows\\System32\\notepad.exe",
+    "id": 332916,
+    "title": "REPORT.md — Notatnik"
+  },
+  "native_select_confirmation": "When Explorer exited 1, the production method required SHOpenFolderAndSelectItems HRESULT S_OK; the unmodified native method completed without refusal in real TUI.",
+  "standalone_native_selection": "The first isolated standalone run completed an explicit current E6-FOLLOWUP selection. Final artifact checks were read-only after the accidental Escape.",
+  "screenshot_capture": "NOT_AVAILABLE: FrameArrived/window capture timed out; accessibility text and returned window metadata were used.",
+  "computer_use_interruption": "Physical Escape was accidental per the user. Helper retained stop state after permitted reinitialization; no bypass or other UI automation was used.",
+  "acceptance_scope": "Native invocation and accessible real folder/report; no claim of pixel screenshot verification.",
+  "qualification_claim": "NONE"
+}

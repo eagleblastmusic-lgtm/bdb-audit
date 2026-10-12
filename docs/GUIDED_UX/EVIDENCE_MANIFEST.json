@@ -1,0 +1,1116 @@
+{
+  "format": "BDB_GUIDED_UX_DELIVERY_1",
+  "base_commit": "3c129a2856f29742b406076927ab4a75e921a856",
+  "branch": "work/guided-audit-ux",
+  "build": {
+    "status": "EXACT_SOURCE_AND_PAYLOAD_PASS",
+    "embedded_files": 423,
+    "source_files_checked": 281,
+    "payload_manifest_digest": "375a5c8efa81b07426fa3102fe3cd8e002d30a745bb24930bdb0a8bed366b0d5",
+    "artifact": {
+      "path": "dist/BDB_AUDIT_LOCAL_PRODUCT.py",
+      "bytes": 1637616,
+      "sha256": "9ece4c70d75d5c2ae721d20809f4cc814d7f7c02b495cad666c95671ea77a458"
+    }
+  },
+  "demo": {
+    "status": "REAL_GUIDED_LOCAL_E1_E6_PASS",
+    "campaign_id": "local-8d3d7ceb8a3d4cc285935413e399e28a",
+    "history_head": "8a577a2eca2b6c8b17fe9d20fdc63bcd5d5b2ad67e3306c919ed495f47c3b1cc",
+    "accepted_local_controls": 19,
+    "imported_local_controls": 20,
+    "rejected_local_controls": 1,
+    "external_ai": 0,
+    "test_fixtures": 0,
+    "actual_tool_runs": 2,
+    "guided_tui_sessions": 41,
+    "source_commit": "2df70942b30e927fe85bcf06a056fe54bf030f18",
+    "source_tree": "3f9e49e6bd9a35d8dc6d3dbce8cb076ae4a023a5",
+    "actual_demo_tests": {
+      "total": 6,
+      "pass": 3,
+      "intentional_defects_detected": 3
+    },
+    "report_verified": true,
+    "restart_without_acceptance_verified": true
+  },
+  "tests": {
+    "passed_unique_cases": 451,
+    "allowed_skips": [
+      "tests.product.test_guided_local_ui::test_actual_reparse_or_symlink_is_refused[file]"
+    ],
+    "failures": 0,
+    "errors": 0
+  },
+  "high_assurance": {
+    "status": "BLOCKED_AS_REQUIRED",
+    "exit_code": 2,
+    "external_ingestion": "BLOCKED",
+    "local_database_unchanged": true,
+    "frozen_model": {
+      "status": "EXACT_BYTES_UNCHANGED",
+      "model": "BDB_NF02_P0_LIMITED_1",
+      "manifest_sha256": "278d45caa8fe3a814c2d16c3706c93454cdd04676207b3159f57166a611d7ee9",
+      "normative_set_sha256": "f4aeeadd96314ef7854f61747fdf3f72caf5dfb599c4977a78170aa3620165df",
+      "machine_set_sha256": "7449d5eb45ca2aa49b065318d1287ac473fed54dc0e8359bcc32033215f5709d",
+      "qualification_claim": "NONE"
+    }
+  },
+  "files": [
+    {
+      "path": ".product-smoke/guided-ux-20261012-v3/TUI_SESSIONS.json",
+      "bytes": 15048,
+      "sha256": "71c4b99dcadfeb7e04f5ebce2859cb88dba03a6d13ed0a0358a7ee8261f6d4bc"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v3/TUI_TRANSCRIPT.txt",
+      "bytes": 832952,
+      "sha256": "89aa7f45d8916cefbbfc46545abb5dae5addbefc0e948446ca4b5020a4df366d"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E1-A.zip",
+      "bytes": 2144,
+      "sha256": "6b538244a68fd105e03fb240dc817a9fc12b1f65faf106cafd697a8ecc563148"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E1-B-draft-rejected.zip",
+      "bytes": 2178,
+      "sha256": "658f31a7f7ff690fe7699b6a73eef1d51c23837680bf95145ec9b9253cb15dd7"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E1-B.zip",
+      "bytes": 2144,
+      "sha256": "93145dade0110ac68c35b0c8c679ff2412894da8de85991fc37b3bde33d1d12f"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E1-C.zip",
+      "bytes": 2143,
+      "sha256": "58302568c597797439ffc5d282ddb6a5c1817e5a3aa665b08ea129dc7258fe4b"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E1-D.zip",
+      "bytes": 2145,
+      "sha256": "e98e3d12d287f38ebc01d3b25ad340b2c85bfd107b0f57e444fcd4ed650153e2"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E1-E.zip",
+      "bytes": 2143,
+      "sha256": "120835f45821373a42f4c6e7fb754126e6a01a5677fe7f1500c2747311d9707e"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E2-ADJUDICATION.zip",
+      "bytes": 2066,
+      "sha256": "f2062ab60c5779a99e15ae10e3cc4f9ecf24402b48eff3e6b1521979dfba8ed8"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E2-CONVERGENCE.zip",
+      "bytes": 2067,
+      "sha256": "ca598328c3a3574c8b54a47e9d66d4275e86755192e392216969bc6d0158881e"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E3-X.zip",
+      "bytes": 2037,
+      "sha256": "5703f6dc5c62c7a7aa223a0ce3ab538a5fd62a6b1f7d71f4b1dc8c9fc894d330"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E3-Y.zip",
+      "bytes": 2036,
+      "sha256": "1b2c274e817987d150ab2612a7c4fc4a59083782fa660267661db2e3af73d9c4"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E3-Z.zip",
+      "bytes": 2039,
+      "sha256": "81278fccc6b2b3aa62469926f71558a17d5bb752f2ef1d426925b12f1aede5b2"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E4-CAUSAL.zip",
+      "bytes": 2015,
+      "sha256": "bc761d67cdb60b28e5baccbf68a0f43de113321703a9f449a2c46c3629b552ca"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E4-MODEL.zip",
+      "bytes": 2055,
+      "sha256": "d545cacead483b38c6322b34bb403bee332ae2abeeb9802a39d809e086704af8"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E4-RESILIENCE.zip",
+      "bytes": 2044,
+      "sha256": "994ec540c99c765cba2fd48be2841442c0ce14e3fd0b5e8ee517d28c9cf7dbb5"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E5-A-CALIBRATION.zip",
+      "bytes": 2096,
+      "sha256": "f7bb7f732d383f975b26b81ae0aeee3702b0fb622c3f3b6883c1f68cde1d1973"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E5-A-INTERACTION.zip",
+      "bytes": 2099,
+      "sha256": "b4d493d777fea3bd4a39ae5d9c652e66dd2fef2e772e0e411278ac25d20bb803"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E5-A-MUTATION.zip",
+      "bytes": 2094,
+      "sha256": "6ba265c814ee8ecc58765b1e4e23e3aa2764263df453181787dd3ee3a603e469"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E5-B1.zip",
+      "bytes": 2054,
+      "sha256": "8310320b37fecd5d82c6490806bc5db754ac652b99684631f5e34c7b95e2706b"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E5-B2.zip",
+      "bytes": 2054,
+      "sha256": "c14f7ba778510bf7cbe150026bbca33e094ed7e75623dd50d127e316555131cd"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/actual-local-responses/E6-FOLLOWUP.zip",
+      "bytes": 2119,
+      "sha256": "2579c7873b481ea2ba18ea9bc40cc9c479e4ef11420fcfb97020fb81b36f42ad"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/checks/local-run-911408a4657b4dddb01a55ad2f6792a8/RUN_MANIFEST.json",
+      "bytes": 862,
+      "sha256": "d5cd729356719bdded64cac38e6e1e4cca42fccb174391b3e6ca2389ee7ed007"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/checks/local-run-911408a4657b4dddb01a55ad2f6792a8/RUN_RECEIPT.json",
+      "bytes": 1278,
+      "sha256": "dabd2050dacee3852b9110388c2812f1c52e90705c31ff70f5d170b168858772"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/checks/local-run-911408a4657b4dddb01a55ad2f6792a8/stderr.bin",
+      "bytes": 2247,
+      "sha256": "7934436214e6adeece62edb6e3bbc87806a85d61d2cbd2db717233976ab329d5"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/checks/local-run-911408a4657b4dddb01a55ad2f6792a8/stdout.bin",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/checks/local-run-ba4644b2d4554b77afa012a05d46a455/RUN_MANIFEST.json",
+      "bytes": 1085,
+      "sha256": "f33eec5f43b367cb676b24b1d773c5189a6de27bad3e62099e49a0bf563d371b"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/checks/local-run-ba4644b2d4554b77afa012a05d46a455/RUN_RECEIPT.json",
+      "bytes": 1269,
+      "sha256": "583ed8003e2338957b2e1bd20cc77f88caaac52db328aaa148074b6cb9d1ce79"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/checks/local-run-ba4644b2d4554b77afa012a05d46a455/stderr.bin",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/checks/local-run-ba4644b2d4554b77afa012a05d46a455/stdout.bin",
+      "bytes": 88,
+      "sha256": "80bb14f8007ee29ee753e217e750c0344222f9521e25d8c647fbdfd13fedfbe9"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/local.sqlite3",
+      "bytes": 98304,
+      "sha256": "6c4133e0b779e3d63e0f0893f130dac885e903ba091fd70c3b6292eb0ddbaf97"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/E1-A.zip",
+      "bytes": 3768,
+      "sha256": "92cb42cb907902bc8a783caca7b83aa79de9a5a767c5c5345016684955bc248d"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/E1-B.zip",
+      "bytes": 3771,
+      "sha256": "fd8b804f8605df917785d7c24718ca9e4108c4bc95643f4c1a6949501b336a5c"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/E1-C.zip",
+      "bytes": 3758,
+      "sha256": "263b104e8fa83cd585ea083354e7e5010f407718cf2f1eba5b828eb693270ef6"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/E1-D.zip",
+      "bytes": 3763,
+      "sha256": "99b0708bb36aecb694eeedfeb74f0320787db865cba8907d0bfc1fa5b56a2e69"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/E1-E.zip",
+      "bytes": 3773,
+      "sha256": "4bb8b542720f8ded2dbd1c3009fd2e284af24915420e6050ff029797c23c7dba"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/E2-ADJUDICATION.zip",
+      "bytes": 9991,
+      "sha256": "93078d8f5783e1a88c0f72736d8464b396d1ec2efb5ba44c2148015d77155f0b"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/E2-CONVERGENCE.zip",
+      "bytes": 9966,
+      "sha256": "a76bc8d3537c3a01f858487ae835035ae4fb41d806ae8f6f1bfd1a1dc634d476"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/E3-X.zip",
+      "bytes": 12199,
+      "sha256": "47c29e0d549b0d6fcbc133fc45025633f0012f439ced7ef630fcfb745611e594"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/E3-Y.zip",
+      "bytes": 12193,
+      "sha256": "d3b74640df22623ca7a9a803d0cf91b1d7b9a4a2f9514169e470a2e7c680e5e1"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/E3-Z.zip",
+      "bytes": 12201,
+      "sha256": "372ac7778225b4d1d42bf93db278a5fe3c6cf61f731824c59f2221cd110a9e76"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/E4-CAUSAL.zip",
+      "bytes": 15240,
+      "sha256": "0106318f42ed7a843b2e52c439a1937024cd271e1771ed0a0794c874d6fc335d"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/E4-MODEL.zip",
+      "bytes": 15233,
+      "sha256": "fb68bca0cd89b02797ac366a60036fb4a3e6fc23187618418b749233d137c075"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/E4-RESILIENCE.zip",
+      "bytes": 15267,
+      "sha256": "ab909cc4b078804de165c4560a67f5479e13bc06b17b994211846eca761d873c"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/E5-A-CALIBRATION.zip",
+      "bytes": 18461,
+      "sha256": "2641e52f7036d32ab70e2510f6f8390447d74a71043c0c83c1a052ee556fc7ef"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/E5-A-INTERACTION.zip",
+      "bytes": 18452,
+      "sha256": "e17e797c1968bf6c8a2cb79c7357d144c1f243b4a9486b2c1624fadc7ac647a3"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/E5-A-MUTATION.zip",
+      "bytes": 18450,
+      "sha256": "c0cb649cae917aeb0ddbcf932c08aade1dc7110950ec4c0eb6f16a8dab9a74bc"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/E5-B1.zip",
+      "bytes": 21464,
+      "sha256": "9b465177b4d0990377405c487b1b6f7a495fad38b4a15d9872385ecd90cb0221"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/E5-B2.zip",
+      "bytes": 21475,
+      "sha256": "9b11485f3f5c119bdddedb147d5b11587c03d6fa9e2bed34370eb176808a9243"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/E6-FOLLOWUP.zip",
+      "bytes": 23602,
+      "sha256": "d0761cda85ab344c4ade0e6bc6029846ecc8066eade3b1c144a003834e5b0947"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/packages/RESPONSE_FORMAT.md",
+      "bytes": 2867,
+      "sha256": "469c815bae0a18ab9f0c07a5aefff1a817376344971f5110c40c4365a68e2e64"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/reports/20261012-214641-ec74c8a9/EVIDENCE_MANIFEST.json",
+      "bytes": 13146,
+      "sha256": "10f2f2534566d69ef76a7e28346f53152a41dd5940f151b4ca2f3cf7b5d793da"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/reports/20261012-214641-ec74c8a9/REPORT.json",
+      "bytes": 248332,
+      "sha256": "85d9c410b3a1f110f7aec9af24d4bcc14277ac3726361123cdaa73110146854e"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/reports/20261012-214641-ec74c8a9/REPORT.md",
+      "bytes": 130332,
+      "sha256": "e2269769651b817544277c9a00a01f1238cb13538b4978208512c1de1ec6063a"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/0106318f42ed7a843b2e52c439a1937024cd271e1771ed0a0794c874d6fc335d.json",
+      "bytes": 168,
+      "sha256": "81aab6f9ff0635661adb109421ee07307e8254c39b4af5042b94e254bd8635a8"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/120835f45821373a42f4c6e7fb754126e6a01a5677fe7f1500c2747311d9707e.json",
+      "bytes": 167,
+      "sha256": "8db7113365080796828f0e4d88d2f406ca71f5f132bd61603c6a3877f58b26a7"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/1b2c274e817987d150ab2612a7c4fc4a59083782fa660267661db2e3af73d9c4.json",
+      "bytes": 167,
+      "sha256": "16e8a69d146851f2abc6d2ddb29f5a6814a5dd032631496716744f7df6a6c98a"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/1ef597589d3dd718852bb733aa38a46c106c492dbc6fc02b205a7965f1b2d391.json",
+      "bytes": 167,
+      "sha256": "79e1c4a8370e180d98574e8d00f01962e5cdcfb800ea6a52ae2c52c296525d4d"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/2579c7873b481ea2ba18ea9bc40cc9c479e4ef11420fcfb97020fb81b36f42ad.json",
+      "bytes": 167,
+      "sha256": "580f3d5bc2114de3aad315328a887fec069aa5cfdfc7f7dd79d8184937cde228"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/263b104e8fa83cd585ea083354e7e5010f407718cf2f1eba5b828eb693270ef6.json",
+      "bytes": 167,
+      "sha256": "c112d940280c5f118ca00caeb35642a4376879ad0b05f1f5860d091192229d86"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/2641e52f7036d32ab70e2510f6f8390447d74a71043c0c83c1a052ee556fc7ef.json",
+      "bytes": 168,
+      "sha256": "6108e34573558b4da2af649d98f3bcb8968b0067daecb9fc5babbc559c297492"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/372ac7778225b4d1d42bf93db278a5fe3c6cf61f731824c59f2221cd110a9e76.json",
+      "bytes": 168,
+      "sha256": "c421b1202f577ac469afcd3ac631787333b9a7436ecc515c29db4e680fde4170"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/47c29e0d549b0d6fcbc133fc45025633f0012f439ced7ef630fcfb745611e594.json",
+      "bytes": 168,
+      "sha256": "a5934179cfb09b6cbeca1043315d446c5dcb1f8203e45cfdfc987d03bbb45517"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/4bb8b542720f8ded2dbd1c3009fd2e284af24915420e6050ff029797c23c7dba.json",
+      "bytes": 167,
+      "sha256": "81f46981d0b412217701640c2b451d088e8a99edfa9ad083b94eb3213b873302"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/5703f6dc5c62c7a7aa223a0ce3ab538a5fd62a6b1f7d71f4b1dc8c9fc894d330.json",
+      "bytes": 167,
+      "sha256": "e40b56128ad36783344d5c9a8f42ecdb2b3a652e3f746dd8af69200be95e466e"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/58302568c597797439ffc5d282ddb6a5c1817e5a3aa665b08ea129dc7258fe4b.json",
+      "bytes": 167,
+      "sha256": "53a2a5e5cba18c596e0564bb35eea5273ea038ce410004ade569378fea14f803"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/583ed8003e2338957b2e1bd20cc77f88caaac52db328aaa148074b6cb9d1ce79.json",
+      "bytes": 167,
+      "sha256": "c0c5aabdbd5a457b73d9f0339a7583963e1b42291bbc138e2f04c2f54e777b84"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/658f31a7f7ff690fe7699b6a73eef1d51c23837680bf95145ec9b9253cb15dd7.json",
+      "bytes": 167,
+      "sha256": "4fc8a38254519f641548a757dda23354cc6a8862341be789cf621a9ba67b0362"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/6b538244a68fd105e03fb240dc817a9fc12b1f65faf106cafd697a8ecc563148.json",
+      "bytes": 167,
+      "sha256": "2faab4b97037c6062803bdb546fa506a79abb8cb3355e5ceb6e2118eec974361"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/6ba265c814ee8ecc58765b1e4e23e3aa2764263df453181787dd3ee3a603e469.json",
+      "bytes": 167,
+      "sha256": "fa4c4781edb824d39fef60630c85799e0d97360f68c9b1693b18ccf2904d44ac"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/7934436214e6adeece62edb6e3bbc87806a85d61d2cbd2db717233976ab329d5.json",
+      "bytes": 167,
+      "sha256": "e3e9a1f16d5abce5a69b639eb3178674fccd10c0aa71c2f4639aab4c75ad29b2"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/80bb14f8007ee29ee753e217e750c0344222f9521e25d8c647fbdfd13fedfbe9.json",
+      "bytes": 165,
+      "sha256": "6f3e7ad48aaa151cccd6ef5c92c8a9bfdce81e4fab4674446f2a76df5040dcf4"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/81278fccc6b2b3aa62469926f71558a17d5bb752f2ef1d426925b12f1aede5b2.json",
+      "bytes": 167,
+      "sha256": "ba66a915b1d6e56f3378a2fdc719afd458dd313297ec793bfbe478b89a2f8bd9"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/8310320b37fecd5d82c6490806bc5db754ac652b99684631f5e34c7b95e2706b.json",
+      "bytes": 167,
+      "sha256": "643323dc724d991a54e2c03fc72a34e3d342a806b98c973b015622e9fe1495b0"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/92cb42cb907902bc8a783caca7b83aa79de9a5a767c5c5345016684955bc248d.json",
+      "bytes": 167,
+      "sha256": "0b9b46d5b669a30c7e3a6310a2b7d815fd3d2df6a35bec08f03066b70cd539aa"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/93078d8f5783e1a88c0f72736d8464b396d1ec2efb5ba44c2148015d77155f0b.json",
+      "bytes": 167,
+      "sha256": "c1b680b9b592b786ded5f68a7697d00b3398aea8996fcd65d57cecfc68fc93c0"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/93145dade0110ac68c35b0c8c679ff2412894da8de85991fc37b3bde33d1d12f.json",
+      "bytes": 167,
+      "sha256": "0766269e22e79e6e2d848ef26582066a248e02cf581c9e772bde62b3676259a9"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/994ec540c99c765cba2fd48be2841442c0ce14e3fd0b5e8ee517d28c9cf7dbb5.json",
+      "bytes": 167,
+      "sha256": "64aeda37697330d0372f60fb8cb40012171c7c8b01adf51886b1d537cf574721"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/99b0708bb36aecb694eeedfeb74f0320787db865cba8907d0bfc1fa5b56a2e69.json",
+      "bytes": 167,
+      "sha256": "00a16c052e05ab1d0ec415e46550399b1472f1a02fb8ec8fd4bb13006687d143"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/9b11485f3f5c119bdddedb147d5b11587c03d6fa9e2bed34370eb176808a9243.json",
+      "bytes": 168,
+      "sha256": "f93bfacd69cef4e9bcdd6b1eced2dd986052ad031e6c61345d9a04fe7c688d3c"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/9b465177b4d0990377405c487b1b6f7a495fad38b4a15d9872385ecd90cb0221.json",
+      "bytes": 168,
+      "sha256": "c8454ade959ce5eb63ad6d241092e767f92f1cbe5927eea72fd2343304cf117c"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/a76bc8d3537c3a01f858487ae835035ae4fb41d806ae8f6f1bfd1a1dc634d476.json",
+      "bytes": 167,
+      "sha256": "c72bf92ef52336b99a1bd68e15ba8912fef52aa5c9132cd83935bd763430e2ce"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/ab909cc4b078804de165c4560a67f5479e13bc06b17b994211846eca761d873c.json",
+      "bytes": 168,
+      "sha256": "64860e2b69154e5417df91e74d302cbfff5651ee40d189e805044a6f40fe98c0"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/b4d493d777fea3bd4a39ae5d9c652e66dd2fef2e772e0e411278ac25d20bb803.json",
+      "bytes": 167,
+      "sha256": "30e1b500f47f5ed10be80c41ab4fc4d544f2164c38c5807f2e18ee1b267c9795"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/bc761d67cdb60b28e5baccbf68a0f43de113321703a9f449a2c46c3629b552ca.json",
+      "bytes": 167,
+      "sha256": "22a71dd8a5021107cf0aa54b91475001037cbc7916f14b9da5b7a15a009946d3"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/c0cb649cae917aeb0ddbcf932c08aade1dc7110950ec4c0eb6f16a8dab9a74bc.json",
+      "bytes": 168,
+      "sha256": "e98667be6ac77d3bf17c20ec0957f36b2283446ca35efee7b14484c5abd89303"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/c14f7ba778510bf7cbe150026bbca33e094ed7e75623dd50d127e316555131cd.json",
+      "bytes": 167,
+      "sha256": "2f12ebdc8102f92ff4466dd8483d232fe2b2043911917dd531b216bd679ff784"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/ca598328c3a3574c8b54a47e9d66d4275e86755192e392216969bc6d0158881e.json",
+      "bytes": 167,
+      "sha256": "6adf03eb9ee5a64f651cbcdbd0350e615f6aae1c4ffd2dd023ec5c3dddd30b1d"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/d0761cda85ab344c4ade0e6bc6029846ecc8066eade3b1c144a003834e5b0947.json",
+      "bytes": 168,
+      "sha256": "3c3ec1cd29698183b2b081c7a62c7838d0a05ba75d8ddfd1c6b2871852cc5b14"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/d3b74640df22623ca7a9a803d0cf91b1d7b9a4a2f9514169e470a2e7c680e5e1.json",
+      "bytes": 168,
+      "sha256": "9219ab4fd97d14096a42ecb9748fadfd6540eedae6b04b1da9f552abefd16bad"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/d545cacead483b38c6322b34bb403bee332ae2abeeb9802a39d809e086704af8.json",
+      "bytes": 167,
+      "sha256": "59e2f32ca213d995c028cba4c08e98176e41da798cac4073ff2662f4ecb603cd"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/d5cd729356719bdded64cac38e6e1e4cca42fccb174391b3e6ca2389ee7ed007.json",
+      "bytes": 166,
+      "sha256": "563b4499960326765deb238ec516faf8f54a022fb0605788408cf374c1ecb059"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/dabd2050dacee3852b9110388c2812f1c52e90705c31ff70f5d170b168858772.json",
+      "bytes": 167,
+      "sha256": "08dec1f362b403b65c897983270bc9d252616569e9afaa85145bb5577c84612b"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/e17e797c1968bf6c8a2cb79c7357d144c1f243b4a9486b2c1624fadc7ac647a3.json",
+      "bytes": 168,
+      "sha256": "6bfd5bd9806b3cf53e82f2eef0fc3f73fff9dfa61235d51318d5bf70fd1153df"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.json",
+      "bytes": 164,
+      "sha256": "f6481308b8d630716a5d20a16eec56033959607c1332c795b8ea05c1ecf6d8e4"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/e98e3d12d287f38ebc01d3b25ad340b2c85bfd107b0f57e444fcd4ed650153e2.json",
+      "bytes": 167,
+      "sha256": "10745fc801a9bbe7d96f7e04d574e31323a49f485045e6c8855e6e6e52b75efa"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/f2062ab60c5779a99e15ae10e3cc4f9ecf24402b48eff3e6b1521979dfba8ed8.json",
+      "bytes": 167,
+      "sha256": "1f63afcd790ce361a56a4c7e197e0d52383d252c5409e25401f6697c902a4977"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/f33eec5f43b367cb676b24b1d773c5189a6de27bad3e62099e49a0bf563d371b.json",
+      "bytes": 167,
+      "sha256": "ee7bdad2f6d96471172ef3c6556a5ed227ca6114f3b69a91206ee4cc48cbef8c"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/f7bb7f732d383f975b26b81ae0aeee3702b0fb622c3f3b6883c1f68cde1d1973.json",
+      "bytes": 167,
+      "sha256": "5b0eac7a2aa927889454238e56a596031268dd66e1b37498efa8ae420b2ad497"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/fb68bca0cd89b02797ac366a60036fb4a3e6fc23187618418b749233d137c075.json",
+      "bytes": 168,
+      "sha256": "de5a280f56bb15900a39e2750e5d9b5e6521c8019a6ea21bef4068f89a970d1e"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/metadata/fd8b804f8605df917785d7c24718ca9e4108c4bc95643f4c1a6949501b336a5c.json",
+      "bytes": 167,
+      "sha256": "938e7f9e21a87dd83d2a6ed3cdab85bb3229e241826a5eb872ce6729de3eaba5"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/01/06318f42ed7a843b2e52c439a1937024cd271e1771ed0a0794c874d6fc335d",
+      "bytes": 15240,
+      "sha256": "0106318f42ed7a843b2e52c439a1937024cd271e1771ed0a0794c874d6fc335d"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/12/0835f45821373a42f4c6e7fb754126e6a01a5677fe7f1500c2747311d9707e",
+      "bytes": 2143,
+      "sha256": "120835f45821373a42f4c6e7fb754126e6a01a5677fe7f1500c2747311d9707e"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/1b/2c274e817987d150ab2612a7c4fc4a59083782fa660267661db2e3af73d9c4",
+      "bytes": 2036,
+      "sha256": "1b2c274e817987d150ab2612a7c4fc4a59083782fa660267661db2e3af73d9c4"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/1e/f597589d3dd718852bb733aa38a46c106c492dbc6fc02b205a7965f1b2d391",
+      "bytes": 3271,
+      "sha256": "1ef597589d3dd718852bb733aa38a46c106c492dbc6fc02b205a7965f1b2d391"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/25/79c7873b481ea2ba18ea9bc40cc9c479e4ef11420fcfb97020fb81b36f42ad",
+      "bytes": 2119,
+      "sha256": "2579c7873b481ea2ba18ea9bc40cc9c479e4ef11420fcfb97020fb81b36f42ad"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/26/3b104e8fa83cd585ea083354e7e5010f407718cf2f1eba5b828eb693270ef6",
+      "bytes": 3758,
+      "sha256": "263b104e8fa83cd585ea083354e7e5010f407718cf2f1eba5b828eb693270ef6"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/26/41e52f7036d32ab70e2510f6f8390447d74a71043c0c83c1a052ee556fc7ef",
+      "bytes": 18461,
+      "sha256": "2641e52f7036d32ab70e2510f6f8390447d74a71043c0c83c1a052ee556fc7ef"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/37/2ac7778225b4d1d42bf93db278a5fe3c6cf61f731824c59f2221cd110a9e76",
+      "bytes": 12201,
+      "sha256": "372ac7778225b4d1d42bf93db278a5fe3c6cf61f731824c59f2221cd110a9e76"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/47/c29e0d549b0d6fcbc133fc45025633f0012f439ced7ef630fcfb745611e594",
+      "bytes": 12199,
+      "sha256": "47c29e0d549b0d6fcbc133fc45025633f0012f439ced7ef630fcfb745611e594"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/4b/b8b542720f8ded2dbd1c3009fd2e284af24915420e6050ff029797c23c7dba",
+      "bytes": 3773,
+      "sha256": "4bb8b542720f8ded2dbd1c3009fd2e284af24915420e6050ff029797c23c7dba"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/57/03f6dc5c62c7a7aa223a0ce3ab538a5fd62a6b1f7d71f4b1dc8c9fc894d330",
+      "bytes": 2037,
+      "sha256": "5703f6dc5c62c7a7aa223a0ce3ab538a5fd62a6b1f7d71f4b1dc8c9fc894d330"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/58/302568c597797439ffc5d282ddb6a5c1817e5a3aa665b08ea129dc7258fe4b",
+      "bytes": 2143,
+      "sha256": "58302568c597797439ffc5d282ddb6a5c1817e5a3aa665b08ea129dc7258fe4b"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/58/3ed8003e2338957b2e1bd20cc77f88caaac52db328aaa148074b6cb9d1ce79",
+      "bytes": 1269,
+      "sha256": "583ed8003e2338957b2e1bd20cc77f88caaac52db328aaa148074b6cb9d1ce79"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/65/8f31a7f7ff690fe7699b6a73eef1d51c23837680bf95145ec9b9253cb15dd7",
+      "bytes": 2178,
+      "sha256": "658f31a7f7ff690fe7699b6a73eef1d51c23837680bf95145ec9b9253cb15dd7"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/6b/538244a68fd105e03fb240dc817a9fc12b1f65faf106cafd697a8ecc563148",
+      "bytes": 2144,
+      "sha256": "6b538244a68fd105e03fb240dc817a9fc12b1f65faf106cafd697a8ecc563148"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/6b/a265c814ee8ecc58765b1e4e23e3aa2764263df453181787dd3ee3a603e469",
+      "bytes": 2094,
+      "sha256": "6ba265c814ee8ecc58765b1e4e23e3aa2764263df453181787dd3ee3a603e469"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/79/34436214e6adeece62edb6e3bbc87806a85d61d2cbd2db717233976ab329d5",
+      "bytes": 2247,
+      "sha256": "7934436214e6adeece62edb6e3bbc87806a85d61d2cbd2db717233976ab329d5"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/80/bb14f8007ee29ee753e217e750c0344222f9521e25d8c647fbdfd13fedfbe9",
+      "bytes": 88,
+      "sha256": "80bb14f8007ee29ee753e217e750c0344222f9521e25d8c647fbdfd13fedfbe9"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/81/278fccc6b2b3aa62469926f71558a17d5bb752f2ef1d426925b12f1aede5b2",
+      "bytes": 2039,
+      "sha256": "81278fccc6b2b3aa62469926f71558a17d5bb752f2ef1d426925b12f1aede5b2"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/83/10320b37fecd5d82c6490806bc5db754ac652b99684631f5e34c7b95e2706b",
+      "bytes": 2054,
+      "sha256": "8310320b37fecd5d82c6490806bc5db754ac652b99684631f5e34c7b95e2706b"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/92/cb42cb907902bc8a783caca7b83aa79de9a5a767c5c5345016684955bc248d",
+      "bytes": 3768,
+      "sha256": "92cb42cb907902bc8a783caca7b83aa79de9a5a767c5c5345016684955bc248d"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/93/078d8f5783e1a88c0f72736d8464b396d1ec2efb5ba44c2148015d77155f0b",
+      "bytes": 9991,
+      "sha256": "93078d8f5783e1a88c0f72736d8464b396d1ec2efb5ba44c2148015d77155f0b"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/93/145dade0110ac68c35b0c8c679ff2412894da8de85991fc37b3bde33d1d12f",
+      "bytes": 2144,
+      "sha256": "93145dade0110ac68c35b0c8c679ff2412894da8de85991fc37b3bde33d1d12f"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/99/4ec540c99c765cba2fd48be2841442c0ce14e3fd0b5e8ee517d28c9cf7dbb5",
+      "bytes": 2044,
+      "sha256": "994ec540c99c765cba2fd48be2841442c0ce14e3fd0b5e8ee517d28c9cf7dbb5"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/99/b0708bb36aecb694eeedfeb74f0320787db865cba8907d0bfc1fa5b56a2e69",
+      "bytes": 3763,
+      "sha256": "99b0708bb36aecb694eeedfeb74f0320787db865cba8907d0bfc1fa5b56a2e69"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/9b/11485f3f5c119bdddedb147d5b11587c03d6fa9e2bed34370eb176808a9243",
+      "bytes": 21475,
+      "sha256": "9b11485f3f5c119bdddedb147d5b11587c03d6fa9e2bed34370eb176808a9243"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/9b/465177b4d0990377405c487b1b6f7a495fad38b4a15d9872385ecd90cb0221",
+      "bytes": 21464,
+      "sha256": "9b465177b4d0990377405c487b1b6f7a495fad38b4a15d9872385ecd90cb0221"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/a7/6bc8d3537c3a01f858487ae835035ae4fb41d806ae8f6f1bfd1a1dc634d476",
+      "bytes": 9966,
+      "sha256": "a76bc8d3537c3a01f858487ae835035ae4fb41d806ae8f6f1bfd1a1dc634d476"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/ab/909cc4b078804de165c4560a67f5479e13bc06b17b994211846eca761d873c",
+      "bytes": 15267,
+      "sha256": "ab909cc4b078804de165c4560a67f5479e13bc06b17b994211846eca761d873c"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/b4/d493d777fea3bd4a39ae5d9c652e66dd2fef2e772e0e411278ac25d20bb803",
+      "bytes": 2099,
+      "sha256": "b4d493d777fea3bd4a39ae5d9c652e66dd2fef2e772e0e411278ac25d20bb803"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/bc/761d67cdb60b28e5baccbf68a0f43de113321703a9f449a2c46c3629b552ca",
+      "bytes": 2015,
+      "sha256": "bc761d67cdb60b28e5baccbf68a0f43de113321703a9f449a2c46c3629b552ca"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/c0/cb649cae917aeb0ddbcf932c08aade1dc7110950ec4c0eb6f16a8dab9a74bc",
+      "bytes": 18450,
+      "sha256": "c0cb649cae917aeb0ddbcf932c08aade1dc7110950ec4c0eb6f16a8dab9a74bc"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/c1/4f7ba778510bf7cbe150026bbca33e094ed7e75623dd50d127e316555131cd",
+      "bytes": 2054,
+      "sha256": "c14f7ba778510bf7cbe150026bbca33e094ed7e75623dd50d127e316555131cd"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/ca/598328c3a3574c8b54a47e9d66d4275e86755192e392216969bc6d0158881e",
+      "bytes": 2067,
+      "sha256": "ca598328c3a3574c8b54a47e9d66d4275e86755192e392216969bc6d0158881e"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/d0/761cda85ab344c4ade0e6bc6029846ecc8066eade3b1c144a003834e5b0947",
+      "bytes": 23602,
+      "sha256": "d0761cda85ab344c4ade0e6bc6029846ecc8066eade3b1c144a003834e5b0947"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/d3/b74640df22623ca7a9a803d0cf91b1d7b9a4a2f9514169e470a2e7c680e5e1",
+      "bytes": 12193,
+      "sha256": "d3b74640df22623ca7a9a803d0cf91b1d7b9a4a2f9514169e470a2e7c680e5e1"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/d5/45cacead483b38c6322b34bb403bee332ae2abeeb9802a39d809e086704af8",
+      "bytes": 2055,
+      "sha256": "d545cacead483b38c6322b34bb403bee332ae2abeeb9802a39d809e086704af8"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/d5/cd729356719bdded64cac38e6e1e4cca42fccb174391b3e6ca2389ee7ed007",
+      "bytes": 862,
+      "sha256": "d5cd729356719bdded64cac38e6e1e4cca42fccb174391b3e6ca2389ee7ed007"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/da/bd2050dacee3852b9110388c2812f1c52e90705c31ff70f5d170b168858772",
+      "bytes": 1278,
+      "sha256": "dabd2050dacee3852b9110388c2812f1c52e90705c31ff70f5d170b168858772"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/e1/7e797c1968bf6c8a2cb79c7357d144c1f243b4a9486b2c1624fadc7ac647a3",
+      "bytes": 18452,
+      "sha256": "e17e797c1968bf6c8a2cb79c7357d144c1f243b4a9486b2c1624fadc7ac647a3"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/e3/b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/e9/8e3d12d287f38ebc01d3b25ad340b2c85bfd107b0f57e444fcd4ed650153e2",
+      "bytes": 2145,
+      "sha256": "e98e3d12d287f38ebc01d3b25ad340b2c85bfd107b0f57e444fcd4ed650153e2"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/f2/062ab60c5779a99e15ae10e3cc4f9ecf24402b48eff3e6b1521979dfba8ed8",
+      "bytes": 2066,
+      "sha256": "f2062ab60c5779a99e15ae10e3cc4f9ecf24402b48eff3e6b1521979dfba8ed8"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/f3/3eec5f43b367cb676b24b1d773c5189a6de27bad3e62099e49a0bf563d371b",
+      "bytes": 1085,
+      "sha256": "f33eec5f43b367cb676b24b1d773c5189a6de27bad3e62099e49a0bf563d371b"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/f7/bb7f732d383f975b26b81ae0aeee3702b0fb622c3f3b6883c1f68cde1d1973",
+      "bytes": 2096,
+      "sha256": "f7bb7f732d383f975b26b81ae0aeee3702b0fb622c3f3b6883c1f68cde1d1973"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/fb/68bca0cd89b02797ac366a60036fb4a3e6fc23187618418b749233d137c075",
+      "bytes": 15233,
+      "sha256": "fb68bca0cd89b02797ac366a60036fb4a3e6fc23187618418b749233d137c075"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/campaign ze spacją żółć/vault/sha256/fd/8b804f8605df917785d7c24718ca9e4108c4bc95643f4c1a6949501b336a5c",
+      "bytes": 3771,
+      "sha256": "fd8b804f8605df917785d7c24718ca9e4108c4bc95643f4c1a6949501b336a5c"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/CLI_COMMANDS.json",
+      "bytes": 9785,
+      "sha256": "81d96cf0ecff469d74a905cd830f7549c62e6218182325d7e22fad8f87cb3be6"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/CLI_TRANSCRIPT.txt",
+      "bytes": 72061,
+      "sha256": "a8b1697400a12092b5dd9534ab76bc94a7a068bf1ea45be40f5baa94ad7e9beb"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/DEMO_RESULT.json",
+      "bytes": 1338,
+      "sha256": "2e7644f83a8034cf197e6f98b6db410cfceb1edf5033517f817e34aa768aba9c"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/exported package copies/E1-A.zip",
+      "bytes": 3768,
+      "sha256": "92cb42cb907902bc8a783caca7b83aa79de9a5a767c5c5345016684955bc248d"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/final-report/EVIDENCE_MANIFEST.json",
+      "bytes": 13146,
+      "sha256": "10f2f2534566d69ef76a7e28346f53152a41dd5940f151b4ca2f3cf7b5d793da"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/final-report/REPORT.json",
+      "bytes": 248332,
+      "sha256": "85d9c410b3a1f110f7aec9af24d4bcc14277ac3726361123cdaa73110146854e"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/final-report/REPORT.md",
+      "bytes": 130332,
+      "sha256": "e2269769651b817544277c9a00a01f1238cb13538b4978208512c1de1ec6063a"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/FINAL_SCREEN.txt",
+      "bytes": 1733,
+      "sha256": "541b853b1c409526261a7225b854b40031f5853a4e0c85638d5de8d172f82a7f"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/known-defects-repository/app.py",
+      "bytes": 449,
+      "sha256": "1af717c7f3d98f7dad8fe14fce8d58aaf4a07caf907afc530f4472fe570391a0"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/known-defects-repository/README.md",
+      "bytes": 79,
+      "sha256": "c2fbfc6afe2618d05c39e26bb7b72b584494edec10cebefa73956ad5f5e5dc11"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/known-defects-repository/test_app.py",
+      "bytes": 1322,
+      "sha256": "bad021d06e75dc9ffd344fd6382f8cef9dcabc2da730ec6886c60f1a1b127cfe"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/REAL_PROCESS_RESTART.json",
+      "bytes": 12893,
+      "sha256": "0b59e57d7cda99422b959d32a6468aa6b7a8670969476a816520983ee42d1b5b"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/REAL_TUI_PROCESS_RESTART.txt",
+      "bytes": 3591,
+      "sha256": "bcb1ba95e98df08dd74e33abb7e94805d566fbf244b2d4b51bb22ef09f7f8a1e"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/SOURCE.bundle",
+      "bytes": 1216,
+      "sha256": "336666fa9eb055bbfdc24c2fabaf59c6ce88e382470f52d0f8c9b7b471700f32"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/standalone-report/EVIDENCE_MANIFEST.json",
+      "bytes": 13146,
+      "sha256": "10f2f2534566d69ef76a7e28346f53152a41dd5940f151b4ca2f3cf7b5d793da"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/standalone-report/REPORT.json",
+      "bytes": 248332,
+      "sha256": "85d9c410b3a1f110f7aec9af24d4bcc14277ac3726361123cdaa73110146854e"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/standalone-report/REPORT.md",
+      "bytes": 130332,
+      "sha256": "e2269769651b817544277c9a00a01f1238cb13538b4978208512c1de1ec6063a"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/TUI_SESSIONS.json",
+      "bytes": 15354,
+      "sha256": "705cad13cd148b96e99bd393411d4f14f1b9fb8ef52a71c3bc1f1f5e7269889f"
+    },
+    {
+      "path": ".product-smoke/guided-ux-20261012-v4/TUI_TRANSCRIPT.txt",
+      "bytes": 837859,
+      "sha256": "05eec676f7620f8d65a2dc7ef0e19ed9ae1cf2136abac8fb3c6ef1adc126c2f9"
+    },
+    {
+      "path": "dist/BDB_AUDIT_LOCAL_PRODUCT.py",
+      "bytes": 1637616,
+      "sha256": "9ece4c70d75d5c2ae721d20809f4cc814d7f7c02b495cad666c95671ea77a458"
+    },
+    {
+      "path": "docs/GUIDED_UX/BDB_AUDIT_GUIDED_UX_SPEC_v1.md",
+      "bytes": 15353,
+      "sha256": "a93d5b948bc7caf15ed88774de299511c87910885ed3adcb326d4bad72bf7c88"
+    },
+    {
+      "path": "docs/GUIDED_UX/CODEX_IMPLEMENTATION_PROMPT.md",
+      "bytes": 3009,
+      "sha256": "89c70a447d512621832ba7502f3eaafd54bd086c21e379a4dc2933449de8263f"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/additional-ui.xml",
+      "bytes": 527,
+      "sha256": "75fbc9f2a3ce0eb84ca60fbb6980b31c30af84b33e0e3e0a2e4055a4fc6d0cca"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/build.txt",
+      "bytes": 183,
+      "sha256": "41d14b403e6d7846c029e93bcb61dc7329cc0dde5de728e60fa9a52918842891"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/crash-replay-diagnostic.xml",
+      "bytes": 577,
+      "sha256": "5bd0799eeb8355228502edc84793a66decc2af218dbee6c4d5208ddc2e5c7917"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/delivery-readback.json",
+      "bytes": 1995,
+      "sha256": "4245d16bd153a9a59c47749af3323dc1d9bb911aa09c21c9482ddbe9754f2418"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/final-guided-ui.xml",
+      "bytes": 8559,
+      "sha256": "ea2e8b52e072a7a75f32657b5f27c1351906e3f276720b0a7b19cd0e84ff88b2"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/final-report-and-ui.xml",
+      "bytes": 4868,
+      "sha256": "92b6e1717612ecb717eee3c2b7b3b7559998f423595a1a44c673ee1a2cb38ba4"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/formal-regression.xml",
+      "bytes": 11367,
+      "sha256": "a552b626d3cb165909584fdbcb25a345f5c29f334cde88cf5926369ca3fb1b24"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/INPUTS.json",
+      "bytes": 478,
+      "sha256": "fbcb3365fbb07b57b65a80898d01461aa850e81c699c50252450c8429aef36ba"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/local-interface.xml",
+      "bytes": 19296,
+      "sha256": "96231a7c6c087833357c6ae2bc0b2f63c00a0e47871075ff20e0d139f210d229"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/mypy-harnesses.txt",
+      "bytes": 44,
+      "sha256": "0c37c4158c91ef55c724ba017bf6465f26018199badb08e3ff13f98acdf056c2"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/mypy.txt",
+      "bytes": 45,
+      "sha256": "bbb056d74047c9da539a491357402c09020761ff6911e560d1fc89951f972115"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/native-windows.json",
+      "bytes": 1613,
+      "sha256": "1d0b00959fd08829ae0ceefd6cc1ca91eb6e6e89044ff74752a5d5507b3d7288"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/qualification-boundaries.xml",
+      "bytes": 355631,
+      "sha256": "910b63ce8f539725fc70dc3f8869b337de6725e77ee64927ce685003e0a68021"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/ruff.txt",
+      "bytes": 19,
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/source-runtime.xml",
+      "bytes": 20733,
+      "sha256": "4041170bfe8e18b1e1ab9ce83ff42c20f48e72dc395917caa4f9d83184de18cc"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/standalone-export.json",
+      "bytes": 801,
+      "sha256": "da32eddc4dcc37ec8f5d3f074c474650bf7e30c19d974ce7e20b34a720223fff"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/standalone-payload.json",
+      "bytes": 606,
+      "sha256": "0443d69d4af3dff287c11bdf4c48e828b70e3bd4f5454ce06995b35fe9f4c203"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/standalone-resume.json",
+      "bytes": 17569,
+      "sha256": "67203a6bd7ab8067b67985f5de679862670affb4f78c7e1b66e8be409180655e"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/standalone-tui.txt",
+      "bytes": 254210,
+      "sha256": "07f4cefd54773c77d9b21a4df896fad67cd272e4e7abc351dba166e73616fb07"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/terminal-review.xml",
+      "bytes": 390,
+      "sha256": "572045520a0ea72c498249fe52281f5b6d369c60b367c855f2e6a24118ffe5e0"
+    },
+    {
+      "path": "docs/GUIDED_UX/evidence/TEST_COMMANDS.json",
+      "bytes": 3789,
+      "sha256": "1a671755422e36d6a2e2b13539709a794953050b96cc9a10cde157c109350f86"
+    },
+    {
+      "path": "docs/GUIDED_UX/README.md",
+      "bytes": 7157,
+      "sha256": "eeeebafd9e802f5528098291f083ac7ce6e0d64242bb0a01e8db4327270ab684"
+    },
+    {
+      "path": "docs/GUIDED_UX/STATUS.md",
+      "bytes": 9738,
+      "sha256": "b0f9d942423342bb8eb8297860a406d5c98acf79a25043f566edd11304287fdd"
+    },
+    {
+      "path": "docs/LOCAL_PRODUCT_MODE/README.md",
+      "bytes": 10230,
+      "sha256": "4bdc44957c45974eeececa2fc6bdc9d9292a30ae03b7bd47955e6caa562dd96b"
+    },
+    {
+      "path": "pyproject.toml",
+      "bytes": 1728,
+      "sha256": "ab25cb0b7a99e30aa6b68b06fa84d5642d02f1268799beb921bdf9cad836457c"
+    },
+    {
+      "path": "Run-Local-Audit.ps1",
+      "bytes": 476,
+      "sha256": "6a795ccfd10cc51fe0ef600ac57bb9a14303032fec4901566b6decfdb96a8b68"
+    },
+    {
+      "path": "src/bdb_audit/local_product/__init__.py",
+      "bytes": 80,
+      "sha256": "aed50e61a576d0c578f68ba840cd5c367d11677ac4f410636fc94dfc9ca74c76"
+    },
+    {
+      "path": "src/bdb_audit/local_product/artifacts.py",
+      "bytes": 8819,
+      "sha256": "05fa7abaa6105b387f6f0cefaf12a9609d1b63e75c17672373e441eeab36fb26"
+    },
+    {
+      "path": "src/bdb_audit/local_product/cli.py",
+      "bytes": 5608,
+      "sha256": "c1cb30fba208ffa6fde2fbd13e86fc650964a37d4c8c9534a4df9dba28710397"
+    },
+    {
+      "path": "src/bdb_audit/local_product/guided.py",
+      "bytes": 14494,
+      "sha256": "7d6c5fa4f826d4bfd3adcd86b01587836145380d6968ebee2c2aa66bbfb496a6"
+    },
+    {
+      "path": "src/bdb_audit/local_product/profile.py",
+      "bytes": 6287,
+      "sha256": "5ced2134069d9c0abaf1ceee4653836b5a9e1c3fec67b8a4cd5e3ebadad95220"
+    },
+    {
+      "path": "src/bdb_audit/local_product/recent.py",
+      "bytes": 3585,
+      "sha256": "45433cff6b0e6aeee22c07833cb1ca2ca5561471f9513ba38d3b21aa9d8a85b7"
+    },
+    {
+      "path": "src/bdb_audit/local_product/report.py",
+      "bytes": 12137,
+      "sha256": "364f4a7f3ed1200c848570e6f6f00f4026a3b1c713cd45322ef604a0bb9f3686"
+    },
+    {
+      "path": "src/bdb_audit/local_product/responses.py",
+      "bytes": 6061,
+      "sha256": "5e9dcbed97a7f260a0e233db95678f45bd77ac2de4384efa333c29c653b6137b"
+    },
+    {
+      "path": "src/bdb_audit/local_product/store.py",
+      "bytes": 7252,
+      "sha256": "ecc574a49b414b7849621d99eb75010aae960a9191eb711ac3e787bc8ccd27da"
+    },
+    {
+      "path": "src/bdb_audit/local_product/ui.py",
+      "bytes": 21703,
+      "sha256": "736fcdf152b53c31042fabbc6bcd34e1c85ad1e3f0a1c66e1e73fb527a3551da"
+    },
+    {
+      "path": "src/bdb_audit/local_product/workflow.py",
+      "bytes": 29495,
+      "sha256": "dbea990341daa8a4a82822e0235b0ed19b1c8013f978a96073b352fb289a4141"
+    },
+    {
+      "path": "tests/product/test_guided_local_ui.py",
+      "bytes": 20104,
+      "sha256": "ed1063ea1687c922dc8c8662a4966c86ec4dee62958f002ceb0a0d16b80d6cf4"
+    },
+    {
+      "path": "tests/product/test_local_product.py",
+      "bytes": 20381,
+      "sha256": "97da80d396e455fcd35eaeca31448d8be3d043b4badfd0290df11b5b8b28cda2"
+    },
+    {
+      "path": "tools/guided_ux_verify.py",
+      "bytes": 10636,
+      "sha256": "ed3022a32844682cb0704dff640049816047e0f13fc2b0230cff76350e261628"
+    },
+    {
+      "path": "tools/local_product_smoke.py",
+      "bytes": 20717,
+      "sha256": "898eb21dedd9a91524b28b4dcace2859567f00d2038dc362ccffd28e128878ad"
+    }
+  ]
+}

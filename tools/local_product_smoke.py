@@ -21,6 +21,8 @@ from bdb_audit.cli import run_cli
 from bdb_audit.core.canonical_json import canonical_bytes, parse
 from bdb_audit.local_product.profile import STAGES
 from bdb_audit.local_product.workflow import LocalWorkflow
+from bdb_audit.local_product.guided import CampaignController
+from bdb_audit.local_product.ui import run_local_ui, render_campaign
 from bdb_audit.workflow.packaging import _deterministic_zip
 
 APP = '''import sqlite3
@@ -76,7 +78,7 @@ if __name__ == "__main__":
 '''
 
 
-def run(output: Path) -> dict:
+def run(output: Path, guided: bool = False) -> dict:
     if output.exists():
         raise RuntimeError("Use a new output directory; existing evidence is never removed")
     output.mkdir(parents=True)
@@ -89,9 +91,28 @@ def run(output: Path) -> dict:
                     "user.email=local-control@example.invalid", "commit", "-qm", "Three intentional defects for real local audit")):
         subprocess.run(["git", "-C", str(repository), *command], capture_output=True, check=True)
     subprocess.run(["git", "-C", str(repository), "bundle", "create", str(output / "SOURCE.bundle"), "HEAD"], capture_output=True, check=True)
-    campaign = output / "campaign"
+    campaign = output / ("campaign ze spacją żółć" if guided else "campaign")
     commands = []
     transcript = bytearray()
+    ui_transcript = bytearray()
+    ui_sessions = []
+    index = output / "recent.json"
+    def tui(answers: list[str], label: str, refusal: bool = False) -> None:
+        iterator = iter(answers)
+        lines = []
+        def answer(prompt):
+            value = next(iterator)
+            lines.append(prompt + value)
+            return value
+        code = run_local_ui(answer, lines.append, index_path=index,
+                            actor="owner-authorized automated guided demo operator; not personal human review")
+        assert code == 0 and list(iterator) == []
+        raw = ("\n".join(lines) + "\n").encode("utf-8")
+        assert (b"ODMOWA:" in raw) == refusal, raw[-4000:].decode("utf-8")
+        ui_sessions.append({"label": label, "answers": answers, "exit_code": code,
+                            "offset": len(ui_transcript), "byte_length": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),
+                            "expected_refusal": refusal, "execution": "PRODUCTION_TUI_WITH_EXPLICIT_SCRIPTED_INPUT"})
+        ui_transcript.extend(raw)
     def cli(*argv: str) -> dict:
         out, err = io.StringIO(), io.StringIO()
         with redirect_stdout(out), redirect_stderr(err):
@@ -106,9 +127,31 @@ def run(output: Path) -> dict:
             raise RuntimeError(actual.decode("utf-8"))
         return parse(actual)
     cli("preflight", "--source", str(repository))
-    cli("start", "--source", str(repository), "--campaign", str(campaign))
-    control = cli("run-check", "--campaign", str(campaign), "--task", "E1-A", "--",
-                  sys.executable, "-m", "unittest", "-v", "test_app")
+    if guided:
+        tui(["1", str(repository), "", "", str(campaign), "0", "0"], "new audit and real E1 packages")
+        control_command = '"' + sys.executable + '" -m unittest -v test_app'
+        tui(["2", "1", "6", "3", "1", control_command, "URUCHOM", "0", "0", "0"], "actual control through advanced TUI")
+        control = LocalWorkflow(campaign).runs[-1]
+        copies = output / "exported package copies"
+        copies.mkdir()
+        tui(["2", "1", "2", "1", "2", "3", "4", str(copies), "1", "0", "0", "0"],
+            "actual Windows folder, clipboard, verified copy and Explorer selection")
+        workflow = LocalWorkflow(campaign)
+        package_path = campaign / "packages" / "E1-A.zip"
+        original = package_path.read_bytes()
+        before = workflow.head, workflow.store.path.read_bytes()
+        package_path.write_bytes(b"actual negative smoke substituted package")
+        tui(["2", "1", "2", "1", "1", "0", "0", "0"], "substituted ZIP refusal", refusal=True)
+        assert (LocalWorkflow(campaign).head, workflow.store.path.read_bytes()) == before
+        package_path.write_bytes(original)
+        package_path.unlink()
+        tui(["2", "1", "2", "1", "1", "0", "0", "0"], "missing ZIP refusal", refusal=True)
+        assert (LocalWorkflow(campaign).head, workflow.store.path.read_bytes()) == before
+        package_path.write_bytes(original)
+    else:
+        cli("start", "--source", str(repository), "--campaign", str(campaign))
+        control = cli("run-check", "--campaign", str(campaign), "--task", "E1-A", "--",
+                      sys.executable, "-m", "unittest", "-v", "test_app")
     assert control["result"]["supervisor_status"] == "TARGET_NONZERO"
     stderr = LocalWorkflow(campaign).store.vault.read_bytes(control["files"]["stderr.bin"]["raw_digest"])
     assert b"Ran 6 tests" in stderr and b"failures=3" in stderr
@@ -166,7 +209,10 @@ def run(output: Path) -> dict:
             pending = [task for task in workflow._available_tasks() if task not in workflow.accepted]
             if not pending:
                 break
-            cli("prepare", "--campaign", str(campaign))
+            if guided:
+                tui(["2", "1", "6", "2", "0", "0", "0"], stage + " real stage packages")
+            else:
+                cli("prepare", "--campaign", str(campaign))
             workflow = LocalWorkflow(campaign)
             for task in pending:
                 package = workflow.packages[task]
@@ -180,30 +226,68 @@ def run(output: Path) -> dict:
                 file = inputs / (task + ".zip")
                 file.write_bytes(_deterministic_zip({"LOCAL_RESULT.json": canonical_bytes(response), "actual-test-stderr.txt": stderr}))
                 cli("inspect", "--campaign", str(campaign), "--file", str(file))
-                imported = cli("import", "--campaign", str(campaign), "--file", str(file))
-                rid = imported["result_id"]
-                validated = cli("validate", "--campaign", str(campaign), "--result", rid)
-                assert validated["status"] == "VALIDATED_STRUCTURE"
-                accepted = cli("accept", "--campaign", str(campaign), "--result", rid, "--confirm-local", "--actor", "owner-authorized automated demo operator")
-                assert accepted["status"] == "USER_ACCEPTED_LOCAL"
+                if guided:
+                    if task == "E1-A":
+                        tui(["2", "1", "3", str(file), "", "0", "0"], "import and preview; postpone acceptance")
+                        before_head = LocalWorkflow(campaign).head
+                        restart = subprocess.run([sys.executable, "-m", "bdb_audit", "product", "local", "ui", "--index", str(index)],
+                                                 input="2\n1\n0\n0\n".encode("utf-8"), capture_output=True, check=True)
+                        (output / "REAL_TUI_PROCESS_RESTART.txt").write_bytes(restart.stdout)
+                        assert LocalWorkflow(campaign).head == before_head and not LocalWorkflow(campaign).accepted
+                        tui(["2", "1", "", "AKCEPTUJ LOCAL", "0", "0"], "resume and separately accept first result")
+                    else:
+                        if task == "E1-B":
+                            draft = dict(response)
+                            draft["limitations"] = [*response["limitations"], "Explicit draft to demonstrate rejection before final local decision"]
+                            draft_file = inputs / "E1-B-draft-rejected.zip"
+                            draft_file.write_bytes(_deterministic_zip({"LOCAL_RESULT.json": canonical_bytes(draft), "actual-test-stderr.txt": stderr}))
+                            tui(["2", "1", "3", str(draft_file), "ODRZUC", "Draft requires further review", "0", "0"], "explicit local rejection")
+                        tui(["2", "1", "3", str(file), "AKCEPTUJ LOCAL", "0", "0"], task + " import, preview and explicit local decision")
+                    assert task in LocalWorkflow(campaign).accepted
+                else:
+                    imported = cli("import", "--campaign", str(campaign), "--file", str(file))
+                    rid = imported["result_id"]
+                    validated = cli("validate", "--campaign", str(campaign), "--result", rid)
+                    assert validated["status"] == "VALIDATED_STRUCTURE"
+                    accepted = cli("accept", "--campaign", str(campaign), "--result", rid, "--confirm-local", "--actor", "owner-authorized automated demo operator")
+                    assert accepted["status"] == "USER_ACCEPTED_LOCAL"
         if stage == "E3":
             restart = subprocess.run([sys.executable, "-m", "bdb_audit", "product", "local", "resume", "--campaign", str(campaign)],
                                      capture_output=True, check=True)
             (output / "REAL_PROCESS_RESTART.json").write_bytes(restart.stdout)
             assert parse(restart.stdout)["stage"] == "E3"
-        cli("advance", "--campaign", str(campaign))
-    exported = cli("report", "--campaign", str(campaign), "--output", str(output / "final-report"))
+        if guided:
+            next_stage = list(STAGES)[list(STAGES).index(stage) + 1:]
+            token = "PRZEJDZ " + next_stage[0] if next_stage else "ZAKONCZ LOCAL"
+            tui(["2", "1", "", token, "0", "0"], stage + " confirmed transition")
+        else:
+            cli("advance", "--campaign", str(campaign))
+    if guided:
+        tui(["2", "1", "5", "n", str(output / "final-report"), "1", "2", "3", "0", "0", "0", "0"],
+            "final report export, actual Markdown opening, JSON display and Explorer folder")
+        tui(["2", "1", "", "0", "0"], "one Enter opens the current verified final Markdown report")
+        exported = {"workflow_status": LocalWorkflow(campaign).status()["status"]}
+        (output / "TUI_TRANSCRIPT.txt").write_bytes(bytes(ui_transcript))
+        (output / "TUI_SESSIONS.json").write_bytes(canonical_bytes(ui_sessions) + b"\n")
+        (output / "FINAL_SCREEN.txt").write_text(render_campaign(CampaignController(campaign).view()), encoding="utf-8")
+    else:
+        exported = cli("report", "--campaign", str(campaign), "--output", str(output / "final-report"))
     assert exported["workflow_status"] == "LOCAL_COMPLETED"
     (output / "CLI_TRANSCRIPT.txt").write_bytes(bytes(transcript))
     (output / "CLI_COMMANDS.json").write_bytes(canonical_bytes(commands) + b"\n")
     final = LocalWorkflow(campaign)
     record = {"status": "REAL_LOCAL_CONTROL_DEMO_COMPLETED", "mode": "LOCAL_PRODUCT",
-              "external_ai_responses": 0, "test_fixtures_imported": 0, "local_control_responses_imported": len(final.accepted),
+              "external_ai_responses": 0, "test_fixtures_imported": 0,
+              "local_control_responses_imported": sum(r["response"]["producer"]["kind"] == "LOCAL_CONTROL" for r in final.results.values()),
+              "local_control_responses_accepted": len(final.accepted),
+              "rejected_responses": sum(r["state"] == "REJECTED" for r in final.results.values()),
               "actual_test_execution": {"tests": 6, "pass": 3, "fail": 3, "error": 0,
                                         "meaning": "Intentional demonstrator defects were actually detected; not BDB regression failures"},
               "campaign_id": final.campaign_id, "source": final.source,
               "history_head": final.head, "real_process_restart": True, "production_cli_commands": len(commands),
-              "report_directory": str(output / "final-report")}
+              "report_directory": str(output / "final-report"), "guided_tui": guided,
+              "guided_tui_sessions": len(ui_sessions), "native_windows_file_actions": guided,
+              "negative_tui_cases_preserve_history": guided}
     (output / "DEMO_RESULT.json").write_bytes(canonical_bytes(record) + b"\n")
     return record
 
@@ -211,5 +295,6 @@ def run(output: Path) -> dict:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--guided", action="store_true", help="Exercise the guided production TUI and actual Windows file actions")
     args = parser.parse_args()
-    print(json.dumps(run(args.output.resolve()), ensure_ascii=False, indent=2))
+    print(json.dumps(run(args.output.resolve(), args.guided), ensure_ascii=False, indent=2))

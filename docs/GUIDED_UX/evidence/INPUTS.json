@@ -1,0 +1,15 @@
+{
+  "spec_matches_pack_exactly": true,
+  "inputs": [
+    {
+      "input": "C:\\Users\\Skarabeusz\\Downloads\\BDB_AUDIT_GUIDED_UX_SPEC_v1.md",
+      "bytes": 15353,
+      "sha256": "a93d5b948bc7caf15ed88774de299511c87910885ed3adcb326d4bad72bf7c88"
+    },
+    {
+      "input": "C:\\Users\\Skarabeusz\\Downloads\\BDB_AUDIT_GUIDED_UX_CODEX_PACK.zip",
+      "bytes": 8190,
+      "sha256": "6f6c8f010f60d1a8f43d212ee9c8cad2d9a80cf92144c6a59a43d0cad7758cc8"
+    }
+  ]
+}

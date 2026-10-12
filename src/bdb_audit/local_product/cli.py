@@ -16,7 +16,8 @@ from .workflow import LocalWorkflow, preflight
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(prog="bdb-audit product local", description=NOTICE)
     sub = root.add_subparsers(dest="action", required=True)
-    sub.add_parser("ui", help="Interactive local audit menu")
+    ui = sub.add_parser("ui", help="Guided local audit: campaigns, packages, review and reports")
+    ui.add_argument("--index", help="Optional location of the campaign shortcut index (not workflow authority)")
     for name in ("preflight", "start"):
         command = sub.add_parser(name)
         command.add_argument("--source", required=True)
@@ -97,7 +98,7 @@ def run_local(argv: Sequence[str]) -> int:
     try:
         if args.action == "ui":
             from .ui import run_local_ui
-            return run_local_ui()
+            return run_local_ui(index_path=args.index)
         data = execute(args)
         code = 2 if data.get("status") in {"REJECTED", "LOCAL_CHECK_INCOMPLETE"} or data.get("issues") else 0
     except (ValidationError, OSError, sqlite3.Error) as exc:

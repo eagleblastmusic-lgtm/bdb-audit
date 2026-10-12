@@ -327,9 +327,9 @@ def test_tui_real_file_import_and_explicit_accept(local, tmp_path):
     from bdb_audit.local_product.ui import run_local_ui
     path = tmp_path / "fixture.json"
     path.write_bytes(canonical_bytes(response(local)))
-    inputs = iter(["2", str(local.store.root), "5", str(path), "6", "1", "AKCEPTUJ LOCAL", "0"])
+    inputs = iter(["2", "O", str(local.store.root), "3", str(path), "AKCEPTUJ LOCAL", "0", "0"])
     output = []
-    assert run_local_ui(lambda _: next(inputs), output.append) == 0
+    assert run_local_ui(lambda _: next(inputs), output.append, index_path=tmp_path / "recent.json") == 0
     restarted = LocalWorkflow(local.store.root)
     assert restarted.results[restarted.accepted["E1-A"]]["state"] == "USER_ACCEPTED_LOCAL"
     assert any("VALIDATED_STRUCTURE" in text for text in output)

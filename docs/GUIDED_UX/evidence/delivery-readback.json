@@ -1,0 +1,56 @@
+{
+  "build": {
+    "status": "EXACT_SOURCE_AND_PAYLOAD_PASS",
+    "embedded_files": 423,
+    "source_files_checked": 281,
+    "payload_manifest_digest": "375a5c8efa81b07426fa3102fe3cd8e002d30a745bb24930bdb0a8bed366b0d5",
+    "artifact": {
+      "path": "dist/BDB_AUDIT_LOCAL_PRODUCT.py",
+      "bytes": 1637616,
+      "sha256": "9ece4c70d75d5c2ae721d20809f4cc814d7f7c02b495cad666c95671ea77a458"
+    }
+  },
+  "demo": {
+    "status": "REAL_GUIDED_LOCAL_E1_E6_PASS",
+    "campaign_id": "local-8d3d7ceb8a3d4cc285935413e399e28a",
+    "history_head": "8a577a2eca2b6c8b17fe9d20fdc63bcd5d5b2ad67e3306c919ed495f47c3b1cc",
+    "accepted_local_controls": 19,
+    "imported_local_controls": 20,
+    "rejected_local_controls": 1,
+    "external_ai": 0,
+    "test_fixtures": 0,
+    "actual_tool_runs": 2,
+    "guided_tui_sessions": 41,
+    "source_commit": "2df70942b30e927fe85bcf06a056fe54bf030f18",
+    "source_tree": "3f9e49e6bd9a35d8dc6d3dbce8cb076ae4a023a5",
+    "actual_demo_tests": {
+      "total": 6,
+      "pass": 3,
+      "intentional_defects_detected": 3
+    },
+    "report_verified": true,
+    "restart_without_acceptance_verified": true
+  },
+  "high_assurance": {
+    "status": "BLOCKED_AS_REQUIRED",
+    "exit_code": 2,
+    "external_ingestion": "BLOCKED",
+    "local_database_unchanged": true,
+    "frozen_model": {
+      "status": "EXACT_BYTES_UNCHANGED",
+      "model": "BDB_NF02_P0_LIMITED_1",
+      "manifest_sha256": "278d45caa8fe3a814c2d16c3706c93454cdd04676207b3159f57166a611d7ee9",
+      "normative_set_sha256": "f4aeeadd96314ef7854f61747fdf3f72caf5dfb599c4977a78170aa3620165df",
+      "machine_set_sha256": "7449d5eb45ca2aa49b065318d1287ac473fed54dc0e8359bcc32033215f5709d",
+      "qualification_claim": "NONE"
+    }
+  },
+  "tests": {
+    "passed_unique_cases": 451,
+    "allowed_skips": [
+      "tests.product.test_guided_local_ui::test_actual_reparse_or_symlink_is_refused[file]"
+    ],
+    "failures": 0,
+    "errors": 0
+  }
+}
