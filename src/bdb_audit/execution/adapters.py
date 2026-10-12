@@ -10,7 +10,7 @@ Manages execution lifecycle:
 """
 from dataclasses import dataclass, field
 import hashlib
-from typing import Any, Callable, Mapping, Sequence, Set
+from typing import Any, Callable, Mapping, Sequence, Set, cast
 
 from ..core.canonical_json import canonical_bytes
 from ..core.errors import ValidationError
@@ -171,14 +171,15 @@ class ExecutionAdapter:
         )
 
         # 7. Validate DAG: Descriptor -> Observations/Fault/Cleanup -> Result (no cycles)
-        dag_edges = [
+        # Model constructors assign each ID before DAG validation.
+        dag_edges = cast(list[tuple[str, str]], [
             (desc.execution_descriptor_id, exec_result.execution_result_id),
             (desc.execution_descriptor_id, cleanup.cleanup_result_id),
             (cleanup.cleanup_result_id, exec_result.execution_result_id),
-        ]
+        ])
         if fault_record:
-            dag_edges.append((desc.execution_descriptor_id, fault_record.fault_run_record_id))
-            dag_edges.append((fault_record.fault_run_record_id, exec_result.execution_result_id))
+            dag_edges.append((cast(str, desc.execution_descriptor_id), cast(str, fault_record.fault_run_record_id)))
+            dag_edges.append((cast(str, fault_record.fault_run_record_id), cast(str, exec_result.execution_result_id)))
 
         validate_execution_dag(dag_edges)
 

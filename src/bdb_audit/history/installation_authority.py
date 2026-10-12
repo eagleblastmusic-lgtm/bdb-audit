@@ -56,7 +56,7 @@ def _powershell(script, data):
         raise ValidationError("NF02_AUTHORITY_VERIFICATION_FAILED") from exc
 
 
-def verify_cms(raw: bytes, signature: bytes, certificate_sha256: str, *, at_time=None, signature_limit=65536):
+def verify_cms(raw: bytes, signature: bytes, certificate_sha256: str, *, at_time=None, signature_limit=65536, require_current_revocation=False):
     """Check a detached CMS against an externally pinned certificate identity.
 
     CheckSignature(true) checks cryptography. Trust comes exclusively from the
@@ -83,11 +83,23 @@ if($now -lt $cert.NotBefore.ToUniversalTime() -or $now -gt $cert.NotAfter.ToUniv
 $hash=[Security.Cryptography.SHA256]::Create().ComputeHash($cert.RawData)
 $pin=([BitConverter]::ToString($hash)).Replace('-','').ToLowerInvariant()
 if($pin -cne $d.pin){throw 'certificate pin'}
+if($d.require_current_revocation -and -not $d.at_time){
+ $chain=New-Object Security.Cryptography.X509Certificates.X509Chain
+ try{
+  $chain.ChainPolicy.RevocationMode=[Security.Cryptography.X509Certificates.X509RevocationMode]::Online
+  $chain.ChainPolicy.RevocationFlag=[Security.Cryptography.X509Certificates.X509RevocationFlag]::ExcludeRoot
+  $chain.ChainPolicy.VerificationFlags=[Security.Cryptography.X509Certificates.X509VerificationFlags]::NoFlag
+  $chain.ChainPolicy.UrlRetrievalTimeout=[TimeSpan]::FromSeconds(10)
+  foreach($additional in $cms.Certificates){[void]$chain.ChainPolicy.ExtraStore.Add($additional)}
+  if(-not $chain.Build($cert) -or $chain.ChainElements.Count -lt 2){throw 'current certificate revocation unavailable or invalid'}
+ }finally{$chain.Dispose()}
+}
 [Console]::Out.Write('VERIFIED')
 """
     if _powershell(script, {"content": base64.b64encode(raw).decode("ascii"),
                             "signature": base64.b64encode(signature).decode("ascii"),
-                            "pin": certificate_sha256, "at_time": at_time}) != "VERIFIED":
+                            "pin": certificate_sha256, "at_time": at_time,
+                            "require_current_revocation": require_current_revocation}) != "VERIFIED":
         raise ValidationError("NF02_AUTHORITY_VERIFICATION_FAILED")
 
 
@@ -122,7 +134,7 @@ foreach($rule in $acl.GetAccessRules($true,$true,[Security.Principal.SecurityIde
 
 
 @contextmanager
-def _locked_file(path, *, directory=False, check_acl=True, digest_only=False):
+def _locked_file(path, *, directory=False, check_acl=True, digest_only=False, byte_limit=16 * 1024 * 1024):
     """Deny write/delete until acceptance/delivery has finished (Windows)."""
     kernel = ctypes.WinDLL("kernel32", use_last_error=True)
     kernel.CreateFileW.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD,
@@ -148,8 +160,12 @@ def _locked_file(path, *, directory=False, check_acl=True, digest_only=False):
                     digest.update(chunk)
             yield {"sha256": digest.hexdigest(), "bytes": size}
         else:
-            raw = b"" if directory else path.read_bytes()
-            if len(raw) > 16 * 1024 * 1024:
+            if directory:
+                raw = b""
+            else:
+                with path.open("rb") as stream:
+                    raw = stream.read(byte_limit + 1)
+            if len(raw) > byte_limit:
                 raise ValidationError("NF02_INSTALLATION_RESOURCE_LIMIT")
             yield raw
     finally:

@@ -19,7 +19,8 @@ ROLE_OPERATIONS = {
 
 
 def verify_cms(raw, signature, certificate_sha256, *, at_time=None):
-    return _verify_cms(raw, signature, certificate_sha256, at_time=at_time, signature_limit=2 * 1024 * 1024)
+    return _verify_cms(raw, signature, certificate_sha256, at_time=at_time, signature_limit=2 * 1024 * 1024,
+                       require_current_revocation=True)
 
 
 def instant(value):
@@ -52,7 +53,7 @@ foreach($path in $d.paths){
  if($allowed -notcontains $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value){throw 'storage owner'}
  foreach($rule in $acl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier])){
   if(($rule.PropagationFlags -band [Security.AccessControl.PropagationFlags]::InheritOnly) -ne 0){continue}
-  if($rule.AccessControlType -eq 'Allow' -and (([long]$rule.FileSystemRights -band 0xD0156) -ne 0) -and $allowed -notcontains $rule.IdentityReference.Value){throw 'untrusted storage writer'}
+  if($rule.AccessControlType -eq 'Allow' -and $allowed -notcontains $rule.IdentityReference.Value){throw 'untrusted storage access'}
  }
 }
 [Console]::Out.Write('SERVICE')
@@ -78,7 +79,8 @@ class LimitedMachineAuthority:
                         stack.enter_context(_locked_file(parent, directory=True, check_acl=False))
                         directories.add(parent)
                 protected_files.append(target)
-                return stack.enter_context(_locked_file(target, check_acl=False))
+                limit = 2 * 1024 * 1024 if target.suffix.lower() in {".json", ".p7s"} else 16 * 1024 * 1024
+                return stack.enter_context(_locked_file(target, check_acl=False, byte_limit=limit))
 
             root_raw, install_raw, install_sig = read("root.json"), read("installation.json"), read("installation.p7s")
             _protected(protected_files + list(directories))
@@ -210,7 +212,7 @@ class LimitedMachineAuthority:
     def storage_lease(self, path, leased):
         campaigns = machine_root().parent / "P0-Campaigns" / leased["root"]["namespace_authority_digest"]
         target = Path(path).absolute()
-        if not target.is_relative_to(campaigns) or target.suffix != ".sqlite":
+        if target != target.resolve() or not target.is_relative_to(campaigns) or target.suffix != ".sqlite":
             raise ValidationError("P0_PROTECTED_HISTORY_LOCATION_REQUIRED")
         with ExitStack() as stack:
             paths = []

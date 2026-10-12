@@ -1,0 +1,65 @@
+Traceback (most recent call last):
+  File "C:\Projekty\Audyty\BDB Audit\src\bdb_audit\history\limited_model.py", line 79, in validate
+    Draft202012Validator(doc, registry=self.resources).validate(value)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Projekty\Audyty\BDB Audit\.venv-f2\Lib\site-packages\jsonschema\validators.py", line 451, in validate
+    raise error
+jsonschema.exceptions.ValidationError: 'submission_01' does not match '^[a-z][a-z0-9_]{0,63}_[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
+
+Failed validating 'pattern' in schema['properties']['payload']['properties']['findings']['items']['properties']['finding_id']:
+    {'type': 'string',
+     'pattern': '^[a-z][a-z0-9_]{0,63}_[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'}
+
+On instance['payload']['findings'][0]['finding_id']:
+    'submission_01'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Projekty\Audyty\BDB Audit\tools\nf02_p0_q1_semantics.py", line 145, in <module>
+    run(parser.parse_args().output)
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekty\Audyty\BDB Audit\tools\nf02_p0_q1_semantics.py", line 119, in run
+    capture(intake, evidence)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Projekty\Audyty\BDB Audit\tools\nf02_p0_q1_semantics.py", line 90, in capture
+    outcome = original_accept(current_intake, request, cert)
+  File "C:\Projekty\Audyty\BDB Audit\tests\product\test_limited_p0.py", line 310, in accept
+    return intake.accept(request, test_signature(request.signing_bytes(), cert))
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekty\Audyty\BDB Audit\src\bdb_audit\workflow\limited_intake.py", line 177, in accept
+    return Coordinator(self.store).accept(request.command, immutable_objects=request.objects, ordered_events=request.events,
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                           raw_artifacts=request.raw, authentication=authentication)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekty\Audyty\BDB Audit\src\bdb_audit\coordinator\__init__.py", line 29, in accept
+    return self._history.accept(command, expected_head, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekty\Audyty\BDB Audit\src\bdb_audit\history\store.py", line 902, in accept
+    return self._accept(command, expected_head, immutable_objects=immutable_objects, ordered_events=ordered_events,
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        bootstrap_profile=bootstrap_profile, expected_closure=expected_closure,
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        authentication=authentication, raw_artifacts=raw_artifacts, leased=leased)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekty\Audyty\BDB Audit\src\bdb_audit\history\store.py", line 989, in _accept
+    verified_raw, authorization_scope = self._nf02.validate(con=con, current=current, command=command, objects=objects,
+                                        ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                      events=list(ordered_events), raw_artifacts=raw_artifacts,
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                      leased=leased, authentication=authentication)
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekty\Audyty\BDB Audit\src\bdb_audit\history\limited_protocol.py", line 433, in validate
+    scope = self.validate_step(records, prior_events, current, command, objects, reader, leased=leased, con=con, at=at)
+  File "C:\Projekty\Audyty\BDB Audit\src\bdb_audit\history\limited_protocol.py", line 392, in validate_step
+    payload = self.transport.result(self.raw(reader, target.body["result_raw_ref"]), {"scope": scope,
+        "binding_ref": binding.ref.as_dict(), "delivery_ref": delivery.ref.as_dict(), "package_raw_ref": binding.body["package_raw_ref"]}, manifest)
+  File "C:\Projekty\Audyty\BDB Audit\src\bdb_audit\workflow\limited_transport.py", line 119, in result
+    manifest, members = self.manifest_archive(raw, "P0_RESULT_TRANSPORT_V1", "RESULT_MANIFEST")
+                        ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekty\Audyty\BDB Audit\src\bdb_audit\workflow\limited_transport.py", line 69, in manifest_archive
+    self.corpus.schemas.validate("wire/" + schema + "__1", manifest)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekty\Audyty\BDB Audit\src\bdb_audit\history\limited_model.py", line 81, in validate
+    raise ValidationError("P0_SCHEMA_INVALID", name) from exc
+bdb_audit.core.errors.ValidationError: P0_SCHEMA_INVALID: wire/RESULT_MANIFEST__1

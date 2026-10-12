@@ -32,7 +32,7 @@ class ClaimQuarantine:
         self.artifacts = dict(artifacts)
         self.policy = policy
         self.namespace = namespace
-        self._views = {}
+        self._views: dict[str, bytes] = {}
 
     def _project(self, key, allow, path=()):
         return project_positive_artifact(self.artifacts, self.policy, key, set(allow), tuple(path))

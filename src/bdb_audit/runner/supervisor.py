@@ -39,7 +39,8 @@ def _terminate_tree(process: subprocess.Popen[bytes]) -> None:
         )
     else:
         try:
-            os.killpg(process.pid, signal.SIGKILL)
+            # Unix-only API; Windows typeshed intentionally omits it.
+            getattr(os, "killpg")(process.pid, getattr(signal, "SIGKILL"))
         except ProcessLookupError:
             pass
     try:

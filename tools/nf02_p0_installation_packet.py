@@ -64,6 +64,9 @@ def prepare(assets, configuration, output):
     for kind, obj in roots.items():
         files["objects/" + kind + ".json"] = canonical_bytes(obj.body) + b"\n"
     files["ENVIRONMENT.json"] = canonical_bytes(snapshot()) + b"\n"
+    # Fail during preparation if the final clean runtime inventory cannot fit
+    # the frozen signed-input quota; never prepare an unusable installation.
+    strict_json(files["ENVIRONMENT.json"])
     if any(n in files for n in ("root.json", "installation.json", "installation.p7s")) or any(n.startswith("grants/") for n in files):
         raise ValueError("Root/installation/grants cannot be qualification input assets")
     for name in ("SOURCE_REPOSITORIES.json", "AUDITOR_TRANSPORT.json"):

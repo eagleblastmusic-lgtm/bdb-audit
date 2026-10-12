@@ -248,6 +248,7 @@ class EvidenceQualificationAssessment:
         )
 
     def body(self) -> dict:
+        assert self.input_history_cut is not None  # Both cut aliases are bound at construction.
         data = {
             "assessment_id": self.assessment_id or "qualification_default",
             "claim_revision_ref": _ref_dict(self.claim_revision_ref),

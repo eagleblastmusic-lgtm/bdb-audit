@@ -255,6 +255,9 @@ class LimitedProtocol:
                     raise ValidationError("P0_INPUT_CUT_MISMATCH")
             for ref in refs_in(obj.body):
                 if ref["revision_digest"] in {o.digest for o in domain}:
+                    target = next(o for o in domain if o.digest == ref["revision_digest"])
+                    if target.ref.as_dict() != ref:
+                        raise ValidationError("P0_CONTENT_REFERENCE_IDENTITY_MISMATCH")
                     spec = next((s for s in self.registry.contract(obj.kind, obj.version)["material_refs"] if obj.body.get(s["field"]) == ref), None)
                     allowed = {"CONTENT_AT_INITIALIZATION_ONLY", "SAME_CREATE_ASSIGNMENT_CONTENT", "PINNED_INSTALLATION"}
                     if not spec or spec["ref_class"] not in allowed:

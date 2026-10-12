@@ -156,13 +156,13 @@ class GapEngine:
 
             for ob in surf_obs:
                 ob_d = ob.digest
-                q = qual_by_ob.get(ob_d)
-                if q is None:
+                qualification = qual_by_ob.get(ob_d)
+                if qualification is None:
                     # Not yet qualified
                     unsatisfied_obs.append(ob.as_object().as_ref())
                 else:
                     eval_res = evaluate_coverage_qualification(
-                        ob, q, invalidated_evidence_digests=invalidated
+                        ob, qualification, invalidated_evidence_digests=invalidated
                     )
                     if not eval_res["satisfies_completion"]:
                         unsatisfied_obs.append(ob.as_object().as_ref())

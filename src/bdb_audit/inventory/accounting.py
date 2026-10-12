@@ -23,6 +23,8 @@ def validate_terminal_accounting(
     by_input: dict[str, list[str]] = {}
 
     for d in dispositions:
+        input_ref: Any
+        disp: Any
         if isinstance(d, InputDispositionRecord):
             input_ref = d.assigned_input_ref
             disp = d.disposition
@@ -49,12 +51,12 @@ def validate_terminal_accounting(
     all_terminal = True
     provisional_inputs = []
     for inp in assigned_set:
-        d = by_input[inp][0]
-        if d in INPUT_DISPOSITION_INTERMEDIATE:
+        disposition = by_input[inp][0]
+        if disposition in INPUT_DISPOSITION_INTERMEDIATE:
             all_terminal = False
             provisional_inputs.append(inp)
-        elif d not in INPUT_DISPOSITION_TERMINAL:
-            raise ValidationError("INVALID_INPUT_DISPOSITION", f"Unknown disposition {d} for input {inp}")
+        elif disposition not in INPUT_DISPOSITION_TERMINAL:
+            raise ValidationError("INVALID_INPUT_DISPOSITION", f"Unknown disposition {disposition} for input {inp}")
 
     return {
         "gate": "ALL_ASSIGNED_INPUTS_TERMINALLY_ACCOUNTED",
@@ -83,6 +85,8 @@ def compute_inventory_denominator(
 
     for s in scope_states:
         state = s.state if isinstance(s, ScopeStateRecord) else s.get("state")
+        if not isinstance(state, str):
+            raise ValidationError("INVALID_SCOPE_STATE")
         if state in by_state:
             by_state[state] += 1
         else:

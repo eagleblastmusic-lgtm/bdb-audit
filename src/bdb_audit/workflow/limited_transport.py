@@ -92,7 +92,7 @@ class LimitedTransport:
             raise ValidationError("P0_SOURCE_PATH_ORDER")
         if set(members) != {e["transport_path"] for e in entries}:
             raise ValidationError("P0_SOURCE_MEMBERS_MISMATCH")
-        for i, e in enumerate(entries):
+        for i, e in enumerate(entries, 1):
             raw = members[e["transport_path"]]
             blob = hashlib.new(algorithm, b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw).hexdigest()
             if (e["transport_path"] != f"source/{i:08d}.bin" or blob != e["git_blob_oid"]
@@ -218,7 +218,7 @@ def approved_git_view(repository, requested_ref, repository_id, paths):
     if not 1 <= len(selected) <= 2044 or len(selected) != len(paths):
         raise ValidationError("P0_GIT_VIEW_MEMBERSHIP")
     entries, members, total = [], {}, 0
-    for i, path in enumerate(selected):
+    for i, path in enumerate(selected, 1):
         segments, tree_oid = path.encode("utf8").split(b"/"), identity.tree_object_id
         if any(s in {b"", b".", b".."} for s in segments):
             raise ValidationError("P0_GIT_PATH_NOT_IN_TREE", path)

@@ -144,6 +144,8 @@ class HypothesisOrchestrator:
             else (exact_revision_ref.revision_digest if hasattr(exact_revision_ref, "revision_digest") else str(exact_revision_ref))
         )
 
+        if not isinstance(ref_d, str):
+            raise ValidationError("UNKNOWN_HYPOTHESIS_REVISION_REF")
         rev = self._revisions_by_digest.get(ref_d)
         if rev is None:
             raise ValidationError("UNKNOWN_HYPOTHESIS_REVISION_REF", f"Revision {ref_d} not found in accepted history")

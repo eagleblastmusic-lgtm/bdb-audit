@@ -1,0 +1,23 @@
+........................................................................ [ 14%]
+........................................................................ [ 29%]
+........................................................................ [ 43%]
+........................................................................ [ 58%]
+........................................................................ [ 72%]
+........................................................................ [ 87%]
+..............................................................           [100%]
+============================== warnings summary ===============================
+tests/product/test_limited_p0_transport.py::test_semantically_equal_repacked_zip_is_not_exact_transport[duplicate]
+  C:\Python314\Lib\zipfile\__init__.py:1721: UserWarning: Duplicate name: 'REPORT.md'
+    return self._open_to_write(zinfo, force_zip64=force_zip64)
+
+tests/product/test_limited_p0_transport.py::test_semantically_equal_repacked_zip_is_not_exact_transport[duplicate]
+  C:\Projekty\Audyty\BDB Audit\src\bdb_audit\assurance\zip_safety.py:227: UserWarning: Overlapped entries: 'REPORT.md' (possible zip bomb)
+    with archive.open(info) as member:
+
+tests/f1/test_zip.py::test_duplicates_and_special
+  C:\Python314\Lib\zipfile\__init__.py:1721: UserWarning: Duplicate name: 'a'
+    return self._open_to_write(zinfo, force_zip64=force_zip64)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: C:\Projekty\Audyty\BDB Audit\docs\PRODUCT_V1\NF02_P0_Q1_FINAL_HANDOFF\evidence\regression.xml -
+494 passed, 3 warnings in 1248.97s (0:20:48)

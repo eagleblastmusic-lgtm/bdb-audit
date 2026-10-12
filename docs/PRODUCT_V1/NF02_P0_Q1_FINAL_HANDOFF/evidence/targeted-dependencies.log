@@ -1,0 +1,12 @@
+........................................................................ [ 31%]
+........................................................................ [ 62%]
+........................................................................ [ 93%]
+...............                                                          [100%]
+============================== warnings summary ===============================
+tests/f1/test_zip.py::test_duplicates_and_special
+  C:\Python314\Lib\zipfile\__init__.py:1721: UserWarning: Duplicate name: 'a'
+    return self._open_to_write(zinfo, force_zip64=force_zip64)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: C:\Projekty\Audyty\BDB Audit\docs\PRODUCT_V1\NF02_P0_Q1_FINAL_HANDOFF\evidence\targeted-dependencies.xml -
+231 passed, 1 warning in 289.37s (0:04:49)

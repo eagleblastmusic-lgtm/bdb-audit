@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Any
+from typing import Any, Literal
 
 from ..history.store import TransactionalHistoryStore
 from ..workflow.read_models import campaign_source_identity, current_accepted_cut
@@ -121,6 +121,7 @@ class ReportBuilder:
 
         conclusions = [item for item in facts if item.record_kind == "campaign_conclusion"]
         final_cases = [item for item in facts if item.record_kind == "final_assurance_case"]
+        scope: Literal["PARTIAL", "BOUNDED", "FULL"]
         if conclusions and final_cases and conclusions[-1].payload.get("termination_state") == "COMPLETED":
             scope = "FULL"
         elif conclusions:

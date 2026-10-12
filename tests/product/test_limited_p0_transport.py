@@ -1,6 +1,7 @@
 """Missing P0 transport and finite-entry-point regressions, without authority."""
 from dataclasses import replace
 import io
+import json
 import subprocess
 import zipfile
 
@@ -49,10 +50,67 @@ def test_semantically_equal_repacked_zip_is_not_exact_transport(corpus, mutation
 def test_source_snapshot_uses_actual_distinct_git_object_types(corpus):
     identity, manifest, archive = approved_git_view(ROOT, "HEAD", "ACTUAL_LOCAL_REPOSITORY_NO_AUTHORITY", ["pyproject.toml"])
     assert identity.commit_object_id != identity.tree_object_id
-    import json
     value = json.loads(manifest)
     assert (value["commit_oid"], value["tree_oid"]) == (identity.commit_object_id, identity.tree_object_id)
     assert LimitedTransport(corpus).archive(archive, "P0_BOOTSTRAP_SOURCE_V1")["MANIFEST.json"] == manifest
+
+
+def test_m07_source_transport_index_starts_at_one_and_follows_utf8_order(corpus):
+    # Literal expectations from MODEL.md M07, independent of the builder/parser.
+    _, manifest, _ = approved_git_view(ROOT, "HEAD", "TEST_ONLY_INDEX", ["pyproject.toml", "AGENTS.md"])
+    entries = json.loads(manifest)["entries"]
+    assert [(e["source_path"], e["transport_path"]) for e in entries] == [
+        ("AGENTS.md", "source/00000001.bin"), ("pyproject.toml", "source/00000002.bin")]
+
+
+def test_m07_zero_based_source_cannot_be_accepted(setup_p0):
+    from bdb_audit.core.canonical_json import canonical_bytes
+    from bdb_audit.history.limited_model import sha
+    from bdb_audit.history.limited_wire import copy
+    store, intake, _, request, _, source, genesis = setup_p0
+    before = snapshot(store)
+    raw_manifest = request.raw[source.body["source_manifest_raw_ref"]["raw_digest"]]
+    archive = request.raw[source.body["source_archive_raw_ref"]["raw_digest"]]
+    manifest = json.loads(raw_manifest)
+    members = intake.runtime.transport.archive(archive, "P0_BOOTSTRAP_SOURCE_V1")
+    original = manifest["entries"][0]["transport_path"]
+    manifest["entries"][0]["transport_path"] = "source/00000000.bin"
+    raw_manifest = canonical_bytes(manifest) + b"\n"
+    archive = fixed_zip({"MANIFEST.json": raw_manifest, "source/00000000.bin": members[original]})
+    body = copy(source.body)
+    body.update(approved_view_digest=sha(raw_manifest),
+        source_manifest_raw_ref=intake.runtime.corpus.raw_ref(raw_manifest, "P0_BOOTSTRAP_SOURCE_V1", "application/json"),
+        source_archive_raw_ref=intake.runtime.corpus.raw_ref(archive, "P0_BOOTSTRAP_SOURCE_V1", "application/zip"))
+    wrong_source = intake.runtime.object("nf02_p0_source_snapshot", body)
+    wrong_genesis = intake.runtime.object("campaign_genesis", {**genesis.body, "source_ref": wrong_source.ref.as_dict()})
+    raw = {**request.raw, sha(raw_manifest): raw_manifest, sha(archive): archive}
+    altered = intake.initialize(source=wrong_source, genesis=wrong_genesis,
+        actor_ref=request.command.actor_ref, grant_digest=request.command.body()["grant_digest"], raw=raw)
+    with pytest.raises(ValidationError, match="P0_GIT_BLOB_IDENTITY_MISMATCH"):
+        accept(intake, altered)
+    assert snapshot(store) == before
+
+
+@pytest.mark.parametrize("algorithm", ["sha1", "sha256"])
+def test_m07_both_git_algorithms_and_regular_file_modes(corpus, tmp_path, algorithm):
+    def git(*args):
+        return subprocess.check_output(["git", "-C", str(tmp_path), *args], stderr=subprocess.DEVNULL).strip().decode("ascii")
+    git("init", "--object-format=" + algorithm)
+    git("config", "user.name", "TEST ONLY")
+    git("config", "user.email", "test-only@example.invalid")
+    (tmp_path / "plain.txt").write_bytes(b"plain\n")
+    (tmp_path / "script.sh").write_bytes(b"#!/bin/sh\nexit 0\n")
+    git("add", "plain.txt", "script.sh")
+    git("update-index", "--chmod=+x", "script.sh")
+    git("commit", "-m", "TEST ONLY supported source variants")
+    identity, raw, archive = approved_git_view(tmp_path, "HEAD", "TEST_ONLY_VARIANTS", ["script.sh", "plain.txt"])
+    value = json.loads(raw)
+    assert identity.object_format == algorithm
+    assert [(e["mode"], e["transport_path"]) for e in value["entries"]] == [
+        ("100644", "source/00000001.bin"), ("100755", "source/00000002.bin")]
+    source = {"repository_id": value["repository_id"], "git_object_algorithm": algorithm,
+        "git_commit_object_id": value["commit_oid"], "git_tree_object_id": value["tree_oid"], "approved_view_digest": __import__("hashlib").sha256(raw).hexdigest()}
+    assert LimitedTransport(corpus).source(raw, archive, source)[0] == value
 
 
 def test_git_replace_cannot_change_the_tree_of_an_approved_commit(tmp_path):

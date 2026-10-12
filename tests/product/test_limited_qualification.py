@@ -271,7 +271,9 @@ def test_production_loader_rejects_owner_grant_for_auditor_outside_rq(
         p.write_bytes(data)
 
     @contextmanager
-    def locked(path, *, directory=False, check_acl=True):
+    def locked(path, *, directory=False, check_acl=True, byte_limit=16 * 1024 * 1024):
+        if not directory and path.stat().st_size > byte_limit:
+            raise ValidationError("NF02_INSTALLATION_RESOURCE_LIMIT")
         yield b"" if directory else path.read_bytes()
 
     monkeypatch.setattr(module, "machine_root", lambda: target)

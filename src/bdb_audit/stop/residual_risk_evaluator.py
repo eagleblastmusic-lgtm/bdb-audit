@@ -152,7 +152,7 @@ def install_residual_risk_evaluator(evaluator_module) -> None:
         evaluator_module._bdb_original_stop_snapshot_binding(stop_input, snapshot)
 
     evaluator_module._bdb_original_stop_snapshot_binding = evaluator_module.validate_stop_snapshot_binding
-    evaluate_stop._bdb_residual_risk_evaluator = True
+    setattr(evaluate_stop, "_bdb_residual_risk_evaluator", True)
     evaluator_module.evaluate_stop = evaluate_stop
     evaluator_module.validate_stop_snapshot_binding = validate_stop_snapshot_binding
 

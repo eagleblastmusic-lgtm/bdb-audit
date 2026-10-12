@@ -8,9 +8,25 @@ from ctypes import wintypes
 import io
 import os
 import sys
+import json
+import re
+import threading
 from contextlib import redirect_stderr, redirect_stdout
 
 SERVICE_NAME = "BDBAuditNF02P0"
+
+
+def diagnostic(code, message):
+    """Event log contains fixed codes, never packet/body/path/exception text."""
+    error = "P0_SERVICE_COMMAND_FAILED" if code else "NONE"
+    try:
+        result = json.loads(message)
+        token = result.get("error") if isinstance(result, dict) else None
+        if isinstance(token, str) and re.fullmatch(r"(?:P0|NF02)_[A-Z0-9_]{1,100}", token):
+            error = token
+    except (ValueError, TypeError):
+        pass
+    return json.dumps({"service": SERVICE_NAME, "exit_code": code, "error": error}, sort_keys=True)
 
 
 def execute(arguments):
@@ -49,21 +65,25 @@ def run_service():
                                     wintypes.WORD, wintypes.DWORD, ctypes.POINTER(wintypes.LPCWSTR), ctypes.c_void_p]
     advapi.DeregisterEventSource.argtypes = [wintypes.HANDLE]
     handle = None
+    lock = threading.RLock()
+    stopped = threading.Event()
     state = Status(0x10, 2, 0, 0, 0, 1, 30000)
 
     def publish(next_state, code=0):
-        state.state = next_state
-        state.controls = 1 if next_state == 4 else 0
-        state.win32_exit = 1066 if code else 0
-        state.specific_exit = code
-        state.checkpoint = state.checkpoint + 1 if next_state in {2, 3} else 0
-        if handle and not advapi.SetServiceStatus(handle, ctypes.byref(state)):
-            raise ctypes.WinError(ctypes.get_last_error())
+        with lock:
+            state.state = next_state
+            state.controls = 5 if next_state == 4 else 0  # STOP and SHUTDOWN
+            state.win32_exit = 1066 if code else 0
+            state.specific_exit = code
+            state.checkpoint = state.checkpoint + 1 if next_state in {2, 3} else 0
+            state.wait_hint = 30000 if next_state in {2, 3} else 0
+            if handle and not advapi.SetServiceStatus(handle, ctypes.byref(state)):
+                raise ctypes.WinError(ctypes.get_last_error())
 
     @handler_type
     def handler(control):
-        if control == 1:  # Finish the serialized operation; forced termination is crash recovery.
-            publish(3)
+        if control in {1, 5}:  # Drain admitted transaction; forced termination uses Store recovery.
+            stopped.set()
         elif control == 4 and handle:
             advapi.SetServiceStatus(handle, ctypes.byref(state))
 
@@ -73,18 +93,38 @@ def run_service():
         handle = advapi.RegisterServiceCtrlHandlerW(SERVICE_NAME, handler)
         if not handle:
             return
-        code, message = 2, "P0 service invocation failed"
+        code, message = 2, "P0_SERVICE_COMMAND_FAILED"
         try:
-            publish(4)
+            publish(2)
             if argc > 25:
                 raise ValueError("Finite SCM arguments required")
-            code, message = execute([argv[i] for i in range(1, argc)])
-        except Exception as exc:
-            message = "P0 service BLOCKED: " + str(exc)[:30000]
+            arguments = [argv[i] for i in range(1, argc)]
+            publish(4)
+            result = []
+            done = threading.Event()
+
+            def work():
+                try:
+                    result.append(execute(arguments))
+                except BaseException:
+                    result.append((2, "P0_SERVICE_COMMAND_FAILED"))
+                finally:
+                    done.set()
+
+            worker = threading.Thread(target=work, name="P0-Store-operation")
+            worker.start()
+            while not done.wait(1):
+                if stopped.is_set():
+                    publish(3)  # Checkpoint while the bounded operation drains.
+            worker.join()
+            code, message = result[0]
+        except BaseException:
+            message = "P0_SERVICE_COMMAND_FAILED"
         finally:
+            publish(3)
             event_source = advapi.RegisterEventSourceW(None, SERVICE_NAME)
             if event_source:
-                strings = (wintypes.LPCWSTR * 1)(message)
+                strings = (wintypes.LPCWSTR * 1)(diagnostic(code, message))
                 advapi.ReportEventW(event_source, 1 if code else 4, 0, 1001, None, 1, 0, strings, None)
                 advapi.DeregisterEventSource(event_source)
             publish(1, code)

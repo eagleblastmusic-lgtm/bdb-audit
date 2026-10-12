@@ -1,0 +1,1 @@
+{"status": "LOCAL_Q1_INPUT_CHECKS_COMPLETE_NOT_Q1_PASS", "counts": {"canonical": 18, "profiles": 7, "schemas": 43, "schema_vectors": 8100, "exact_ref_vectors": 414, "dag_vectors": 9, "state_branches_to_qualify": 72}, "output": "docs\\PRODUCT_V1\\NF02_P0_Q1_FINAL_HANDOFF\\evidence\\reference-rebuild"}

@@ -110,7 +110,7 @@ class RemediationPlanner:
             if not member_digests:
                 continue
             finding_refs = _dedupe_refs(
-                claims[d].source_ref for d in member_digests if claims[d].source_ref is not None
+                ref for d in member_digests if (ref := claims[d].source_ref) is not None
             )
             claimed_by_root.update(member_digests)
             decision_payloads = [decisions_by_claim[d].payload for d in member_digests]

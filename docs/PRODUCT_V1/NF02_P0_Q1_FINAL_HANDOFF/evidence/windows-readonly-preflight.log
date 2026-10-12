@@ -1,0 +1,1 @@
+{"status":"READ_ONLY_NOT_INSTALLATION_OR_RQ","os":"Microsoft Windows NT 10.0.19045.0","service":"BDBAuditNF02P0","installed":false,"authority_root":"C:\\ProgramData\\BDB Audit\\NF02-P0-Limited","root_present":false,"required_account":"NT SERVICE\\BDBAuditNF02P0","current_identity":"S-1-5-21-4030705213-1609979533-3169636942-1001"}

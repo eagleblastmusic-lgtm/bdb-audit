@@ -1,0 +1,29 @@
+Traceback (most recent call last):
+  File "C:\Projekty\Audyty\BDB Audit\tools\nf02_p0_q1_semantics.py", line 145, in <module>
+    run(parser.parse_args().output)
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekty\Audyty\BDB Audit\tools\nf02_p0_q1_semantics.py", line 97, in run
+    flow = fixtures.delivered(setup, monkeypatch)
+  File "C:\Projekty\Audyty\BDB Audit\tests\product\test_limited_p0.py", line 488, in delivered
+    store, intake, authority, assignment, gd, grant, binding, package = started(
+                                                                        ~~~~~~~^
+        setup_p0
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Projekty\Audyty\BDB Audit\tests\product\test_limited_p0.py", line 466, in started
+    store, intake, authority, assignment, gd, grant = assigned(setup_p0)
+                                                      ~~~~~~~~^^^^^^^^^^
+  File "C:\Projekty\Audyty\BDB Audit\tests\product\test_limited_p0.py", line 315, in assigned
+    assert accept(intake, init).head.commit_seq == 1
+           ~~~~~~^^^^^^^^^^^^^^
+  File "C:\Projekty\Audyty\BDB Audit\tools\nf02_p0_q1_semantics.py", line 89, in capture
+    denial(request, "command_envelope/3", ref["field"], mutation, command_field=True)
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekty\Audyty\BDB Audit\tools\nf02_p0_q1_semantics.py", line 63, in denial
+    altered = replace(request, command=LimitedCommand(body, intake.runtime))
+                                       ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekty\Audyty\BDB Audit\src\bdb_audit\history\limited_wire.py", line 92, in __init__
+    "expected_parent_head": b["expected_parent"], "governing_policy_ref": b["policy_ref"],
+                                                                          ~^^^^^^^^^^^^^^
+KeyError: 'policy_ref'

@@ -1,0 +1,22 @@
+{
+  "app_version": "2.0.3",
+  "build_id": "BDB-V2-STANDALONE-2.0.3",
+  "payload_manifest_digest": "8fc20e59297657ae0b8cba227bfe5877c24daa036898a927dd3aa2dc7415202c",
+  "runtime_lock": {
+    "attrs": "26.1.0",
+    "jsonschema": "4.25.1",
+    "jsonschema-specifications": "2025.9.1",
+    "referencing": "0.37.0",
+    "rpds-py": "2026.6.3"
+  },
+  "runtime_platform": {
+    "implementation": "cpython",
+    "machine": "x86_64",
+    "python_major": 3,
+    "python_minor": 14,
+    "soabi": "cp314-win_amd64",
+    "system": "windows"
+  },
+  "status": "PASS",
+  "verified_files_count": 412
+}

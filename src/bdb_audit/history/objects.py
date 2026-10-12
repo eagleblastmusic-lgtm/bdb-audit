@@ -250,7 +250,7 @@ class HistoryCut:
                    head.commit_hash, governing_policy_ref, tuple(governing_spec_refs))
 
     def as_dict(self):
-        out = {"variant": self.variant,
+        out: dict[str, Any] = {"variant": self.variant,
                "governing_policy_ref": self.governing_policy_ref,
                "governing_spec_refs": list(self.governing_spec_refs)}
         if self.variant == "EMPTY_HISTORY_CUT":
@@ -597,6 +597,8 @@ class BootstrapAdmissionDecision:
         object.__setattr__(self, "reason_codes", tuple(self.reason_codes))
 
     def body(self):
+        # __post_init__ rejects a missing selection before serialization.
+        assert self.trusted_predecessor_selection_ref is not None
         out = {"admission_input_history_cut": _copy(self.admission_input_history_cut),
                "legacy_ref": self.legacy_ref.as_dict(),
                "mechanical_validation_assessment_ref": self.mechanical_validation_assessment_ref.as_dict(),

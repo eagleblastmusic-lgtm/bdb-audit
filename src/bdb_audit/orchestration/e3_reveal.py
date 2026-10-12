@@ -34,10 +34,10 @@ def _freeze_preview_value(value: Any) -> Any:
 
 def _exposure_union(state: KnowledgeState, exposure_ref: Mapping) -> tuple[dict, ...]:
     by_digest = {
-        ref.get("revision_digest"): _canonical_copy(dict(ref))
+        ref["revision_digest"]: _canonical_copy(dict(ref))
         for ref in state.potential_exposure_refs
     }
-    by_digest[exposure_ref.get("revision_digest")] = _canonical_copy(dict(exposure_ref))
+    by_digest[exposure_ref["revision_digest"]] = _canonical_copy(dict(exposure_ref))
     return tuple(by_digest[key] for key in sorted(by_digest))
 
 FORBIDDEN_REVEAL_FIELDS = frozenset({

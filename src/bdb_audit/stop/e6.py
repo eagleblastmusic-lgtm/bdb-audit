@@ -217,13 +217,16 @@ class AdaptiveE6Generator:
                 "ACCEPTED_HISTORY_CUT_REQUIRED",
                 f"{label} must be a canonical ACCEPTED_HISTORY_CUT",
             )
+        governing_policy = value.get("governing_policy_ref")
+        if not isinstance(governing_policy, str):
+            raise ValidationError("ACCEPTED_HISTORY_CUT_REQUIRED", label)
         cut = HistoryCut(
-            variant=value.get("variant"),
+            variant="ACCEPTED_HISTORY_CUT",
             history_namespace_ref=value.get("history_namespace_ref"),
             campaign_id=value.get("campaign_id"),
             accepted_head_seq=value.get("accepted_head_seq"),
             accepted_head_hash=value.get("accepted_head_hash"),
-            governing_policy_ref=value.get("governing_policy_ref"),
+            governing_policy_ref=governing_policy,
             governing_spec_refs=tuple(value.get("governing_spec_refs", ())),
         )
         cut.require_accepted()
@@ -296,6 +299,7 @@ class AdaptiveE6Generator:
         stop_cut = AdaptiveE6Generator._accepted_cut(dict(stop_input.input_history_cut), "stop_input_cut")
         hcut = dict(e6_input_history_cut or stop_input.input_history_cut)
         e6_cut = AdaptiveE6Generator._accepted_cut(hcut, "e6_input_history_cut")
+        assert e6_cut.accepted_head_seq is not None and stop_cut.accepted_head_seq is not None
         if e6_cut.campaign_id != stop_cut.campaign_id:
             raise ValidationError("E6_INPUT_CUT_CAMPAIGN_MISMATCH")
         if e6_cut.accepted_head_seq < stop_cut.accepted_head_seq:
@@ -489,6 +493,7 @@ class AdaptiveE6Generator:
     def verify_post_e6_return_to_stop(new_head_cut: dict[str, Any], previous_cut: dict[str, Any]) -> None:
         previous = AdaptiveE6Generator._accepted_cut(previous_cut, "previous_cut")
         new = AdaptiveE6Generator._accepted_cut(new_head_cut, "new_head_cut")
+        assert new.accepted_head_seq is not None and previous.accepted_head_seq is not None
         if new.campaign_id != previous.campaign_id:
             raise ValidationError(
                 "POST_E6_CAMPAIGN_MISMATCH",

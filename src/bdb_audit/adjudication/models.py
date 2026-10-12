@@ -93,6 +93,7 @@ class FindingClaimRevision:
         elif self.claim_id is None:
             object.__setattr__(self, "claim_id", new_id("finding_claim_revision"))
 
+        assert self.claim_id is not None  # Assigned in every constructor branch.
         if self.claim_id.startswith("finding_claim_revision_"):
             validate_id(self.claim_id, "finding_claim_revision")
 

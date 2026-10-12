@@ -66,7 +66,7 @@ def _derived_registered_ref(label: str, payload: Any) -> dict[str, Any]:
 
 def _digest_set(refs: Sequence[dict[str, Any]]) -> set[str]:
     return {
-        ref.get("revision_digest")
+        ref["revision_digest"]
         for ref in refs
         if isinstance(ref, dict) and isinstance(ref.get("revision_digest"), str)
     }

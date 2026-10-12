@@ -88,6 +88,7 @@ class LimitedCommand(CommandEnvelope):
         b = copy(body)
         object.__setattr__(self, "runtime", runtime)
         object.__setattr__(self, "_value", b)
+        self.as_object()  # Closed schema before reading caller-controlled fields.
         values = {"command_id": b["command_id"], "command_kind": b["operation"], "actor_ref": b["actor_ref"],
                   "expected_parent_head": b["expected_parent"], "governing_policy_ref": b["policy_ref"],
                   "governing_spec_refs": (b["spec_ref"],), "campaign_ref": b["campaign_id"],
@@ -96,7 +97,6 @@ class LimitedCommand(CommandEnvelope):
             object.__setattr__(self, k, v)
         if b["command_id"] != b["object_id"]:
             raise ValidationError("P0_COMMAND_ID_MISMATCH")
-        self.as_object()
 
     def body(self):
         return copy(self._value)

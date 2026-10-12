@@ -1,0 +1,12 @@
+Processing .\.
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: bdb-audit
+  Building wheel for bdb-audit (pyproject.toml): started
+  Building wheel for bdb-audit (pyproject.toml): finished with status 'done'
+  Created wheel for bdb-audit: filename=bdb_audit-2.0.3-py3-none-any.whl size=798770 sha256=5b823f8ffec59a4a32dec5d4badf8b7e5f5aa39f3335f0abb841a6afd9809fc6
+  Stored in directory: C:\Users\Skarabeusz\AppData\Local\Temp\pip-ephem-wheel-cache-8vx1c_4g\wheels\1b\57\e0\e82e6ab4efdb94e5c991858c1db03782ee40afac0293da9095
+Successfully built bdb-audit
+
+[notice] A new release of pip is available: 26.0.1 -> 26.2.1
+[notice] To update, run: C:\Projekty\Audyty\BDB Audit\.venv-f2\Scripts\python.exe -m pip install --upgrade pip

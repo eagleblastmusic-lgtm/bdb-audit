@@ -1,0 +1,1 @@
+{"candidate": "PASS", "sets": {"normative": {"count": 55, "sha256": "f4aeeadd96314ef7854f61747fdf3f72caf5dfb599c4977a78170aa3620165df"}, "machine": {"count": 55, "sha256": "7449d5eb45ca2aa49b065318d1287ac473fed54dc0e8359bcc32033215f5709d"}}, "files": 58, "contracts": 18, "profiles": 7, "schemas": 43}

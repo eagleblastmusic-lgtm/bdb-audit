@@ -37,7 +37,7 @@ def backend_identity():
 
 
 def _offline(uri):
-    raise NoSuchResource(ref=uri)
+    raise NoSuchResource(uri)
 
 
 def _formats():
@@ -119,7 +119,9 @@ class SchemaBindings:
                 raise ValidationError("SCHEMA_REFERENCE_CONTRACT_NOT_BOUND")
             self.registry.reference_parity(kind, schema["x-bdb-material-refs"], wire_version)
             raw_map[key] = (raw, digest)
-            validators[key] = Draft202012Validator(schema, registry=Registry(retrieve=_offline),
+            # Registry's default retriever denies unknown resources. Schemas
+            # with external refs have already been rejected above.
+            validators[key] = Draft202012Validator(schema, registry=Registry(),
                                                    format_checker=_formats())
         self._bindings = MappingProxyType(raw_map)
         self._validators = MappingProxyType(validators)

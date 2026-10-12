@@ -52,6 +52,17 @@ def load_raw(directory, digests):
     return raw
 
 
+def write_prepared(store, path, raw):
+    """Service output stays in the leased campaign directory; never overwrites."""
+    target = Path(path).absolute()
+    parent = Path(store.path).absolute().parent
+    if target.parent != parent or target.resolve().parent != parent.resolve():
+        raise ValidationError("P0_PROTECTED_OUTPUT_LOCATION_REQUIRED")
+    with store._nf02.lease(store.path):
+        with target.open("xb") as stream:
+            stream.write(raw)
+
+
 def run_p0(argv):
     parser = argparse.ArgumentParser(prog="bdb-audit product p0")
     subs = parser.add_subparsers(dest="action", required=True)
@@ -84,8 +95,7 @@ def run_p0(argv):
             ref = strict_json(read_bounded(args.binding_ref, 2 * 1024 * 1024))
             job = intake.release_job(binding_ref=ref, grant_digest=args.grant_digest)
             raw = canonical_bytes(runtime.release_statement(job))
-            with Path(args.output).open("xb") as out:
-                out.write(raw)
+            write_prepared(store, args.output, raw)
             data = {"status": "PREPARED_UNSIGNED", "output": str(Path(args.output).resolve()), "sign_exact_bytes_sha256": sha(raw)}
         elif args.action == "release":
             statement = strict_json(read_bounded(args.input, 2 * 1024 * 1024))
@@ -105,8 +115,7 @@ def run_p0(argv):
             if args.action == "prepare":
                 request = intake.prepare(value["operation"], objects, actor_ref=value["actor_ref"], grant_digest=value["grant_digest"],
                     raw=raw, events=value.get("events"), command_id=value.get("command_id"))
-                with Path(args.output).open("xb") as out:
-                    out.write(canonical_bytes(packet(request)) + b"\n")
+                write_prepared(store, args.output, canonical_bytes(packet(request)) + b"\n")
                 data = {"status": "PREPARED_UNSIGNED", "output": str(Path(args.output).resolve()),
                         "signing_preimage_base64": base64.b64encode(request.signing_bytes()).decode("ascii")}
             else:

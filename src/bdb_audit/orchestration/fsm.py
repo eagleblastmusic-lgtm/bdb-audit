@@ -190,10 +190,11 @@ def project_states(facts: Iterable[TransitionFact | Mapping], *, initial=None):
         else:
             payload = fact
             aggregate = str(fact.get("aggregate", "")).lower()
-            aggregate_id = fact.get("aggregate_id") or fact.get("id")
-            before, after = fact.get("from_state"), fact.get("to_state")
-            if not aggregate_id or before is None or after is None:
+            candidate_id = fact.get("aggregate_id") or fact.get("id")
+            candidate_before, candidate_after = fact.get("from_state"), fact.get("to_state")
+            if not isinstance(candidate_id, str) or not candidate_id or not isinstance(candidate_before, str) or not isinstance(candidate_after, str):
                 raise ValidationError("TRANSITION_FACT_INCOMPLETE")
+            aggregate_id, before, after = candidate_id, candidate_before, candidate_after
             legal_transition(aggregate, before, after,
                              event_kind=fact.get("event_kind"),
                              retry_of=fact.get("retry_of"), attempt_id=fact.get("attempt_id"))

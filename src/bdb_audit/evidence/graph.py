@@ -68,7 +68,9 @@ EDGE_RELATIONS = {
 def _extract_id(item: Any) -> str:
     if isinstance(item, dict):
         return item.get("revision_digest") or item.get("logical_id") or item.get("id") or str(item)
-    if isinstance(item, (ObjectRef, CanonicalObject)):
+    if isinstance(item, ObjectRef):
+        return item.revision_digest
+    if isinstance(item, CanonicalObject):
         return item.digest
     return str(item)
 

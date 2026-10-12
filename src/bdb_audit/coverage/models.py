@@ -232,6 +232,7 @@ class CoverageObligation:
         )
 
     def body(self) -> dict:
+        assert self.obligation_input_history_cut is not None  # Validated at construction.
         return {
             "obligation_id": self.obligation_id,
             "obligation_revision": str(self.obligation_revision),

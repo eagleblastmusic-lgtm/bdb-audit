@@ -52,6 +52,16 @@ def test_multidimensional_independence_all_distinct():
         assert res["dimension_results"][dim] == "INDEPENDENT"
 
 
+def test_typed_object_reference_and_wire_reference_share_same_dependency():
+    from bdb_audit.history.objects import ObjectRef
+    dependency = ObjectRef("observation", "a" * 64, schema_revision_ref="BDB_SCHEMA_REGISTRY::observation/1")
+    result = assess_multidimensional_independence(make_ref("finding_claim_revision", "claim"),
+        {"ORACLE_INDEPENDENCE": [dependency]}, {"ORACLE_INDEPENDENCE": [dependency.as_dict()]},
+        required_dimensions=("ORACLE_INDEPENDENCE",))
+    assert result["overall_result"] == "SHARED_DEPENDENCY"
+    assert result["shared_dependencies"] == ["a" * 64]
+
+
 def test_adversarial_shared_oracle_or_parser_rejection():
     claim_ref = make_ref("finding_claim_revision", "claim_2")
 

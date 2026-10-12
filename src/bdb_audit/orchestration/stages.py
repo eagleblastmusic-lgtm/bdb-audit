@@ -82,8 +82,8 @@ class StageSpec:
 class StageSpecRegistry:
     """Content-addressed registry; it never exposes a mutable latest-by-key."""
     def __init__(self, specs: Iterable[StageSpec] = ()):
-        self._by_digest = {}
-        self._by_key = {}
+        self._by_digest: dict[str, StageSpec] = {}
+        self._by_key: dict[tuple[str, str], str] = {}
         for spec in specs:
             self.register(spec)
 
@@ -105,7 +105,9 @@ class StageSpecRegistry:
         elif isinstance(ref, Mapping):
             if ref.get("kind") != "stage_spec":
                 raise ValidationError("STAGE_SPEC_REF_INVALID")
-            digest = ref.get("revision_digest")
+            if not isinstance(ref.get("revision_digest"), str):
+                raise ValidationError("STAGE_SPEC_REF_INVALID")
+            digest = ref["revision_digest"]
         else:
             raise ValidationError("STAGE_SPEC_REF_INVALID")
         try:

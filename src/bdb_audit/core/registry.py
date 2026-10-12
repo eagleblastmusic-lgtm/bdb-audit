@@ -7,6 +7,7 @@ from a subset of convenient field names.
 from copy import deepcopy
 import hashlib
 from pathlib import Path
+from typing import Any
 
 from .canonical_json import parse, canonical_bytes
 from .errors import ValidationError
@@ -244,7 +245,7 @@ class ContractRegistry:
             expected_parent=expected_parent, profile_name=profile_name)
         if profile is None:
             return set()
-        by_kind = {}
+        by_kind: dict[str | None, list[Any]] = {}
         for node in nodes:
             kind = node.get("kind") if isinstance(node, dict) else getattr(node, "kind", None)
             by_kind.setdefault(kind, []).append(node)
@@ -252,7 +253,7 @@ class ContractRegistry:
         # A group may be absent. Pair every present group with every later
         # present group, preserving the exact profile relation without
         # inferring edges from prose or kind-name conventions.
-        edges = set()
+        edges: set[tuple[str, str]] = set()
         def node_id(node):
             return node.get("id") if isinstance(node, dict) else getattr(node, "node_id")
         for i, group in enumerate(groups):

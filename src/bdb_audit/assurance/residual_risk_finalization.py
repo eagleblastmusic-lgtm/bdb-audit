@@ -23,7 +23,7 @@ from .release import ReleaseQualification
 
 def _digest_set(refs) -> set[str]:
     return {
-        ref.get("revision_digest")
+        ref["revision_digest"]
         for ref in refs
         if isinstance(ref, dict) and isinstance(ref.get("revision_digest"), str)
     }

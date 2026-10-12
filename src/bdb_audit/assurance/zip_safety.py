@@ -12,6 +12,7 @@ import zipfile
 import zlib
 import bz2
 import lzma
+from typing import Any
 
 from ..core.errors import ValidationError
 
@@ -112,7 +113,9 @@ def _expanded(raw, info, ceiling):
         raise ValidationError("ZIP_INTEGRITY_FAILURE", "compressed extent")
     data = memoryview(raw)[start:end]
     method = info.compress_type
-    decoder = None
+    # zlib, bz2, lzma and optional zstd expose different streaming state.
+    # The compression-method branch below selects the appropriate API.
+    decoder: Any = None
     if method == zipfile.ZIP_DEFLATED:
         decoder = zlib.decompressobj(-15)
     elif method == zipfile.ZIP_BZIP2:
@@ -137,6 +140,8 @@ def _expanded(raw, info, ceiling):
     output = bytearray()
     position = 0
     pending = b""
+    chunk: bytes | memoryview
+    compressed: bytes | memoryview
     while True:
         limit = min(65536, ceiling - len(output) + 1)
         if decoder is None:

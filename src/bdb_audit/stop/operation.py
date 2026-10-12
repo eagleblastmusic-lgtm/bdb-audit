@@ -256,10 +256,13 @@ def _is_exact_stop_snapshot(
         return False
     snapshot_body = snapshot_record["body"]
     snapshot_id = snapshot_body.get("snapshot_id")
+    schema_revision_ref = snapshot_record.get("schema_revision_ref")
+    if not isinstance(schema_revision_ref, str):
+        return False
     snapshot_obj = CanonicalObject(
         "snapshot",
         snapshot_body,
-        snapshot_record.get("schema_revision_ref"),
+        schema_revision_ref,
         snapshot_record.get("logical_id")
         or (
             snapshot_id
