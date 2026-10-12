@@ -24,7 +24,7 @@ def parser() -> argparse.ArgumentParser:
         command.add_argument("--path", action="append", help="Explicit source file scope; repeat per file")
         if name == "start":
             command.add_argument("--campaign", required=True, help="New campaign directory (must not exist)")
-    for name in ("status", "resume", "prepare", "inspect", "import", "validate", "accept", "reject", "advance", "run-check", "recover-check", "abandon-check"):
+    for name in ("status", "resume", "prepare", "inspect", "import", "validate", "accept", "reject", "advance", "run-check", "recover-check", "abandon-check", "report"):
         command = sub.add_parser(name)
         command.add_argument("--campaign", required=True)
         if name in {"inspect", "import"}:
@@ -44,6 +44,8 @@ def parser() -> argparse.ArgumentParser:
             command.add_argument("argv", nargs=argparse.REMAINDER, help="Explicit command after --; never read from an AI result")
         if name in {"recover-check", "abandon-check"}:
             command.add_argument("--run-id", required=True)
+        if name == "report":
+            command.add_argument("--output", required=True, help="New directory for Markdown, JSON and evidence manifest")
     return root
 
 
@@ -77,6 +79,9 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
         return workflow.recover_check(args.run_id)
     if args.action == "abandon-check":
         return workflow.abandon_check(args.run_id, args.reason)
+    if args.action == "report":
+        from .report import export_report
+        return export_report(workflow, args.output)
     raise ValidationError("LOCAL_ACTION_NOT_IMPLEMENTED")
 
 

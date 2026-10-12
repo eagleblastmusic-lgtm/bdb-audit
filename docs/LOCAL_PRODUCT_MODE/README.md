@@ -97,3 +97,19 @@ Nieukończoną kontrolę bez pełnego receipt można jawnie porzucić, zachowuj�
 ```
 
 Porzucenie nie tworzy PASS i pozostaje w historii oraz raporcie.
+
+## Raport końcowy i częściowy
+
+```powershell
+& $python -m bdb_audit product local report --campaign 'C:\audyty\moj-local' --output 'C:\audyty\eksport-001'
+```
+
+Powstają `REPORT.md`, `REPORT.json` i `EVIDENCE_MANIFEST.json`. Eksport częściowy
+wskazuje brakujące wyniki i nie oznacza audytu jako ukończonego. Raport zawiera
+exact commit/tree i zakres, deklarowane modele/producenci, przebieg etapów, findings
+z istotnością, uzasadnieniem i referencjami, rzeczywiste lokalne wykonania, spory,
+nieweryfikowane twierdzenia, ograniczenia oraz działania naprawcze. Różne severity
+lub disposition przy tym samym identyfikatorze finding są oznaczane jako potencjalna
+rozbieżność wymagająca oceny; algorytm nie rozstrzyga prawdy. Ustalenia i oceny AI są
+interpretacjami; fakty dotyczą tylko zarejestrowanych lokalnych decyzji i wykonań.
+Eksport nie nadpisuje wcześniejszego raportu ani chronionych plików kampanii.

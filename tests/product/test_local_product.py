@@ -286,3 +286,38 @@ def test_missing_control_receipt_requires_explicit_abandonment(local, monkeypatc
     restarted.abandon_check(run_id, "Actual execution has no complete receipt; not a passed check")
     assert len(LocalWorkflow(local.store.root).abandoned_runs) == 1
     assert not restarted.runs
+
+
+def test_reports_keep_claims_separate_and_export_exact_evidence(local, tmp_path):
+    from bdb_audit.local_product.report import build_report, export_report
+    finding = {"id": "F1", "title": "<script>alert(1)</script>", "statement": "Negative clamp is wrong",
+               "rationale": "Explicit fixture assertion, not independent AI evidence", "severity": "HIGH",
+               "disposition": "CLAIM", "source_refs": [{"path": "app.py", "line": 2}]}
+    rid = imported(local, tmp_path, response(local, findings=[finding]))
+    local.validate(rid)
+    local.accept(rid, "user", confirm=True)
+    altered = deepcopy(finding)
+    altered.update(severity="LOW", disposition="DISPUTED")
+    rid = imported(local, tmp_path, response(local, "E1-B", findings=[altered]), "B.json")
+    local.validate(rid)
+    local.accept(rid, "user", confirm=True)
+    report = build_report(local)
+    assert report["status"] == "NEEDS_REAL_RESULTS" and report["contains_test_fixtures"]
+    assert len(report["findings"]) == 2 and not any(f["truth_verified"] for f in report["findings"])
+    assert report["contradictions"][0]["classification"] == "POTENTIAL_DISAGREEMENT_REQUIRES_REVIEW"
+    assert all(item["record_kind"] != "local_finding_claim" for item in report["derived_report_model"]["facts"])
+    exported = export_report(local, tmp_path / "report")
+    assert exported["status"] == "EXPORTED_LOCAL"
+    md = (tmp_path / "report" / "REPORT.md").read_text(encoding="utf-8")
+    assert "<script>" not in md and "&lt;script&gt;" in md
+    manifest = parse((tmp_path / "report" / "EVIDENCE_MANIFEST.json").read_bytes())
+    from hashlib import sha256
+    for item in manifest["reports"]:
+        raw = (tmp_path / "report" / item["path"]).read_bytes()
+        assert item["sha256"] == sha256(raw).hexdigest()
+    head = local.head
+    with pytest.raises(ValidationError, match="LOCAL_REPORT_OUTPUT_EXISTS"):
+        export_report(local, tmp_path / "report")
+    with pytest.raises(ValidationError, match="LOCAL_REPORT_PROTECTED_PATH"):
+        export_report(local, local.store.root / "vault" / "new-report")
+    assert local.head == head
