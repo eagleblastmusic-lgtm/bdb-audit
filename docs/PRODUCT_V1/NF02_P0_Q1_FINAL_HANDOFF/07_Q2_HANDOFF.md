@@ -2,6 +2,8 @@
 
 **NOT_RUN. Freeze pozostaje niedopuszczony przy Q1 OPEN.** Pakiet jest materiałem do rzeczywistego review, z ujawnionymi brakami; nie wystawia decyzji w imieniu kwalifikatora. Wszystkie ścieżki są względem repozytorium. `EVIDENCE_MANIFEST.json` wiąże actual bytes; nie wystarcza nazwa gałęzi ani podany checkpoint.
 
+Kontynuację checkpointu 4132 opisują 01/02 i `evidence/q1-closure-4132c5d/`. Nowe materiały obejmują pełne enclosing contexts, material-target/chronology/wrapper/entry-point cases oraz naprawę F11 SAME_CREATE_ASSIGNMENT_CONTENT. Końcowy status każdego QG znajduje się w 02; brak realnych owner inputs jest oddzielony w `EXTERNAL_DEPENDENCIES.json` i 10. `11_Q1_REPRODUCTION.md` podaje aktualną procedurę. Nie traktować zachowanych przebiegów sprzed F11 jako dowodu końcowego kodu; ich inputs są użyte ponownie przez rzeczywisty końcowy runtime.
+
 ## Wejście recenzenta
 
 Recenzent otrzymuje repo/commit podany w 00_STATUS, ten katalog, frozen `NF02_P0_LIMITED_MODEL` i istniejące `nf02_p0_runtime_qualification` bez kopiowania dużych shardów. Odczytuje manifest obu zbiorów, MODEL.md §§M01–M18, całe MODEL.json/Registry, siedem profili, 43 schemas, graph i qualification matrix. Informacyjne statusy PROPOSED w zamrożonych plikach pozostają oryginalnymi bajtami; późniejsze owner approval jest odrębnym record, nie edycją normy.
@@ -34,6 +36,8 @@ $env:PYTHONUTF8='1'
 ```
 
 Recenzent porównuje regenerated reference files byte-for-byte z materiałami przez `03_GOLDEN_VECTOR_REGISTER.json`, a expected primitive/node decisions dodatkowo niezależną procedurą `tools/nf02_p0_reference.py`. Powtarza literal M07 one-based indexing, wrong-content-logical-ID denial, mode chain/current rights i najistotniejsze crash/CAS/replay. Reference history czyta zachowany SQLite read-only, liczy CJSON dwoma encoderami, własny digest/domain/Kahn/receipts; nie weryfikuje udawanych CMS jako prawdziwych.
+
+Wektory danych zachowują exact bytes. Metadane `LOCAL_Q1_INPUT_CHECKS.json` mają historyczny hash procedury; aktualny `REFERENCE_INPUT_CHECKS_CURRENT.json` i `VECTOR_EXECUTION.json` jawnie pokazują zmianę wyłącznie `reference_procedures` po poprawkach typowania harnessu. Wszystkie pozostałe pola tego rekordu i wszystkie vector shards muszą być byte-equivalent; nie dopuszcza się dowolnej zmiany expected. Niezależny history readback obejmuje także klasy material refs, exact basis/index oraz odrzucenie pre-F11 kontrprzykładu.
 
 Własny reviewer może użyć dodatkowej procedury/implementacji oracle; nie może wyprowadzić expected wyłącznie z writer response. Każda niezgodność ma exact input, expected, observed, normative clause, source binding i retest. Do zamknięcia Q1 pozostaje lista konkretnych OPEN obligations z 02, w tym enclosing/cross-field combinations oraz pełne temporal/material-target/mode/signed-input proof. Nie wolno podpisać freeze na podstawie liczby 8100/322/72.
 

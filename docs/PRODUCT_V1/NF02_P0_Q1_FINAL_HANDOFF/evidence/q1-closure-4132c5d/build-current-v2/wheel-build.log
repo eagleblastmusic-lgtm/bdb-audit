@@ -1,0 +1,9 @@
+Processing .\.
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: bdb-audit
+  Building wheel for bdb-audit (pyproject.toml): started
+  Building wheel for bdb-audit (pyproject.toml): finished with status 'done'
+  Created wheel for bdb-audit: filename=bdb_audit-2.0.3-py3-none-any.whl size=798789 sha256=a2a879c19020c6ed43d3b236850935b19ba74e81fc6f70388b802e608f341b46
+  Stored in directory: c:\users\skarabeusz\appdata\local\pip\cache\wheels\11\a3\1f\03a90e7b17083f31f40dab0343b0d5fc5e3e225582d48ecb8e
+Successfully built bdb-audit

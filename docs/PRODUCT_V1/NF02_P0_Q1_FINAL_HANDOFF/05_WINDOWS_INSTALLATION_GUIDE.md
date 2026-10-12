@@ -55,3 +55,5 @@ Event Application/1001 zawiera stały service ID, exit code i bezpieczny error t
 ## Odbiór instalacji
 
 Kwalifikator potwierdza actual service SID/token bez Administrators, real start/stop/drain/new-process restart, deny-write code/root, allowed DB/vault/outbox, deny-read/write audytora, leases/rename/reparse i końcowy readback. Sprawdza original source commit/tree/blob, PKI current revocation, zegar i osobny namespace. Żaden z tych wyników nie jest zastępowany lokalnym pytest z monkeypatch OS/CMS.
+
+Aktualny rebuild po poprawce same-create: `evidence/q1-closure-4132c5d/build-current-v2/BUILD_READBACK.json`, `bdb_p0_unqualified.py` i wheel w tym samym katalogu. Starszy `evidence/build/` jest historycznym niekwalifikowanym buildem; nie stanowi dowodu naprawionego runtime. Źródła i payload LF normalization mają oddzielne exact SHA-256. Nadal nie wolno instalować ani aktywować bez właściwego upoważnienia i qualified authority.

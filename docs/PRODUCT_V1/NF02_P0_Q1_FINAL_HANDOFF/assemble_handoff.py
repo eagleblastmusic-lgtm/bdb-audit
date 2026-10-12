@@ -42,6 +42,10 @@ def cases(path):
 
 
 def generate():
+    if (HERE / "evidence/q1-closure-4132c5d/FINAL_Q1_AUDIT.json").exists():
+        from tools.nf02_p0_q1_finalize import assemble
+        assemble()
+        return
     model = read(BASE + "MODEL.json")
     matrix = read(BASE + "QUALIFICATION_MATRIX.json")
     candidate = read("docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/CANDIDATE_IDENTITY.json")

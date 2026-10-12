@@ -12,6 +12,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+from typing import Any
 
 from jsonschema import Draft202012Validator
 from referencing import Registry, Resource
@@ -390,8 +391,9 @@ def finite_inputs(corpus):
                     kind=kind, logical_id=logical, digest=digest, body={"refs": refs}
                 )
             )
+        actual: list[Any] | str
         try:
-            actual = [n.digest for n in LimitedProtocol.order(None, nodes)]
+            actual = [n.digest for n in LimitedProtocol.order(LimitedProtocol.__new__(LimitedProtocol), nodes)]
         except ValidationError as exc:
             actual = exc.code
         wanted = (
@@ -539,9 +541,8 @@ def generate(output):
         )
     matrix = json.loads(files[BASE + "QUALIFICATION_MATRIX.json"])
     from bdb_audit.history.limited_protocol import LimitedProtocol
-    from types import SimpleNamespace
-
-    ref_context = SimpleNamespace(schemas=corpus.schemas, schema_ref=corpus.schema_ref)
+    ref_context = LimitedProtocol.__new__(LimitedProtocol)
+    ref_context.schemas, ref_context.corpus = corpus.schemas, corpus
     ref_vectors = []
     for kind, version in corpus.versions.items():
         valid = {
@@ -674,7 +675,9 @@ def generate(output):
         },
     }
     # Qualification inputs keep the approved JSON quota; never enlarge M06.
-    chunks, chunk, size = [], [], 0
+    chunks: list[list[dict[str, Any]]] = []
+    chunk: list[dict[str, Any]] = []
+    size = 0
     for vector in vectors:
         amount = len(reference_a(vector)) + 1
         if chunk and size + amount > 1024 * 1024:
@@ -687,13 +690,13 @@ def generate(output):
     offset = 0
     for i, chunk in enumerate(chunks, 1):
         name = f"SCHEMA_VECTORS_PART_{i:02}.json"
-        value = {
+        shard_body = {
             "status": "SHAPE_ONLY_LOCAL_CHECKS_NOT_QUALIFICATION",
             "vectors": chunk,
         }
-        raw = reference_a(value) + b"\n"
+        raw = reference_a(shard_body) + b"\n"
         assert len(raw) <= 2 * 1024 * 1024
-        values[name] = value
+        values[name] = shard_body
         values["SCHEMA_VECTORS.json"]["shards"].append(
             {
                 "file": name,

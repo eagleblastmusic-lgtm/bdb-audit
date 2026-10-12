@@ -311,6 +311,8 @@ class LimitedProtocol:
             extended[assignment.digest] = {"object": assignment, "ref": assignment.ref.as_dict(), "seq": current.commit_seq + 1}
             assignment_ref = assignment.ref.as_dict()
             a, source, _, _, _ = self.context(extended, assignment_ref, reader)
+            if a["attempt_ref"] != attempt.ref.as_dict():
+                raise ValidationError("P0_ASSIGNMENT_ATTEMPT_CONTENT_MISMATCH")
             old_attempts = [r for r in records.values() if r["object"].kind == "attempt"]
             previous = max(old_attempts, key=lambda r: r["seq"]) if old_attempts else None
             aborts = [r for r in records.values() if r["object"].kind == "nf02_p0_abort"]

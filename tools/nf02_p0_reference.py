@@ -30,6 +30,15 @@ def equal(a, b):
     return a == b
 
 
+def value_key(value):
+    """Injective key for the same strict CJSON equality as equal()."""
+    if isinstance(value, dict):
+        return (dict, tuple((key, value_key(value[key])) for key in sorted(value)))
+    if isinstance(value, list):
+        return (list, tuple(value_key(item) for item in value))
+    return (type(value), value)
+
+
 def pointer(document, fragment):
     for segment in fragment.removeprefix("/").split("/") if fragment else []:
         segment = segment.replace("~1", "/").replace("~0", "~")
@@ -73,7 +82,7 @@ def valid(schema, value, documents):
     if type(value) is list:
         if len(value) < schema.get("minItems", 0) or len(value) > schema.get("maxItems", len(value)):
             return False
-        if schema.get("uniqueItems") and any(equal(a, b) for i, a in enumerate(value) for b in value[:i]):
+        if schema.get("uniqueItems") and len({value_key(item) for item in value}) != len(value):
             return False
         if "items" in schema and not all(valid(schema["items"], item, documents) for item in value):
             return False
@@ -126,13 +135,14 @@ def typed_refs(value):
             yield from typed_refs(child)
 
 
-def history(path):
+def history(path, *, expected_operations=("INITIALIZE_P0_FROM_APPROVED_GIT", "CREATE_ASSIGNMENT", "BIND_PACKAGE", "START_ATTEMPT", "CONFIRM_DELIVERY", "INGEST_EVIDENCE", "ACCEPT_RESULT")):
     """Independent digest, content order, exact-ref, receipt and chronology proof.
 
     Simulated CMS remains simulated; this procedure does not validate signatures.
     """
     con = sqlite3.connect(Path(path).absolute().as_uri() + "?mode=ro", uri=True)
     try:
+        definitions = json.loads((Path(__file__).resolve().parents[1] / "docs/PRODUCT_V1/NF02_P0_LIMITED_MODEL/MODEL.json").read_bytes())["canonical_contracts"]
         objects, raw_objects = {}, []
         for digest, kind, version, schema, logical_id, raw in con.execute("SELECT digest,kind,version,schema_ref,logical_id,body FROM immutable_objects"):
             body = json.loads(raw)
@@ -146,9 +156,11 @@ def history(path):
             raw_objects.append({"kind": kind, "version": version, "logical_id": logical_id, "expected_object_digest": expected,
                                 "expected_cjson_sha256": sha(b), "actual_digest_matches": True})
         raw_rows = []
+        raw_pool = {}
         for digest, size, raw in con.execute("SELECT digest,byte_length,body FROM immutable_raw_artifacts"):
             assert digest == sha(raw) and size == len(raw)
             raw_rows.append({"raw_digest": digest, "bytes": size, "actual_exact_bytes_match": True})
+            raw_pool[digest] = raw
         previous: str | dict[str, Any] = "EMPTY_HISTORY"
         seen: set[str] = set()
         steps: list[dict[str, Any]] = []
@@ -177,13 +189,42 @@ def history(path):
             for field in ("policy_ref", "spec_ref", "schema_registry_ref"):
                 assert command[field] == body[field]
             domain = [objects[d] for d in content if objects[d]["kind"] != "command_envelope"]
+            trace = json.loads(raw_pool[body["authorization_trace_raw_ref"]["raw_digest"]])
+            installation = json.loads(raw_pool[trace["installation_raw_ref"]["raw_digest"]])
+            pins = {r["kind"]: r for r in installation["initial_root_refs"]}
+            pinned = {r["revision_digest"] for r in pins.values()}
+            prior_basis = {reference_a(r): r for value in [*[o["body"] for o in domain], command["events"]]
+                           for r in typed_refs(value) if r["revision_digest"] not in content | pinned}
+            assert command["basis_refs"] == sorted(prior_basis.values(), key=lambda r: (r["kind"], r["logical_id"], r["revision_digest"]))
             for obj in domain:
                 for ref in typed_refs(obj["body"]):
                     assert ref == objects[ref["revision_digest"]]["ref"]
                     assert ref["revision_digest"] in seen | content
+                for rule in definitions[obj["kind"] + "/" + obj["version"]]["material_refs"]:
+                    value = obj["body"][rule["field"]]
+                    if value is None:
+                        assert rule["ref_class"] == "PRIOR_OR_NULL_INITIAL"
+                        assert not any(objects[d]["kind"] == "attempt" for d in seen)
+                        continue
+                    for ref in value if isinstance(value, list) else [value]:
+                        assert ref["kind"] + "/" + ref["version"] in rule["allowed_keys"]
+                        cls = rule["ref_class"]
+                        if cls == "PINNED_INSTALLATION":
+                            assert pins[ref["kind"]] == ref
+                        elif cls in {"PRIOR", "PRIOR_OR_NULL_INITIAL"}:
+                            assert ref["revision_digest"] in seen
+                        elif cls == "CONTENT_AT_INITIALIZATION_ONLY":
+                            assert seq == 1 and ref["revision_digest"] in content
+                        elif cls == "SAME_CREATE_ASSIGNMENT_CONTENT":
+                            assert command["operation"] == "CREATE_ASSIGNMENT"
+                            required, = [o["ref"] for o in domain if o["kind"] == "attempt"]
+                            assert ref == required, "SAME_CREATE_ASSIGNMENT_CONTENT"
+                        else:
+                            raise AssertionError((rule, "Unaccounted domain reference class"))
                 for field, cut in obj["body"].items():
                     if field.endswith("_cut"):
                         assert cut["head"] == previous
+                        assert all(cut[k] == command[k] for k in ("policy_ref", "spec_ref", "schema_registry_ref"))
             previous = {"campaign_id": body["campaign_id"], "commit_seq": seq, "commit_hash": commit_digest}
             receipt_digest, receipt_raw = con.execute("SELECT receipt_digest,body FROM receipts WHERE command_id=?", (command["command_id"],)).fetchone()
             receipt = json.loads(receipt_raw)
@@ -191,11 +232,12 @@ def history(path):
             assert receipt_digest == sha(b"BDB2/command_receipt/3\0" + reference_b(receipt))
             assert receipt["accepted_head"] == previous and receipt["command_ref"] == body["command_ref"]
             assert receipt["commit_ref"]["revision_digest"] == commit_digest
+            assert con.execute("SELECT command_digest,receipt_digest FROM command_index WHERE command_id=?", (command["command_id"],)).fetchone() == (body["command_ref"]["revision_digest"], receipt_digest)
             assert receipt["result_object_refs"] == sorted([obj["ref"] for obj in domain], key=lambda r: (r["kind"], r["logical_id"], r["revision_digest"]))
             steps.append({"seq": seq, "operation": command["operation"], "commit_hash": commit_digest, "receipt_digest": receipt_digest,
                           "content_order": ordered, "chronology_checked": True})
             seen.update(content)
-        assert [s["operation"] for s in steps] == ["INITIALIZE_P0_FROM_APPROVED_GIT", "CREATE_ASSIGNMENT", "BIND_PACKAGE", "START_ATTEMPT", "CONFIRM_DELIVERY", "INGEST_EVIDENCE", "ACCEPT_RESULT"]
+        assert [s["operation"] for s in steps] == list(expected_operations)
         return {"authority": "EXPLICIT_SIMULATION_NOT_REAL_CMS_OR_RQ", "objects": raw_objects, "raw": raw_rows, "steps": steps,
                 "counts_by_kind": dict(Counter(o["kind"] for o in objects.values())), "reference_status": "PASS_FOR_LISTED_PROPERTIES"}
     finally:

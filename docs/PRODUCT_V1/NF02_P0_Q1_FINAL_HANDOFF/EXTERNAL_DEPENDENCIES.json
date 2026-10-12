@@ -1,0 +1,53 @@
+{
+  "author_record_issued": false,
+  "blocked": {
+    "QG-03": [
+      "positive genuine owner CMS/authority input verification",
+      "legal independently approved initial source/view/task/root/pins authority proof"
+    ],
+    "QG-04": [
+      "author-only READY record after QG-03 and fresh final exact readback"
+    ]
+  },
+  "canonical_record": false,
+  "format": "Q1_EXTERNAL_INPUT_REQUEST_DOCUMENTATION_ONLY",
+  "later_not_q1_prerequisites": [
+    "Q2 independent review/FREEZE",
+    "owner+qualifier mandate",
+    "real qualified installation, scoped grants, separated service/auditor hosts",
+    "RQ 32 families and real original ZIP/ACK/return",
+    "signed PRODUCTION installation"
+  ],
+  "missing": [
+    {
+      "id": "OWNER_IDENTITY",
+      "required": "Actual owner designation, nonempty 1..4096 string and retained authenticated mapping to the real owner",
+      "requirement": "M18 OWNER_MODEL_DECISION.owner_actor_ref; Q1-09/Q1-11",
+      "status": "PENDING_OWNER_PROVISIONING"
+    },
+    {
+      "id": "OWNER_PUBLIC_DER_PIN",
+      "required": "Public DER certificate, SHA-256 confirmed through an independent authenticated channel, operators/time/channel confirmation; no private key/PFX/password",
+      "requirement": "M01/M02, Q1-08/Q1-09 exact signer and independently approved inputs",
+      "status": "PENDING_OWNER_PROVISIONING"
+    },
+    {
+      "id": "SIGNED_EXACT_OWNER_DECISION",
+      "required": "Schema-valid actual owner decision binding manifest, graph, both set digests and all eight accepted limits; detached CMS/SHA-256 with valid chain/current revocation",
+      "requirement": "M18, Q1-09/Q1-11 and author owner_decision_sha256",
+      "status": "PENDING_OWNER_PROVISIONING"
+    }
+  ],
+  "procedure": {
+    "bytes": 5628,
+    "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/10_EXTERNAL_INPUT_REQUEST.md",
+    "sha256": "d73241d19a277c6f914f80f5e052ea01c20d71d45ba5bbf194526a21c0c6a95f"
+  },
+  "status": "PENDING_OWNER_PROVISIONING",
+  "subsequent_author_record_input": "After genuine owner inputs and full Q1 closure, designate the actual authorized author governance_actor_ref and obtain owner's signature on exact author-only record. No fictitious author identity is issued by this package.",
+  "template": {
+    "bytes": 1793,
+    "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/OWNER_MODEL_DECISION_TEMPLATE.md",
+    "sha256": "07f58b3aeb67e36611e747ed75b22e7857d44afc6088b5fd99451fb764cb301c"
+  }
+}

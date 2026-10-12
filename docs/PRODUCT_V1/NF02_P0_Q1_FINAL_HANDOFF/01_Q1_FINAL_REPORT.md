@@ -1,50 +1,44 @@
-# Q1 — końcowy audyt autora
+# Końcowa ocena autora Q1
 
-**Q1 OPEN.** Przeprowadzono ocenę wszystkich 11 rodzin i całego scope 18/7/43/M01–M18. Nie stwierdzono pełnego mandatory closure i nie wydano AUTHOR_QUALIFICATION. Nie jest to niezależne Q2/RQ ani production approval.
+**Q1 OPEN — pozostały rzeczywiste wejścia owner i zależny author record.** Pełny zakres 18 kontraktów / 7 profili / 43 schematów, M01–M18 i 11 rodzin został oceniony. Zakończono lokalne brakujące przypadki QG-01 i QG-02. Nie utożsamiamy tej oceny z niezależnym Q2/RQ ani produkcyjną authority.
 
-Tożsamość exact candidate, graph i obu set digests została odczytana niezależnie od SUT, porównana z checkpointem i approved generator `--check`. Body/schema parity wszystkich 18, 43 offline dependencies/representations i siedem profiles są zinwentaryzowane. MODELowych plików nie regenerowano ani nie zmieniano.
-
-Actual results: 8100 schema/node/bound vectors sprawdzone także niezależnym interpreterem; 72 primitive ObjectDigest checks; 414 typed-ref cases; 9 DAG probes; 72 operation-state branches (13 accept / 59 deny); 7-commit retained rich result history i 322 direct material/command mutations DENY bez mutacji. Source sha1/sha256 i modes 100644/100755 mają rzeczywiste Git fixtures. `REFERENCE_HISTORY_CHECK` wylicza exact raw/object/commit/receipt identity i Kahn/cuts z retained SQL bez production validatora. Oryginalny ZIP wygenerowano niezależnym struct/CRC encoderem.
-
-Wektorów shape-only, isolated bounds i ordering stubs nie traktuje się jako legal authority/history proof. Integration używa actual Store/Coordinator/inbox/predicates/ZIP/Git/CAS/replay/process code, z jawnie symulowanym OS/CMS/HTTPS. Native local probes obejmują malformed CMS, Windows leases, outside-SCM denial i bezpieczny parser/skrypt, bez instalacji/ACL zmian.
-
-| Rodzina | Ocena | Otwarte obowiązki |
+| Blocker | Status | Wynik i pozostały obowiązek |
 |---|---|---|
-| Q1-01 | PASS_FOR_FAMILY_SCOPE | brak w zakresie rodziny |
-| Q1-02 | OPEN | QG-01, QG-02 |
-| Q1-03 | PASS_FOR_FAMILY_SCOPE | brak w zakresie rodziny |
-| Q1-04 | OPEN | QG-02 |
-| Q1-05 | OPEN | QG-01 |
-| Q1-06 | PASS_FOR_FAMILY_SCOPE | brak w zakresie rodziny |
-| Q1-07 | OPEN | QG-02 |
+| QG-01 | CLOSED_LOCAL_Q1 | Full enclosing 43-schema contexts and branch/conditional products executed; every exact full input reconstructed and independently rechecked in final audit |
+| QG-02 | CLOSED_LOCAL_Q1 | Actual accepted foreign/prior/future/other-attempt target pools, own/future/stale cuts, wrapper replay mutations and applicable entry points executed on final code; same-create defect fixed and exact counterexample regressed |
+| QG-03 | OPEN_EXTERNAL_INPUT | PENDING_OWNER_PROVISIONING: actual owner_actor_ref, public DER SHA-256 independently confirmed, exact owner decision plus real detached CMS are absent; native positive legal authority input proof cannot be manufactured. Q2/RQ/mandate are subsequent gates, not prerequisites invented for Q1 |
+| QG-04 | OPEN_DEPENDS_ON_QG_03 | Final retained readback completed with zero unexplained mismatch. AUTHOR_QUALIFICATION only permits READY; no real owner_decision_sha256 exists, so no author record or signature is issued |
+
+| Rodzina | Ocena w granicy Q1 | Pozostałe obowiązki |
+|---|---|---|
+| Q1-01 | PASS_FOR_Q1_AUTHOR_LOCAL_FAMILY_SCOPE | brak |
+| Q1-02 | PASS_FOR_Q1_AUTHOR_LOCAL_FAMILY_SCOPE | brak |
+| Q1-03 | PASS_FOR_Q1_AUTHOR_LOCAL_FAMILY_SCOPE | brak |
+| Q1-04 | PASS_FOR_Q1_AUTHOR_LOCAL_FAMILY_SCOPE | brak |
+| Q1-05 | PASS_FOR_Q1_AUTHOR_LOCAL_FAMILY_SCOPE | brak |
+| Q1-06 | PASS_FOR_Q1_AUTHOR_LOCAL_FAMILY_SCOPE | brak |
+| Q1-07 | PASS_FOR_Q1_AUTHOR_LOCAL_FAMILY_SCOPE | brak |
 | Q1-08 | OPEN | QG-03 |
 | Q1-09 | OPEN | QG-03 |
-| Q1-10 | PASS_FOR_FAMILY_SCOPE | brak w zakresie rodziny |
+| Q1-10 | PASS_FOR_Q1_AUTHOR_LOCAL_FAMILY_SCOPE | brak |
 | Q1-11 | OPEN | QG-04 |
 
-## Findings i poprawki
+QG-01: 78539 pełnych enclosing documents obejmuje każdą osiągalną nested union/enum/required/type/closed/bound gałąź, pary initial/retry oraz iloczyn mode/RQ/mandate i operation/mode/parent. Wartości max±1 są odtwarzane z recept; legalna/nielegalna kombinacja wynika z zamrożonego schematu i niezależnego interpretera. Schema-only acceptance nie jest legalną authority/history. Finalny readback rekonstruuje całe wejścia, weryfikuje dwa kodery, dokładne SHA/length/schema bytes i ponownie ustala expected niezależną procedurą.
 
-| Finding | Naprawa | Dowód |
-|---|---|---|
-| F01: M07 zero-based source mapping | Builder i parser liczą od 1; norma bez zmian | M07 positive/zero-denial/sha1/sha256/mode tests |
-| F02: same-content wrong logical ID | Pełne typed target identity przed class admission | target regression i 322 semantic cases; retained pre-fix local counterexample |
-| F03: missing command fields powodowały KeyError przed schema | Closed schema przed field access | Missing-field direct API regressions |
-| F04: brak current certificate revocation w P0 | Native Online/ExcludeRoot/NoFlag, pin, expiry, fail-closed | Native malformed CMS + policy wrapper tests; real positive PKI remains RQ |
-| F05/F06: secret-bearing diagnostic text i SCM stop bez checkpointów | Stałe log tokens, STOP/SHUTDOWN drain i periodic checkpoints | Native outside-SCM denial + explicit callback simulation; actual installed SCM remains RQ |
-| F07: IO read-all przed quota | Bounded reads; signed JSON/CMS 2 MiB, assets 16 MiB | Native exact/over-bound lease test |
-| F08: service prepared output poza campaign | Leased same campaign directory, create-new | Scoped-output/no-overwrite test |
-| F09: lexical '..' namespace escape | Reject non-canonical resolved store path przed leases/DB | Parent traversal denial test |
-| F10: 48 mypy P0 exposure findings | Annotations/narrowing, valid API modeling, ObjectRef digest bug fixed | 171-file closure + typed-ref graph regression |
+QG-02: 78539 full-document schema cases / 43 schemas; 1539 material/context/entry/retry cases; 456 joint role/prepare/release/retry cases; 74 alternate entry cases; 380 replay corruption cases. Wszystkie 37 material fields mają oddzielne wiersze z positive history, target/class i negative case IDs; wrapper arrays mają finite dispatch zgodny z ośmioma komendami. Accepted foreign-campaign i inne-attempt targets pochodzą z rzeczywiście przyjętych testowych historii. Future/self/same-commit/own-cut/stale substitutions, immediate predecessor, raw durability, authorization/current scope, command/commit/receipt equality i dokładny retry mają rzeczywiste wyniki. Root pins są wspólne dla instalacji; result po stanie terminalnym nie jest legalnym basis target dla następnej komendy. Wykluczenia wynikają z M05/Registry, nie lokalizacji pliku ani arbitralnego pominięcia wariantu.
 
-## Brakujące mandatory evidence
+Znaleziono i naprawiono F11: SAME_CREATE_ASSIGNMENT_CONTENT nie był egzekwowany, gdy ref rozwiązywał się do prior accepted Attempt. Test miał poprawnie dopasowany testowy grant i CMS, dlatego nie maskował problemu na authority. Exact input DB SHA-256 `7831a38226d14d341e9d5b4c847013be701cf6c3efe9431ae2a1049b6ac005ce`; packet SHA-256 `acac80f1343f0c13a7d2c271f7e089e0350f372b10eb5ecc1b34d4e6c0e36c21`; signing preimage SHA-256 `4d51bb27b2cf6405288678687729dfb841c7d2be16b1815920d4c39c48ca7b91`. Przed poprawką actual ACCEPTED_COUNTEREXAMPLE przy expected DENY; po poprawce te same bajty dają DENY_WITHOUT_MUTATION, a reader odrzuca wadliwy accepted DB. Historyczny kontrprzykład jest oznaczony jako nieważna testowa historia. Regresja i niezależny history oracle obejmują tę klasę.
 
-- **QG-01 (Q1-02, Q1-05)**: 8100 independently checked node/isolated-bound vectors are not a retained full enclosing-context product for every inline/nested branch. Wymagany wynik: Each applicable positive context validates; wrong kind/version/extra/bounds/schema and incompatible context denies with exact retained expected/output.
-- **QG-02 (Q1-02, Q1-04, Q1-07)**: 322 direct field mutations and 72 operation-state cases do not establish every accepted cross-campaign/attempt/source/slot pool, same/future/own-cut variant, all commit/receipt replay mutations and full entry-point combinations. Wymagany wynik: Typed identity/target/class/prior/content/cut/context matches exactly; denied variants leave DB/raw/receipt/head byte-identical; legal retries return original receipt.
-- **QG-03 (Q1-08, Q1-09)**: Positive author integration uses explicit simulated OS/CMS/transport, not genuinely provisioned owner/qualifier/Coordinator/auditor inputs. No real owner decision CMS, Q1/Q2/mandate or protected deployment exists. Wymagany wynik: Actual independently controlled external inputs bind exact candidate/model/namespace/code/environment and fail closed on every mandatory role/mode/signature/context mismatch.
-- **QG-04 (Q1-11)**: QG-01..03 prevent all mandatory obligations being evidenced; AUTHOR_QUALIFICATION schema permits only READY, not OPEN. No record/signature is issued. Wymagany wynik: All mandatory cases closed, final exact readback/zero unexplained mismatch, valid author-only record with actual owner decision/final-audit hashes and independent_assurance=false.
+Dodatkowe 33 kontrole semantyczne sprawdzają wszystkie 18 schema bindings przeciw innym rzeczywistym schema bytes, semantyczną kolejność Registry/SchemaRegistry, siedem exact profile pins i sześć Assignment contexts z dopasowanymi grantami. 32 kombinacje Git SHA1/SHA256 × mode 100644/100755 × commit/tree/blob length korzystają z rzeczywistych repozytoriów, niezależnie wyliczonych typed Git hashes i struct/CRC ZIP. JUnit zachowuje raw Git objects i exact source transport inputs.
 
-Final retained audit odróżnia wykonane cases, static parity i prerequisites. QG-01/02 są brakami coverage/retention, nie udowodnioną nową sprzecznością normy; QG-03 wymaga rzeczywistych zewnętrznych inputs/authority. Nie wolno ich zamknąć samą liczbą testów. Formalny author record o verdict READY byłby nieprawdziwy przy tych brakach.
+Końcowy pytest: **568 PASS / 0 FAIL / 0 ERROR / 0 SKIP**. Matrix 72 cases wykonano osobno; nie zwiększa sztucznie licznika pytest o 72. 8100 node/bounds vectors, 414 typed-ref vectors, dziewięć strukturalnych DAG probes i 72 primitive checks zachowują swoje ograniczone znaczenie. Pełne accepted DAG/history mają osobny niezależny readback; syntetyczne DAG inputs są wyłącznie danymi testującymi prawdziwą funkcję ordering.
 
-Final regression JUnit: {'PASS': 494, 'FAIL': 0, 'ERROR': 0, 'SKIP': 0}. Mypy closure/configured i Ruff oraz rebuild/readback są w evidence. Dawne 333/18 PASS nie są blanket proof nowego kodu. Sandboxowy przebieg miał 25 fixture access errors i 1 tempfile failure; normal Windows targeted rerun dał 33 PASS bez zmian expectations. Final native-context regression zastępuje ten przebieg.
+QG-03: user potwierdził PENDING_OWNER_PROVISIONING. Brakuje formalnego owner_actor_ref, niezależnie potwierdzonego publicznego SHA-256 DER oraz podpisanych exact OWNER_MODEL_DECISION bytes. Nie można wykonać prawdziwego pozytywnego native CMS/readback ani przypisać owner authority na podstawie stringów/testowych cert pinów. Negatywne native CMS i lokalne role/scope/mode/grant cases są wykonane. Żądanie wejść i procedura public DER, oddzielnego potwierdzenia i podpisu są w 10. Brak realnego Q2 freeze lub RQ przed Q1 nie jest błędnie ustanowionym warunkiem; te etapy pozostają późniejsze.
 
-Zmiany R5.4.2/legacy/v1_4_4/approved norm są zabronione i final diff/readback ich nie wykazuje. Nie wykonano migracji, push, merge, release, kwalifikacji za drugą stronę ani production activation. EVIDENCE_MANIFEST wiąże final materiały i current implementation; sam manifest nie daje runtime authority.
+QG-04: pełny retained final audit wykonano, brak niewyjaśnionych mismatches. Schemat AUTHOR_QUALIFICATION/1 dopuszcza wyłącznie P0_AUTHOR_BASELINE_READY i wymaga prawdziwego owner_decision_sha256. Dlatego nie powstał rekord OPEN ani placeholder READY. Po realnym ustanowieniu danych konieczne są native verification, exact final readback, zamknięcie QG-03 i dopiero zewnętrzny author-only record z independent_assurance=false.
+
+Macierz 02 mapuje każde wymaganie/predykat do źródeł normy, actual testów lub niezależnych dowodów. Rejestr 03 oraz EVIDENCE_MANIFEST wiążą hashe i lokalizacje. Materiały starych przebiegów są provenance/construction, a bieżące execution directories dowodzą końcowego predykatu. Mypy obejmuje conservative rzeczywisty import closure; brak zmian import graph i dwóch linii predykatu nie uzasadnia napraw legacy.
+
+Nie zmieniono zatwierdzonej normy, R5.4.2 ani zakresu 18/7/43. Produkcyjny import pozostaje BLOCKED. Q2/RQ nie wykonano za kwalifikatora. Windows jest przygotowany do późniejszej kwalifikacji, bez twierdzenia o realnej instalacji/PKI/ACL PASS.
+
+Dodatkowe finalne dowody: **38** przypadków rzeczywiście innego commitu Git, view i task; **72** osobno zachowane pary operacja–stan (13 accept / 59 deny) z dokładnym SHA-256 bazy i pełnego packetu; **56** faktycznych odmów dla siedmiu schema-allowed, lecz operation-inapplicable basis targets we wszystkich ośmiu komendach. Każda alternatywa target 37 material fields ma teraz osobny wynik albo normatywnie uzasadnioną, wykonaną odmowę. Są to przypadki kwalifikacyjne, nie dodatkowe liczniki pytest.

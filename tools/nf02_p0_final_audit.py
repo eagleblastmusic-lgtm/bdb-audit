@@ -197,13 +197,26 @@ def vectors():
     from jsonschema import Draft202012Validator
     from referencing import Registry, Resource
     from tools.nf02_p0_reference import valid, pointer
-    from tools.nf02_p0_q1 import expand, reference_a, reference_b
+    from tools.nf02_p0_q1 import expand, reference_a, reference_b, generate
     existing = ROOT / "docs/PRODUCT_V1/nf02_p0_runtime_qualification"
     rebuilt = OUT / "evidence/reference-rebuild"
+    assert not rebuilt.exists(), "Preserve existing material; regenerated reference destination must be new"
+    generate(rebuilt)
     comparisons = []
     for path in sorted(rebuilt.glob("*.json")):
         actual = path.read_bytes()
         prior = (existing / path.name).read_bytes()
+        if path.name == "LOCAL_Q1_INPUT_CHECKS.json":
+            current_report, prior_report = json.loads(actual), json.loads(prior)
+            current_procedures = current_report.pop("reference_procedures")
+            prior_procedures = prior_report.pop("reference_procedures")
+            assert current_report == prior_report, "Reference metadata may differ only in procedure identity"
+            target = OUT / "evidence/q1-closure-4132c5d/REFERENCE_INPUT_CHECKS_CURRENT.json"
+            target.write_bytes(actual)
+            comparisons.append({**identity(target.relative_to(ROOT).as_posix()), "historical": identity((existing / path.name).relative_to(ROOT).as_posix()),
+                                "metadata_difference": {"current_reference_procedures": current_procedures, "prior_reference_procedures": prior_procedures},
+                                "all_other_fields_exact_equal": True})
+            continue
         assert actual == prior, "Q1 retained reference drift: " + path.name
         comparisons.append(identity((existing / path.name).relative_to(ROOT).as_posix()))
     documents = {}
@@ -259,7 +272,7 @@ def vectors():
 
 
 def verification(stage):
-    selected = ["tests/product/test_limited_p0.py", "tests/product/test_limited_p0_boundaries.py",
+    selected = ["tests/product/test_limited_p0.py", "tests/product/test_limited_p0_boundaries.py", "tests/product/test_limited_q1_closure.py",
         "tests/product/test_limited_p0_transport.py", "tests/product/test_limited_service.py",
         "tests/product/test_limited_installation_packet.py", "tests/product/test_limited_qualification.py",
         "tests/product/test_limited_content_identity.py", "tests/product/test_limited_windows_readiness.py",
@@ -278,7 +291,7 @@ def verification(stage):
     directories = [ROOT / "src", ROOT / "build", ROOT / "tools", ROOT / "tests"]
     inputs = [identity(path.relative_to(ROOT).as_posix()) for directory in directories for path in sorted(directory.rglob("*.py"))]
     inputs += [identity("pyproject.toml"), identity("requirements-f2.lock")]
-    command = [sys.executable, "-m", "pytest", *selected, "-q", "-p", "no:tmpdir", "-p", "tools.product_test_tmp",
+    command = [sys.executable, "-m", "pytest", *selected, "-q", "-o", "junit_family=xunit1", "-p", "no:tmpdir", "-p", "tools.product_test_tmp",
                "--junitxml=" + str(OUT / "evidence" / (stage + ".xml"))]
     started = time.monotonic()
     result = subprocess.run(command, cwd=ROOT, capture_output=True)

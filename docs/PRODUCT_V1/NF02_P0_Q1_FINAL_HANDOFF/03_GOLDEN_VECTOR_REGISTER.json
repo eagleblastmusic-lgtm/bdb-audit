@@ -37,7 +37,7 @@
           "sha256": "5eaecaa7d5c386a2478d8d8204136430413638f5e881865cc84503aad2966bf3"
         }
       ],
-      "claim": "8100 node/isolated-bound vectors, independent schema interpreter; enclosing combinations OPEN",
+      "claim": "8100 node cases plus complete current enclosing document execution/readback linked in current_closure; not authority",
       "expected_basis": "Frozen MODEL.md/MODEL.json/profiles/schemas; reference_a/reference_b/independent schema and struct ZIP encoder; literal M05 chronology/expected denials",
       "independent_assurance": false
     },
@@ -114,6 +114,123 @@
       "independent_assurance": false
     }
   ],
+  "continuation_checkpoint": "4132c5d81599042ccaef21e9a92f7bb84ac88645",
+  "current_closure": {
+    "QG-01": "CLOSED_LOCAL_Q1",
+    "QG-02": "CLOSED_LOCAL_Q1",
+    "additional_results": {
+      "actual_distinct_commit_view_task": {
+        "count": 38,
+        "evidence": {
+          "bytes": 7702,
+          "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/q1-closure-4132c5d/distinct-source/DISTINCT_SOURCE_EXECUTION.json",
+          "sha256": "dbcb79ae3a4773f1f3fd5b2c8332f3dc026c8a9ca03350b3ce25b3a424f91566"
+        }
+      },
+      "all_inapplicable_basis_targets": {
+        "count": 56,
+        "evidence": {
+          "bytes": 514,
+          "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/q1-closure-4132c5d/basis-applicability/BASIS_EXECUTION.json",
+          "sha256": "bf027e90434041f254c5dfbaba6231c95591416520adeb34e3ed575be34793e0"
+        }
+      },
+      "all_state_pairs_retained": {
+        "allowed": 13,
+        "count": 72,
+        "denied": 59,
+        "evidence": {
+          "bytes": 872,
+          "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/q1-closure-4132c5d/state-retained/STATE_EXECUTION.json",
+          "sha256": "64d103e6617d9700c6f5affc401bf6ba2d895f488bb508006b6229bdf6e28a33"
+        }
+      }
+    },
+    "artifacts": [
+      {
+        "bytes": 413039,
+        "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/q1-closure-4132c5d/FINAL_Q1_AUDIT.json",
+        "sha256": "0d6978211c94b7f7fd2327873a7ccba688a9b1b528910a6633d636972be3a66f"
+      },
+      {
+        "bytes": 2793207,
+        "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/q1-closure-4132c5d/contexts-final/CONTEXT_EXECUTION.json",
+        "sha256": "05a4b47fe11a2b739526c5d73fdde47e4ad1fb50d624a285bfdf55989f7bf5e6"
+      },
+      {
+        "bytes": 44881776,
+        "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/q1-closure-4132c5d/contexts-final/CONTEXT_CASES.jsonl",
+        "sha256": "8fae9e9e538231cbd353fd31bd2f8dc56782ec789b53f8c162648be70436e383"
+      },
+      {
+        "bytes": 576,
+        "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/q1-closure-4132c5d/adversarial-current-v2/ADVERSARIAL_EXECUTION.json",
+        "sha256": "a534d005d45812069ae49ff7a6fde54f00cdf4d8e856fec0eaedfff312991b26"
+      },
+      {
+        "bytes": 2137112,
+        "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/q1-closure-4132c5d/adversarial-current-v2/ADVERSARIAL_CASES.jsonl",
+        "sha256": "d420ea91d31c67c0e8e179abe72aa9c4c19e8010c77422a77e59f4468206e159"
+      },
+      {
+        "bytes": 557,
+        "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/q1-closure-4132c5d/replay-current/REPLAY_EXECUTION.json",
+        "sha256": "00d164bf1ee544c85d5cbef1f0f85c604827b2b85e5ba5f36ce4139241785606"
+      },
+      {
+        "bytes": 220503,
+        "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/q1-closure-4132c5d/replay-current/REPLAY_CASES.jsonl",
+        "sha256": "66ed9151fa74da46f9cb10dc1eb4420c614bcb4565cafb4221f0702dd6cb9dca"
+      },
+      {
+        "bytes": 395,
+        "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/q1-closure-4132c5d/entrypoints-current/ENTRYPOINT_EXECUTION.json",
+        "sha256": "c27d18b6229c50a1700569f898cdc8d3032afc45b777c7aa31e3980049bf22bb"
+      },
+      {
+        "bytes": 802989,
+        "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/q1-closure-4132c5d/entrypoints-current/ADVERSARIAL_CASES.jsonl",
+        "sha256": "95e8129cf5c8c0c77dbfbdf5e7417c70dc4b3e797b93424d810e89fd74e3ee9b"
+      },
+      {
+        "bytes": 397,
+        "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/q1-closure-4132c5d/supplement-current/SUPPLEMENT_EXECUTION.json",
+        "sha256": "5f078801c5d009e6882542ae37fb58095c9342a77ad22bd4b94b2e095225b346"
+      },
+      {
+        "bytes": 790994,
+        "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/q1-closure-4132c5d/supplement-current/ADVERSARIAL_CASES.jsonl",
+        "sha256": "8a31d45f4e699a35a2f23a35751ba3ebd3d7eabaf29aa907d888f932f9ec9c45"
+      },
+      {
+        "bytes": 898,
+        "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/q1-closure-4132c5d/same-create-fixed/EXECUTION.json",
+        "sha256": "e282af38a31f84a172a866b4c9ddb7ba5a5a4e9824ace220b2e39c0090e1a7f4"
+      },
+      {
+        "bytes": 40791,
+        "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/q1-closure-4132c5d/TYPE_AND_LINT_EXECUTION.json",
+        "sha256": "43c9b5c1a3bc124d1cf9f3bafcd2029af007f945b1cef1516f0aedff5ed383d6"
+      },
+      {
+        "bytes": 95151,
+        "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/q1-closure-4132c5d/build-current-v2/BUILD_READBACK.json",
+        "sha256": "6823bde425868c28f033e8892a4f92bd86a452078e98bce6ec2a7fcd3a8c79d1"
+      }
+    ],
+    "authority": "SIMULATED_OS_CMS_HTTPS_FOR_LOCAL_POSITIVE_CASES; no independent assurance",
+    "expected_basis": "Frozen literal normative predicates; independent schema interpreter, two CJSON procedures, independent SQL history/class/receipt checks, typed Git objects and struct ZIP",
+    "final_audit": {
+      "bytes": 413039,
+      "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/q1-closure-4132c5d/FINAL_Q1_AUDIT.json",
+      "sha256": "0d6978211c94b7f7fd2327873a7ccba688a9b1b528910a6633d636972be3a66f"
+    },
+    "full_input_recipes": {
+      "bytes": 2085602,
+      "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/q1-closure-4132c5d/contexts-final/CONTEXT_BASES.json",
+      "sha256": "65402cd27c631815de454387a093ca54c607dcb56d2508218994b8f56f9b8b58"
+    }
+  },
   "execution": {
     "bytes": 14713,
     "file": "docs/PRODUCT_V1/NF02_P0_Q1_FINAL_HANDOFF/evidence/VECTOR_EXECUTION.json",

@@ -1,10 +1,12 @@
 # Mypy — triage wszystkich 131 zgłoszeń
 
-Baseline odtworzony: **131 błędów / 39 plików / 266 source files**. Po naprawie: **83 błędy / 15 plików**, wszystkie poza P0 closure. Pełne `mypy src` nie jest PASS. Conservatively admitted module-import closure P0 ma 165 plików; z builderem i pięcioma narzędziami author/installer **171 files PASS**. Configured 56 files PASS. Nie dodano globalnego ignore_errors ani type: ignore.
+Baseline odtworzony: **131 błędów / 39 plików / 266 source files**. Po naprawie: **83 błędy / 15 plików**, wszystkie poza P0 closure. Pełne `mypy src` nie jest PASS. Conservatively admitted module-import closure P0 ma 165 plików; poprzedni przebieg z builderem i pięcioma narzędziami obejmował 171 plików. Kontynuacja Q1 po checkpointcie 4132 obejmuje **184 files PASS**, z builderem, wszystkimi aktualnymi narzędziami P0/Q1 i nową regresją. Configured mypy również PASS. Nie dodano globalnego ignore_errors ani type: ignore.
 
 Kategorie baseline: {'FALSE-POSITIVE/CONFIG': 9, 'LEGACY-OUT-OF-SCOPE': 83, 'P0-CRITICAL': 7, 'P0-TRANSITIVE': 32}. Wszystkie 48 zgłoszeń z ekspozycją P0 zostały naprawione, także 9 problemów modelowania API/Windows/streaming stubs. Poszczególne zgłoszenia zachowują oryginalną linię; po edycji numeracja może się różnić.
 
 Graf `evidence/P0_DEPENDENCY_CLOSURE.json` obejmuje module/package initialization, explicit finite P0 lazy imports i witnesses. Cały imported module jest typowany, także jego dormant metody. Wykluczone moduły nie mają admitted import path; ich lazy legacy branches nie są wybierane przez closed P0 command/service dispatch. Builder pakuje również legacy bytes, ale nie wykonuje tych dormant ścieżek. Build/source verification sprawdza ich zachowanie; lokalizacja pliku nie jest jedynym uzasadnieniem.
+
+Aktualne wejścia i dokładne komendy: `evidence/q1-closure-4132c5d/TYPE_AND_LINT_EXECUTION.json`, `mypy-final-closure.log`, `mypy-final-configured.log`, `ruff-final.log`. Import graph pozostał 165-modułowy. Nowy predykat same-create nie dodaje zależności. Dodatkowe błędy typowania narzędzi kwalifikacyjnych (list/str, list element annotation i modelowanie kontekstu stateless order/ref) naprawiono przez rzeczywisty obiekt protokołu dla pure predicate calls i poprawne anotacje, bez wyciszeń i bez zmiany expected vector bytes. Historyczny pełny `mypy src` nie był ponawiany ani rozszerzany na legacy; poniższe 131 wpisów zachowuje oryginalne linie i klasyfikację.
 
 | ID | Plik:linia baseline | Kategoria / ekspozycja | Kod | Zgłoszenie |
 |---|---|---|---|---|
