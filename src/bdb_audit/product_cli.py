@@ -116,6 +116,9 @@ def _execute(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def run_product(argv: Sequence[str]) -> int:
+    if argv and argv[0] == "local":
+        from .local_product.cli import run_local
+        return run_local(list(argv[1:]))
     if argv and argv[0] == "p0":
         from .product_p0_cli import run_p0
         return run_p0(list(argv[1:]))

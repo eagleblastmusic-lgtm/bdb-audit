@@ -154,6 +154,12 @@ class TransactionalHistoryStore:
 
     def _connect(self):
         con = sqlite3.connect(self.path, isolation_level=None, timeout=30)
+        # LOCAL campaigns can never be upgraded by opening them through a
+        # qualified/foundation Store. Check before even changing SQLite pragmas.
+        if (con.execute("PRAGMA application_id").fetchone()[0] == 0x42444C31
+                or con.execute("SELECT name FROM sqlite_master WHERE name IN ('local_meta','local_events')").fetchone()):
+            con.close()
+            raise ValidationError("LOCAL_STORE_CANNOT_BECOME_QUALIFIED")
         con.execute("PRAGMA foreign_keys=ON")
         con.execute("PRAGMA journal_mode=DELETE")
         con.execute("PRAGMA synchronous=FULL")
