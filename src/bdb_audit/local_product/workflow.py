@@ -4,6 +4,7 @@ from __future__ import annotations
 from contextlib import nullcontext
 from dataclasses import asdict
 from pathlib import Path
+import shutil
 import subprocess
 from typing import Any
 import uuid
@@ -14,6 +15,9 @@ from ..core.errors import ValidationError
 from ..source.git_resolver import fetched_remote_repository, resolve_local_repository, validate_repository_location, _git_env
 from ..workflow.limited_transport import approved_git_view
 from ..workflow.packaging import _deterministic_zip, _publish_exact
+from ..runner.supervisor import ToolSupervisor
+from ..runner.specs import ToolRunSpec
+from ..runner.verification import verify_run_evidence
 from .profile import MODE, PROFILE, PROFILE_SHA256, RESPONSE, STAGES, NOTICE, task_definition
 from .responses import decode, issues, read_file
 from .store import LocalStore, sha
@@ -108,6 +112,7 @@ class LocalWorkflow:
         self.results: dict[str, dict[str, Any]] = {}
         self.accepted: dict[str, str] = {}
         self.runs: list[dict[str, Any]] = []
+        self.pending_runs: dict[str, dict[str, Any]] = {}
         for event in events[1:]:
             self._replay(event)
         self.events = events
@@ -121,17 +126,18 @@ class LocalWorkflow:
             return tasks[:3]
         return tasks
 
-    def _prior_ids(self) -> list[str]:
+    def _prior_ids(self, target: str) -> list[str]:
         # All earlier accepted results, plus E5-A for E5-B. The frozen package
         # context prevents substituting a different revision after a challenge.
         available = self._available_tasks()
         return [result_id for task, result_id in sorted(self.accepted.items())
-                if task not in available or (self.stage == "E5" and task.startswith("E5-A-"))]
+                if task not in available or (self.stage == "E5" and task.startswith("E5-A-")
+                                            and target.startswith("E5-B"))]
 
     def _package_bytes(self, task: str) -> tuple[dict[str, Any], bytes]:
         definition = task_definition(self.stage, task)
         prior = [{"result_id": rid, "raw_sha256": self.results[rid]["raw"]["raw_digest"],
-                  "response": self.results[rid]["response"]} for rid in self._prior_ids()]
+                  "response": self.results[rid]["response"]} for rid in self._prior_ids(task)]
         prompt = (NOTICE + "\n\n" + definition["instruction"] + "\n\n"
                   "Inspect the exact source transport and PRIOR_RESULTS.json. Cite source paths and lines. "
                   "Separate observations from predictions. Do not claim execution without actual run evidence. "
@@ -209,6 +215,23 @@ class LocalWorkflow:
             if result["state"] not in {"IMPORTED_UNTRUSTED", "VALIDATED_STRUCTURE"} or not data.get("reason"):
                 raise ValidationError("LOCAL_REJECTION_HISTORY_INVALID")
             result.update(state="REJECTED", issues=[data["reason"]])
+        elif kind == "STAGE_COMPLETED":
+            if data != self._finish_payload():
+                raise ValidationError("LOCAL_STAGE_COMPLETION_HISTORY_INVALID")
+            self.completed.append(self.stage)
+            self.stage = data["next_stage"]
+        elif kind == "CHECK_STARTED":
+            if (data["run_id"] in self.pending_runs or data["task_id"] not in self._available_tasks()
+                    or data["context"] != self.packages[data["task_id"]]["context"]):
+                raise ValidationError("LOCAL_CHECK_HISTORY_INVALID")
+            self.pending_runs[data["run_id"]] = data
+        elif kind == "CHECK_FINISHED":
+            start = self.pending_runs.get(data["run_id"])
+            if not start:
+                raise ValidationError("LOCAL_CHECK_START_REQUIRED")
+            self._verify_check(data, start)
+            self.pending_runs.pop(data["run_id"])
+            self.runs.append(data)
         else:
             # Stage progression and local tool receipts are added separately;
             # unknown events must never be interpreted as qualified records.
@@ -251,7 +274,8 @@ class LocalWorkflow:
                               "path": str(self.store.root / "packages" / (k + ".zip"))} for k, v in self.packages.items()],
                 "results": [{"result_id": k, "task_id": v["response"].get("task_id"), "state": v["state"],
                              "issues": v.get("issues", []), "superseded_by": v.get("superseded_by")}
-                            for k, v in self.results.items()], "notice": NOTICE}
+                            for k, v in self.results.items()],
+                "local_checks": self.runs, "pending_checks": list(self.pending_runs.values()), "notice": NOTICE}
 
     def prepare(self) -> dict[str, Any]:
         for task in self._available_tasks():
@@ -311,3 +335,102 @@ class LocalWorkflow:
             raise ValidationError("LOCAL_REJECTION_NOT_ALLOWED")
         self._append("RESULT_REJECTED", {"result_id": rid, "reason": reason})
         return self.result_info(rid)
+
+    def _finish_payload(self) -> dict[str, Any]:
+        if self.stage == "COMPLETE":
+            raise ValidationError("LOCAL_CAMPAIGN_ALREADY_COMPLETED")
+        tasks = [slot for slot, _, _ in STAGES[self.stage]]
+        missing = [task for task in tasks if task not in self.accepted]
+        if missing:
+            raise ValidationError("LOCAL_STAGE_RESULTS_MISSING", ",".join(missing))
+        if self.pending_runs:
+            raise ValidationError("LOCAL_CHECKS_PENDING", "Recover or abandon explicitly before advancing")
+        stages = list(STAGES)
+        index = stages.index(self.stage)
+        return {"stage_id": self.stage, "next_stage": stages[index + 1] if index + 1 < len(stages) else "COMPLETE",
+                "results": [{"task_id": task, "result_id": self.accepted[task],
+                             "raw_sha256": self.results[self.accepted[task]]["raw"]["raw_digest"]} for task in tasks],
+                "completion_meaning": "Required responses structurally checked and manually accepted locally; claims unverified"}
+
+    def advance(self) -> dict[str, Any]:
+        if self.stage != "E1":
+            raise ValidationError("LOCAL_LATER_STAGES_NOT_YET_ENABLED")
+        self._append("STAGE_COMPLETED", self._finish_payload())
+        return self.prepare()
+
+    def _portable_source_paths(self) -> list[str]:
+        seen: set[str] = set()
+        names: list[str] = []
+        reserved = {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1, 10)), *(f"LPT{i}" for i in range(1, 10))}
+        for name in self.source["paths"]:
+            parts = name.split("/")
+            if (canonical_path(name) != name or any(part in {"", ".", "..", ".git"} or part.rstrip(". ") != part
+                    or part.split(".")[0].upper() in reserved or any(c in '<>"|?*' or ord(c) < 32 for c in part) for part in parts)
+                    or name.casefold() in seen):
+                raise ValidationError("LOCAL_SOURCE_PATH_NOT_PORTABLE", name)
+            seen.add(name.casefold())
+            names.append(name)
+        return names
+
+    def _verify_check(self, data: dict[str, Any], start: dict[str, Any]) -> None:
+        files = data.get("files", {})
+        if set(files) != {"RUN_MANIFEST.json", "RUN_RECEIPT.json", "stdout.bin", "stderr.bin"}:
+            raise ValidationError("LOCAL_CHECK_EVIDENCE_INCOMPLETE")
+        manifest = parse(self.store.vault.read_bytes(files["RUN_MANIFEST.json"]["raw_digest"]))
+        receipt = parse(self.store.vault.read_bytes(files["RUN_RECEIPT.json"]["raw_digest"]))
+        expected_hash = receipt.pop("receipt_digest")
+        expected_spec = ToolRunSpec(start["run_id"], str(self.store.root / "work" / start["run_id"]),
+                                    str(self.store.root / "checks" / start["run_id"]), tuple(start["argv"]),
+                                    start["timeout_seconds"], start["max_output_bytes"])
+        if (sha(canonical_bytes(receipt)) != expected_hash or receipt != data["result"]
+                or receipt["run_id"] != start["run_id"] or manifest["argv"] != start["argv"]
+                or receipt["spec_digest"] != expected_spec.digest
+                or manifest["spec_digest"] != receipt["spec_digest"]
+                or data["context"] != start["context"]):
+            raise ValidationError("LOCAL_CHECK_RECEIPT_MISMATCH")
+        for stream in ("stdout", "stderr"):
+            ref = files[stream + ".bin"]
+            if ref["raw_digest"] != receipt[stream + "_sha256"] or ref["byte_length"] != receipt[stream + "_bytes"]:
+                raise ValidationError("LOCAL_CHECK_OUTPUT_MISMATCH")
+
+    def recover_check(self, run_id: str) -> dict[str, Any]:
+        start = self.pending_runs.get(run_id)
+        if start is None:
+            raise ValidationError("LOCAL_PENDING_CHECK_NOT_FOUND")
+        evidence = self.store.root / "checks" / run_id
+        verify_run_evidence(evidence)
+        files = {name: self.store.put((evidence / name).read_bytes())
+                 for name in ("RUN_MANIFEST.json", "RUN_RECEIPT.json", "stdout.bin", "stderr.bin")}
+        result = parse((evidence / "RUN_RECEIPT.json").read_bytes())
+        result.pop("receipt_digest")
+        data = {"run_id": run_id, "task_id": start["task_id"], "context": start["context"], "files": files, "result": result}
+        self._verify_check(data, start)
+        self._append("CHECK_FINISHED", data)
+        return {"mode": MODE, "status": "LOCAL_CHECK_RECORDED", **data, "notice": NOTICE}
+
+    def run_check(self, task: str, argv: list[str], timeout: int = 60, max_output: int = 4 * 1024 * 1024) -> dict[str, Any]:
+        if task not in self._available_tasks() or task not in self.packages:
+            raise ValidationError("LOCAL_CURRENT_TASK_PACKAGE_REQUIRED")
+        self._portable_source_paths()  # Reject before persisting intent or running anything.
+        run_id = "local-run-" + uuid.uuid4().hex
+        work = self.store.root / "work" / run_id
+        evidence = self.store.root / "checks" / run_id
+        spec = ToolRunSpec(run_id, str(work), str(evidence), tuple(argv), timeout, max_output)
+        self._append("CHECK_STARTED", {"run_id": run_id, "task_id": task, "context": self.packages[task]["context"],
+                                       "argv": argv, "timeout_seconds": timeout, "max_output_bytes": max_output})
+        work.mkdir(parents=True)
+        try:
+            for entry in self.source_manifest["entries"]:
+                path = work / entry["source_path"]
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(self.source_members[entry["transport_path"]])
+            result = ToolSupervisor().run(spec)
+        finally:
+            # Only this freshly created UUID directory, resolved inside work.
+            if work.resolve().parent != (self.store.root / "work").resolve():
+                raise ValidationError("LOCAL_CHECK_CLEANUP_PATH_CHANGED")
+            shutil.rmtree(work)
+        if not (evidence / "RUN_RECEIPT.json").is_file():
+            return {"mode": MODE, "status": "LOCAL_CHECK_INCOMPLETE", "run_id": run_id,
+                    "result": result.as_dict(), "notice": NOTICE}
+        return self.recover_check(run_id)

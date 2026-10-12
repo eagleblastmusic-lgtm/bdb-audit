@@ -5,6 +5,7 @@ from copy import deepcopy
 from pathlib import Path
 import sqlite3
 import subprocess
+import sys
 
 import pytest
 
@@ -180,3 +181,46 @@ def test_production_cli_import_and_accept(local, tmp_path, capsys):
     assert parse(capsys.readouterr().out.encode())["status"] == "USER_ACCEPTED_LOCAL"
     assert run_cli([*base, "resume", "--campaign", str(local.store.root)]) == 0
     assert parse(capsys.readouterr().out.encode())["stage"] == "E1"
+
+
+def accept_fixture(local, tmp_path, task):
+    rid = imported(local, tmp_path, response(local, task), task + ".json")
+    local.validate(rid)
+    local.accept(rid, "fixture operator", confirm=True)
+    return rid
+
+
+def test_e1_completion_requires_every_real_input(local, tmp_path):
+    local.prepare()
+    head = local.head
+    with pytest.raises(ValidationError, match="LOCAL_STAGE_RESULTS_MISSING"):
+        local.advance()
+    assert local.head == head
+    for task in list(local._available_tasks()):
+        accept_fixture(local, tmp_path, task)
+    assert local.advance()["stage"] == "E2"
+    resumed = LocalWorkflow(local.store.root)
+    assert resumed.completed == ["E1"]
+    archive = read_bytes(resumed.store.vault.read_bytes(resumed.packages["E2-CONVERGENCE"]["raw"]["raw_digest"]))
+    prior = parse(archive["PRIOR_RESULTS.json"])
+    assert len(prior) == 5
+    assert all(item["response"]["producer"]["kind"] == "TEST_FIXTURE" for item in prior)
+
+
+def test_actual_control_uses_exact_commit_and_restart_receipt(local, tmp_path, repo):
+    local.prepare()
+    (repo / "app.py").write_text("def clamp(n):\n    return 0\n", encoding="utf-8")
+    result = local.run_check("E1-A", [sys.executable, "-c", "from app import clamp; assert clamp(-1) == 0"], timeout=10)
+    assert result["result"]["supervisor_status"] == "TARGET_NONZERO"
+    assert result["result"]["target_exit_code"] != 0
+    assert result["context"]["source_commit"] == local.source["commit"]
+    resumed = LocalWorkflow(local.store.root)
+    assert len(resumed.runs) == 1 and not resumed.pending_runs
+    assert b"AssertionError" in resumed.store.vault.read_bytes(result["files"]["stderr.bin"]["raw_digest"])
+
+
+def test_fast_control_output_is_bounded(local):
+    local.prepare()
+    result = local.run_check("E1-E", [sys.executable, "-c", "print('x' * 100000)"], timeout=10, max_output=1024)
+    assert result["result"]["supervisor_status"] == "OUTPUT_LIMIT"
+    assert result["result"]["stdout_bytes"] + result["result"]["stderr_bytes"] <= 1024

@@ -24,7 +24,7 @@ def parser() -> argparse.ArgumentParser:
         command.add_argument("--path", action="append", help="Explicit source file scope; repeat per file")
         if name == "start":
             command.add_argument("--campaign", required=True, help="New campaign directory (must not exist)")
-    for name in ("status", "resume", "prepare", "inspect", "import", "validate", "accept", "reject"):
+    for name in ("status", "resume", "prepare", "inspect", "import", "validate", "accept", "reject", "advance", "run-check", "recover-check"):
         command = sub.add_parser(name)
         command.add_argument("--campaign", required=True)
         if name in {"inspect", "import"}:
@@ -37,6 +37,13 @@ def parser() -> argparse.ArgumentParser:
             command.add_argument("--replace", help="Exact previous accepted result ID for this task")
         if name == "reject":
             command.add_argument("--reason", required=True)
+        if name == "run-check":
+            command.add_argument("--task", required=True)
+            command.add_argument("--timeout", type=int, default=60)
+            command.add_argument("--max-output", type=int, default=4 * 1024 * 1024)
+            command.add_argument("argv", nargs=argparse.REMAINDER, help="Explicit command after --; never read from an AI result")
+        if name == "recover-check":
+            command.add_argument("--run-id", required=True)
     return root
 
 
@@ -61,6 +68,13 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
         return workflow.accept(args.result, args.actor, confirm=args.confirm_local, replaces=args.replace)
     if args.action == "reject":
         return workflow.reject(args.result, args.reason)
+    if args.action == "advance":
+        return workflow.advance()
+    if args.action == "run-check":
+        argv = args.argv[1:] if args.argv[:1] == ["--"] else args.argv
+        return workflow.run_check(args.task, argv, args.timeout, args.max_output)
+    if args.action == "recover-check":
+        return workflow.recover_check(args.run_id)
     raise ValidationError("LOCAL_ACTION_NOT_IMPLEMENTED")
 
 

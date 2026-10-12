@@ -163,10 +163,21 @@ class ToolSupervisor:
                 if not timed_out and not output_exceeded:
                     status = "SUCCESS" if exit_code == 0 else "TARGET_NONZERO"
 
-            stdout_digest, stdout_size = _sha256_file(stdout_temp)
-            stderr_digest, stderr_size = _sha256_file(stderr_temp)
-            _persist(evidence / "stdout.bin", stdout_temp.read_bytes())
-            _persist(evidence / "stderr.bin", stderr_temp.read_bytes())
+            # A fast process may exit between quota polls. Check once more and
+            # retain at most the declared total budget, including that case.
+            if stdout_temp.stat().st_size + stderr_temp.stat().st_size > spec.max_output_bytes:
+                output_exceeded = True
+                status = "OUTPUT_LIMIT"
+                limitations.append("OUTPUT_TRUNCATED_TO_BUDGET")
+            with stdout_temp.open("rb") as handle:
+                stdout_raw = handle.read(spec.max_output_bytes)
+            with stderr_temp.open("rb") as handle:
+                stderr_raw = handle.read(spec.max_output_bytes - len(stdout_raw))
+            stdout_size, stderr_size = len(stdout_raw), len(stderr_raw)
+            stdout_digest = hashlib.sha256(stdout_raw).hexdigest()
+            stderr_digest = hashlib.sha256(stderr_raw).hexdigest()
+            _persist(evidence / "stdout.bin", stdout_raw)
+            _persist(evidence / "stderr.bin", stderr_raw)
             manifest = {
                 "run_id": spec.run_id,
                 "spec_digest": spec.digest,

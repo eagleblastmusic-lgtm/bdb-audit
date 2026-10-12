@@ -36,3 +36,29 @@ Historia jest sprawdzana przy każdym wznowieniu. SHA-256 i łańcuch historii c
 przed przypadkową utratą integralności, nie przed przepisaniem całego magazynu przez
 administratora hosta. Przerwanie przed zapisem zdarzenia może pozostawić nieprzyjęty
 blob w vault; nie staje się on wynikiem audytu. Nie przenoś danych LOCAL do NF02.
+
+## Ukończenie E1 i lokalne kontrole
+
+Wymaganych jest pięć rzeczywiście dostarczonych i ręcznie zaakceptowanych odpowiedzi
+E1-A–E1-E. Brak dowolnej odpowiedzi blokuje przejście; poprawny pusty ZIP nie zalicza
+zadania. `advance` domyka lokalne E1 i przygotowuje wejścia E2 ze wszystkimi przyjętymi
+deklaracjami, zachowując ich status niezweryfikowanych twierdzeń.
+
+```powershell
+& $python -m bdb_audit product local run-check --campaign 'C:\audyty\moj-local' --task E1-A --timeout 60 -- python -m unittest discover
+& $python -m bdb_audit product local advance --campaign 'C:\audyty\moj-local'
+```
+
+`run-check` wykonuje wyłącznie komendę jawnie podaną przez użytkownika, na kopii
+zamrożonego źródła; nigdy komendę odczytaną z odpowiedzi AI. Zachowuje rzeczywisty
+exit code, stdout, stderr i ograniczenia runnera. Niezerowy kod jest dowodem wyniku
+kontroli, nie dowodem udanego testu. Runner nie izoluje sieci ani całego systemu
+plików hosta; uruchamiaj tylko źródło/komendy, których wykonanie dopuszczasz.
+Limit wyjścia obejmuje łączny zapis stdout/stderr; nadmiar zostaje oznaczony i obcięty.
+Po przerwaniu między wykonaniem a zapisem historii można związać kompletny receipt:
+
+```powershell
+& $python -m bdb_audit product local recover-check --campaign 'C:\audyty\moj-local' --run-id 'local-run-<id>'
+```
+
+Brak kompletnych materiałów kontroli pozostaje jawnym stanem oczekującym.
