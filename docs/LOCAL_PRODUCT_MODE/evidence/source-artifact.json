@@ -1,0 +1,15 @@
+{
+  "status": "PASS_EXACT_SOURCE_ARTIFACT",
+  "artifact_sha256": "996902e159b9a086a204724cd93851cd3cc8e2d24cbed84e9763c6dd369fa24d",
+  "source_files": 279,
+  "embedded_files": 420,
+  "runtime_platform": {
+    "implementation": "cpython",
+    "machine": "x86_64",
+    "python_major": 3,
+    "python_minor": 14,
+    "soabi": "cp314-win_amd64",
+    "system": "windows"
+  },
+  "source_normalization": "Builder's existing UTF-8 CRLF/CR to LF rule; raw source bytes separately retained in evidence manifest"
+}

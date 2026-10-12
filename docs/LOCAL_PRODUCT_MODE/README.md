@@ -7,6 +7,19 @@ niezweryfikowane nawet po ręcznej akceptacji. HIGH ASSURANCE zachowuje swoje bl
 Pierwszy checkpoint: P0 import, walidacja struktury, ręczna akceptacja, nowa rewizja,
 exact Git commit/tree, paczki E1, oddzielny magazyn i wznowienie.
 
+Najprościej uruchom `Run-Local-Audit.ps1` w katalogu BDB Audit. Alternatywnie użyj
+`python -m bdb_audit product local ui`. W istniejącym głównym TUI wybierz **8**.
+Nie jest potrzebna instalacja usługi, uprawnienia administratora ani PKI.
+
+Zbudowany samodzielny plik `dist/BDB_AUDIT_LOCAL_PRODUCT.py` zawiera też chronioną
+ścieżkę HIGH ASSURANCE z zachowanymi blokadami. Ten wariant zawiera natywne zależności
+dla **Windows x64 / CPython 3.14**, zweryfikowane bez site-packages (`-I -S`).
+Dystrybucja źródłowa wymaga Python 3.12+ i istniejących zależności z lockfile.
+
+```powershell
+python .\dist\BDB_AUDIT_LOCAL_PRODUCT.py product local ui
+```
+
 Uruchamiaj w repozytorium BDB Audit:
 
 ```powershell
@@ -21,6 +34,9 @@ $python = '.\.venv-f2\Scripts\python.exe'
 ```
 
 Źródło GitHub: `--target github --source https://github.com/OWNER/REPO.git --ref main`.
+Można wskazać pełny commit zamiast nazwy gałęzi. Odczyt publicznego GitHub i start
+kampanii zostały rzeczywiście sprawdzone; wejście `github-start.json` wskazuje exact
+commit, tree, snapshot i utworzone paczki. Prywatnego repozytorium nie testowano.
 Repozytorium prywatne korzysta z istniejącego dostępu Git; nie umieszczaj tokenu w URL.
 Audyt obejmuje commit, nie niezapisane pliki worktree. Domyślnie wybiera wszystkie
 pliki regularne; większe repozytorium wymaga jawnego zakresu `--path` (powtarzanego).
@@ -28,14 +44,22 @@ Brak obsługi symlinków, submodułów i niepobranych obiektów LFS jest jawną 
 
 Paczki znajdują się w `CAMPAIGN\packages`. Zawierają prompt, mapę źródeł i
 `RESPONSE_TEMPLATE.json`. Wypełnioną odpowiedź zwróć jako JSON albo ZIP z głównym
-`LOCAL_RESULT.json`. Załączniki wymagają dokładnego SHA-256 i długości. Sam zgodny
-schemat/hash nie dowodzi prawdziwości treści. `NEEDS_WORK` można zachować, lecz nie
+`LOCAL_RESULT.json`. Załączniki wymagają dokładnego SHA-256 i długości.
+Przekaż modelowi także `packages/RESPONSE_FORMAT.md`: opisuje wszystkie wymagane
+pola finding, dopuszczalne stany, format referencji i załączników oraz limity.
+Sam zgodny schemat/hash nie dowodzi prawdziwości treści. `NEEDS_WORK` można zachować, lecz nie
 zalicza zadania. Poprawka to nowy plik i jawne `accept --replace <poprzedni-id>`.
 
 Historia jest sprawdzana przy każdym wznowieniu. SHA-256 i łańcuch historii chronią
 przed przypadkową utratą integralności, nie przed przepisaniem całego magazynu przez
 administratora hosta. Przerwanie przed zapisem zdarzenia może pozostawić nieprzyjęty
 blob w vault; nie staje się on wynikiem audytu. Nie przenoś danych LOCAL do NF02.
+Opcjonalne `import/inspect --expected-sha256 <raw-sha256>` porównuje hash pliku przed
+jakąkolwiek mutacją importu. `resume` odtwarza brakujące opublikowane paczki z vault;
+nie nadpisuje pliku o sprzecznych bajtach. Dwa równoległe zapisy są rozstrzygane przez
+CAS; przegrana komenda musi ponowić odczyt i import. Duplikat po wznowieniu jest
+idempotentny. W razie przerwania wykonanej komendy kontrolnej status pokazuje pending
+run do jawnego odzyskania lub porzucenia.
 
 ## Ukończenie E1 i lokalne kontrole
 
@@ -113,3 +137,26 @@ lub disposition przy tym samym identyfikatorze finding są oznaczane jako potenc
 rozbieżność wymagająca oceny; algorytm nie rozstrzyga prawdy. Ustalenia i oceny AI są
 interpretacjami; fakty dotyczą tylko zarejestrowanych lokalnych decyzji i wykonań.
 Eksport nie nadpisuje wcześniejszego raportu ani chronionych plików kampanii.
+
+## Rzeczywista demonstracja i ograniczenia
+
+`tools/local_product_smoke.py --output <nowy-katalog>` tworzy rzeczywiste repo Git z
+trzema celowymi błędami, uruchamia sześć testów i rzeczywisty skan AST, importuje 19
+plików ZIP przez produkcyjny CLI i przechodzi E1–E6 aż do raportu. Dane wejściowe są
+oznaczone `LOCAL_CONTROL`, nie `EXTERNAL_AI` ani `TEST_FIXTURE`. Ręczną operację
+akceptacji w demonstracji wykonuje jawnie nazwany, autoryzowany operator automatyczny;
+nie oznacza to osobistego przeczytania każdego pliku przez właściciela. Żaden zewnętrzny
+model nie został w tej demonstracji uruchomiony. Błędy repo demo: SQL injection,
+brak dolnej granicy clamp i utrata aktualizacji dwóch rzeczywistych wątków.
+
+Ukończona kampania na tym komputerze:
+`.product-smoke/local-product-final/campaign`. Raport:
+`.product-smoke/local-product-final/final-report/REPORT.md` (także JSON).
+`SOURCE.bundle` pozwala odtworzyć dokładne obiekty Git repo demo.
+
+Nie zaimplementowano automatycznego wywoływania płatnych modeli AI ani weryfikacji
+ich tożsamości — dostarczasz otrzymane odpowiedzi ręcznie. Plik swobodnego tekstu nie
+jest importowany jako gotowy wynik; użyj szablonu JSON/ZIP. Lokalne zadania E1–E6
+zachowują cele etapów, ale nie ustanawiają ślepych, niezależnych audytorów ani
+normatywnego STOP. Sam komplet 19 odpowiedzi nie gwarantuje kompletności analizy
+aplikacji. Własne zaufanie do treści i decyzja o przyjęciu pozostają po Twojej stronie.

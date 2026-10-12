@@ -16,6 +16,7 @@ from .workflow import LocalWorkflow, preflight
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(prog="bdb-audit product local", description=NOTICE)
     sub = root.add_subparsers(dest="action", required=True)
+    sub.add_parser("ui", help="Interactive local audit menu")
     for name in ("preflight", "start"):
         command = sub.add_parser(name)
         command.add_argument("--source", required=True)
@@ -29,6 +30,7 @@ def parser() -> argparse.ArgumentParser:
         command.add_argument("--campaign", required=True)
         if name in {"inspect", "import"}:
             command.add_argument("--file", required=True)
+            command.add_argument("--expected-sha256", help="Optional independently obtained raw file digest; checked before import mutation")
         if name in {"validate", "accept", "reject"}:
             command.add_argument("--result", required=True)
         if name == "accept":
@@ -56,14 +58,16 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
             return preflight(args.source, ref, args.target, args.path)
         return LocalWorkflow.start(args.campaign, args.source, ref, args.target, args.path).prepare()
     workflow = LocalWorkflow(args.campaign)
-    if args.action in {"status", "resume"}:
+    if args.action == "resume":
+        return workflow.prepare()
+    if args.action == "status":
         return workflow.status()
     if args.action == "prepare":
         return workflow.prepare()
     if args.action == "inspect":
-        return workflow.inspect(args.file)
+        return workflow.inspect(args.file, args.expected_sha256)
     if args.action == "import":
-        return workflow.import_result(args.file)
+        return workflow.import_result(args.file, args.expected_sha256)
     if args.action == "validate":
         return workflow.validate(args.result)
     if args.action == "accept":
@@ -91,8 +95,11 @@ def run_local(argv: Sequence[str]) -> int:
     except SystemExit as exc:
         return int(exc.code or 0)
     try:
+        if args.action == "ui":
+            from .ui import run_local_ui
+            return run_local_ui()
         data = execute(args)
-        code = 2 if data.get("status") == "REJECTED" else 0
+        code = 2 if data.get("status") in {"REJECTED", "LOCAL_CHECK_INCOMPLETE"} or data.get("issues") else 0
     except (ValidationError, OSError, sqlite3.Error) as exc:
         data = {"mode": MODE, "status": "REFUSED", "error": getattr(exc, "code", "LOCAL_IO_ERROR"),
                 "detail": str(exc), "notice": NOTICE}

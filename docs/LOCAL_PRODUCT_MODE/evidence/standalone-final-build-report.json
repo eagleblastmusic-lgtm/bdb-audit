@@ -1,0 +1,19 @@
+{
+  "mode": "LOCAL_PRODUCT",
+  "notice": "LOCAL PRODUCT MODE: manual acceptance permits use in this local audit only. Producer identities and AI claims are unverified. No PKI, independent qualification, qualified Evidence/4, Result/4 or HIGH ASSURANCE completion is established.",
+  "output": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\final-build-report",
+  "reports": [
+    {
+      "byte_length": 246136,
+      "path": "REPORT.json",
+      "sha256": "143e0a9b3ef8674604f9f017333e725a405fb4629c685d59fc5c8fa4bc34f478"
+    },
+    {
+      "byte_length": 129548,
+      "path": "REPORT.md",
+      "sha256": "c2e8b7ffe8b486a0f838c7ae8fa9c49825b1adce3e1b77a1f6167f4b5ac78e49"
+    }
+  ],
+  "status": "EXPORTED_LOCAL",
+  "workflow_status": "LOCAL_COMPLETED"
+}

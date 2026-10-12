@@ -1,0 +1,397 @@
+{
+  "abandoned_checks": [],
+  "available_tasks": [],
+  "campaign_directory": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign",
+  "campaign_id": "local-fe51911405094e6c938e93fa3727e394",
+  "completed_stages": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E6"
+  ],
+  "history_events": 87,
+  "history_head": "97ed622a527036c2518a4845aaf40de26ec7f74e86f668fcd7ab60b5468d1534",
+  "local_checks": [
+    {
+      "context": {
+        "campaign_id": "local-fe51911405094e6c938e93fa3727e394",
+        "input_package_digest": "756f08fb1b36bd2f59c7d326f33b7db8bef8907fce8758c1d81215b20f06514a",
+        "source_commit": "b79959dd154c2be23bbbc5273dcfc97bad8eae9f",
+        "source_tree": "3f9e49e6bd9a35d8dc6d3dbce8cb076ae4a023a5",
+        "stage_id": "E1",
+        "task_id": "E1-A"
+      },
+      "files": {
+        "RUN_MANIFEST.json": {
+          "already_present": false,
+          "byte_length": 862,
+          "media_type": "application/octet-stream",
+          "raw_digest": "c1ff460e9e69ec4dc03f253e12a8ff95ba306b2573f54b915a3ec9dcfeff88f1"
+        },
+        "RUN_RECEIPT.json": {
+          "already_present": false,
+          "byte_length": 1212,
+          "media_type": "application/octet-stream",
+          "raw_digest": "10ce773bb59320c596251f660c14323f9f2407a4dce91a5a8a47606354c4cf4f"
+        },
+        "stderr.bin": {
+          "already_present": false,
+          "byte_length": 2247,
+          "media_type": "application/octet-stream",
+          "raw_digest": "3f1e24b7dd3e656bda8d1fb3df4974236e2f8aea2a5d6e00b44c1619b0098c8c"
+        },
+        "stdout.bin": {
+          "already_present": false,
+          "byte_length": 0,
+          "media_type": "application/octet-stream",
+          "raw_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "result": {
+        "capability_profile_digest": "0feff10f2c86ffef892eae49a7290ff43396ad803cc85e12d2d646e9cbee33e5",
+        "cleanup_status": "CLEAN",
+        "detail": null,
+        "evidence_files": [
+          "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\checks\\local-run-de30135df188490494cf0f9adeb0d70a\\RUN_MANIFEST.json",
+          "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\checks\\local-run-de30135df188490494cf0f9adeb0d70a\\stdout.bin",
+          "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\checks\\local-run-de30135df188490494cf0f9adeb0d70a\\stderr.bin"
+        ],
+        "limitations": [
+          "HOST_FILESYSTEM_ISOLATION_NOT_ENFORCED",
+          "NETWORK_EGRESS_NOT_ENFORCED"
+        ],
+        "output_limit_exceeded": false,
+        "run_id": "local-run-de30135df188490494cf0f9adeb0d70a",
+        "spec_digest": "75f8be72a4d04fe146b2aebb0441112a7dbe4b5d66bce553f715b1af3cab0f4d",
+        "stderr_bytes": 2247,
+        "stderr_sha256": "3f1e24b7dd3e656bda8d1fb3df4974236e2f8aea2a5d6e00b44c1619b0098c8c",
+        "stdout_bytes": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "supervisor_status": "TARGET_NONZERO",
+        "target_exit_code": 1,
+        "timed_out": false
+      },
+      "run_id": "local-run-de30135df188490494cf0f9adeb0d70a",
+      "task_id": "E1-A"
+    },
+    {
+      "context": {
+        "campaign_id": "local-fe51911405094e6c938e93fa3727e394",
+        "input_package_digest": "e7547db7a0599131cc72194078d95b513ae1fa1533eaf8089f25909880c65a47",
+        "source_commit": "b79959dd154c2be23bbbc5273dcfc97bad8eae9f",
+        "source_tree": "3f9e49e6bd9a35d8dc6d3dbce8cb076ae4a023a5",
+        "stage_id": "E1",
+        "task_id": "E1-E"
+      },
+      "files": {
+        "RUN_MANIFEST.json": {
+          "already_present": false,
+          "byte_length": 1085,
+          "media_type": "application/octet-stream",
+          "raw_digest": "ff8590bf54d78628441e56a99ff7e739db238f1bc750633fcf1b978284e73ae8"
+        },
+        "RUN_RECEIPT.json": {
+          "already_present": false,
+          "byte_length": 1203,
+          "media_type": "application/octet-stream",
+          "raw_digest": "34af0b486ddedbcc4855f2876b14e521cb2fa7e76c45c0d5947c9c052ee4db88"
+        },
+        "stderr.bin": {
+          "already_present": true,
+          "byte_length": 0,
+          "media_type": "application/octet-stream",
+          "raw_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout.bin": {
+          "already_present": false,
+          "byte_length": 88,
+          "media_type": "application/octet-stream",
+          "raw_digest": "80bb14f8007ee29ee753e217e750c0344222f9521e25d8c647fbdfd13fedfbe9"
+        }
+      },
+      "result": {
+        "capability_profile_digest": "0feff10f2c86ffef892eae49a7290ff43396ad803cc85e12d2d646e9cbee33e5",
+        "cleanup_status": "CLEAN",
+        "detail": null,
+        "evidence_files": [
+          "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\checks\\local-run-7da6e1243845418fb5fad7c208e59df1\\RUN_MANIFEST.json",
+          "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\checks\\local-run-7da6e1243845418fb5fad7c208e59df1\\stdout.bin",
+          "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\checks\\local-run-7da6e1243845418fb5fad7c208e59df1\\stderr.bin"
+        ],
+        "limitations": [
+          "HOST_FILESYSTEM_ISOLATION_NOT_ENFORCED",
+          "NETWORK_EGRESS_NOT_ENFORCED"
+        ],
+        "output_limit_exceeded": false,
+        "run_id": "local-run-7da6e1243845418fb5fad7c208e59df1",
+        "spec_digest": "97dee5e413b99e06c4a41fe4e71ffc471ebbac7b08595c4428b15c9ea5573bbb",
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_bytes": 88,
+        "stdout_sha256": "80bb14f8007ee29ee753e217e750c0344222f9521e25d8c647fbdfd13fedfbe9",
+        "supervisor_status": "SUCCESS",
+        "target_exit_code": 0,
+        "timed_out": false
+      },
+      "run_id": "local-run-7da6e1243845418fb5fad7c208e59df1",
+      "task_id": "E1-E"
+    }
+  ],
+  "missing_results": [],
+  "mode": "LOCAL_PRODUCT",
+  "notice": "LOCAL PRODUCT MODE: manual acceptance permits use in this local audit only. Producer identities and AI claims are unverified. No PKI, independent qualification, qualified Evidence/4, Result/4 or HIGH ASSURANCE completion is established.",
+  "packages": [
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\packages\\E1-A.zip",
+      "raw_sha256": "8d9b856a10707c927562b165ec4b72da4f2037019958cb508b0e3a9e9f619590",
+      "task_id": "E1-A"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\packages\\E1-B.zip",
+      "raw_sha256": "f672e4bbd416a8e3e28fd83ff288e605718e182ba7edf2c6d425501bead55c25",
+      "task_id": "E1-B"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\packages\\E1-C.zip",
+      "raw_sha256": "b2338856de9ca3482afffcc7a53943bdb61e1b0eb922e433c2913ea66b3d350c",
+      "task_id": "E1-C"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\packages\\E1-D.zip",
+      "raw_sha256": "761dd75ef3f1d3c30c71f6eef6605157863908c631944b252be2c98e5ebade12",
+      "task_id": "E1-D"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\packages\\E1-E.zip",
+      "raw_sha256": "93da128bed27e38aefe2fbbe77f8916866e744abbe60cd7133c04ebefbcf980e",
+      "task_id": "E1-E"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\packages\\E2-CONVERGENCE.zip",
+      "raw_sha256": "9762b98988f237dc238b16c0f8b5f5830b456bb23360cd0cdcaea08249b572d1",
+      "task_id": "E2-CONVERGENCE"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\packages\\E2-ADJUDICATION.zip",
+      "raw_sha256": "7d1088d8068db97ce5e6eea143c0ecd54cb5bafc766735434145b53483851dfd",
+      "task_id": "E2-ADJUDICATION"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\packages\\E3-X.zip",
+      "raw_sha256": "b8bb5485babb689bb9d25c0bdcfad9ae17f0c34f587c429157c9d3f3bf9e621e",
+      "task_id": "E3-X"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\packages\\E3-Y.zip",
+      "raw_sha256": "1d350bdbd21edff23584e7ec639f2597741145d10bc0286b52c8975e1887fb43",
+      "task_id": "E3-Y"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\packages\\E3-Z.zip",
+      "raw_sha256": "02e1ee42bb2d13b295e0163c7dd1174b30ecbad89b4d663379d92305f1a91510",
+      "task_id": "E3-Z"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\packages\\E4-MODEL.zip",
+      "raw_sha256": "a53c1f02a0fa70f85820ebdd8cfd74f91c75389e2b7613be80bdc25fc9f523dd",
+      "task_id": "E4-MODEL"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\packages\\E4-RESILIENCE.zip",
+      "raw_sha256": "dc1775e8a5c766eeb77963807b3d20eccdb50e13dccdd2e9bf474c589072f694",
+      "task_id": "E4-RESILIENCE"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\packages\\E4-CAUSAL.zip",
+      "raw_sha256": "fd00a6eccd9d1e6e4276bed915fc7a4fb04de9201777f89f39ee4a4d50fa1312",
+      "task_id": "E4-CAUSAL"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\packages\\E5-A-INTERACTION.zip",
+      "raw_sha256": "823aef4cf75b0ec71a0390af22cd4dac1b17a957410fd94018b9729ba1fe65a8",
+      "task_id": "E5-A-INTERACTION"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\packages\\E5-A-MUTATION.zip",
+      "raw_sha256": "93c01ebb4c09cf972a2e80158b5169db9074a3f41ce2bb8497d53986e500dc0d",
+      "task_id": "E5-A-MUTATION"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\packages\\E5-A-CALIBRATION.zip",
+      "raw_sha256": "b28d0ce6459f5cc776322c1088422036b19531efe28862c3227abc8d8a446310",
+      "task_id": "E5-A-CALIBRATION"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\packages\\E5-B1.zip",
+      "raw_sha256": "ec57e7a57dc203a888de4b9355bce9efb0988c7d813e633e0105a2d37cbcb78e",
+      "task_id": "E5-B1"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\packages\\E5-B2.zip",
+      "raw_sha256": "2fe94cb379d9644ee71ed4fc290f32e86b478b15b6c178cef2e95bc07a3f5a0b",
+      "task_id": "E5-B2"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\campaign\\packages\\E6-FOLLOWUP.zip",
+      "raw_sha256": "2ed04b901ebbf2926cdf6b2c6af5c07892754acb11d1a913c21102b90e6a8c69",
+      "task_id": "E6-FOLLOWUP"
+    }
+  ],
+  "pending_checks": [],
+  "profile": "BDB_LOCAL_WORKFLOW_1",
+  "results": [
+    {
+      "issues": [],
+      "result_id": "local-result-9014544cd4c3334f4a5699e2b09b35fe20cbec2a94c6ed13a9f0548d4f612acf",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E1-A"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-89b5ee13d80e02288a6c7ee60e4c5707ea43c273e8be64f7c37dc4af9dd249b0",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E1-B"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-49e5367053e9f5bbf458a056a8bc840e8c5366ea6d9bf9e1830b59b43874c8f6",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E1-C"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-3480e528ac7c3e7d517f0d669b851938305c298c24afadacf9dd43bf2e4c0e86",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E1-D"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-51a16f7a7f51ef812b9fb23a7a32a58be26598f40f22c4251704250e168e51f1",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E1-E"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-b9bc8f5487cf477e52949f43e9773e3113bba446ca08586c2206570f4503b85d",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E2-CONVERGENCE"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-8121631dca404e2c66c54d4fb8975bc631e20ce9fe3c4faa93e0a62757554f79",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E2-ADJUDICATION"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-cfefb1d6b7a0b7f2ebe8186f21e0126afb738bf36bebd95f211d6edfce4e8372",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E3-X"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-86519940501215a962b31eea9d4909110d5f30bff2c3b0a6bbf7a7319a82e24f",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E3-Y"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-85eee575fbc01ae293f6d657249292c85661e890ab2ec6a5ad6266178c585158",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E3-Z"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-a40f85e193283a4aa67a8609754e8e597749ad51c67bd3d63efea62e71b05e73",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E4-MODEL"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-04f746cfe202e9d3ed7f9663b1e482e8cf7cfba7bb901b63da2afcdefe0ef329",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E4-RESILIENCE"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-92881e86591d35cb0c712910a15e2962e6e8ffbf4a5374d295cb4a1c3ba59337",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E4-CAUSAL"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-a386b701c2416109c9737eaa0916f2d4a5a99e3b09ccaee6f741861358155ccd",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E5-A-INTERACTION"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-cfcfab09fb48f18eb56ae74d54ba4b4e291b756cc965e106c101cfb9622b508e",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E5-A-MUTATION"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-087edf80a500e60d1a78b62a79d15704d0f6905e39af4737f72d26c63fd62868",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E5-A-CALIBRATION"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-7ec1ababddf4bee10dbcf5d9fe9c39b3a0b791758ae9533e08b54b23e4712d67",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E5-B1"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-c5c624f0a43ac10436b01e85152b44b168782f1bdefc0614cea421789550a1ca",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E5-B2"
+    },
+    {
+      "issues": [],
+      "result_id": "local-result-654238aaea19508a8423b52d04d3283ada559bb7b161e91b1d536826957001f3",
+      "state": "USER_ACCEPTED_LOCAL",
+      "superseded_by": null,
+      "task_id": "E6-FOLLOWUP"
+    }
+  ],
+  "source": {
+    "commit": "b79959dd154c2be23bbbc5273dcfc97bad8eae9f",
+    "location": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\local-product-final\\known-defects-repository",
+    "manifest_sha256": "3474c178dcab2a7457ed8638df02b8cd5ed41a6917647c09b836a18b8f385ef5",
+    "object_format": "sha1",
+    "paths": [
+      "README.md",
+      "app.py",
+      "test_app.py"
+    ],
+    "requested_ref": "HEAD",
+    "scope": "ALL_REGULAR_FILES",
+    "snapshot_sha256": "1f22a87ec0d20608797ab031bc97451f0546f0d8c716791d9a36b9cf9f5afb79",
+    "target_type": "local",
+    "tree": "3f9e49e6bd9a35d8dc6d3dbce8cb076ae4a023a5"
+  },
+  "stage": "COMPLETE",
+  "status": "LOCAL_COMPLETED"
+}

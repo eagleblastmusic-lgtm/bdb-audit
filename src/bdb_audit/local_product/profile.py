@@ -16,6 +16,53 @@ NOTICE = (
     "qualified Evidence/4, Result/4 or HIGH ASSURANCE completion is established."
 )
 
+RESPONSE_GUIDE = """# LOCAL response format — informational user guide
+
+Use the exact RESPONSE_TEMPLATE.json from the assigned package. Keep format,
+mode, campaign_id, stage_id, task_id, source_commit, source_tree and
+input_package_digest unchanged. They identify local context, not authority.
+
+Return UTF-8 JSON directly, or a ZIP with root LOCAL_RESULT.json and declared
+attachments. Do not send a ZIP containing another ZIP instead of this manifest.
+JSON must not have duplicate keys, floating-point numbers or extra root fields.
+The response JSON limit is 2 MiB; archive limit 64 MiB, expanded 50 MiB, 512 members,
+32 MiB per member, ratio 500. Responses are never executed or extracted as code.
+
+producer: {"kind": "EXTERNAL_AI", "declared_name": "actual model/provider name"}.
+Other disclosed kinds: HUMAN, LOCAL_CONTROL, TEST_FIXTURE. Names are declarations,
+not verified identities. Do not invent an external AI run or independent auditor.
+
+completion: COMPLETE, NEEDS_WORK or BLOCKED. COMPLETE requires a substantive text
+for every key in MANIFEST.json.required_outputs (explain an absence when relevant).
+The outputs object maps each required key to a string. Empty/template fields do
+not complete a task. NEEDS_WORK and BLOCKED may retain unfinished observations.
+
+findings is a list; [] is permitted only if no findings are being declared.
+Every finding has:
+- id, title, statement, rationale: nonempty strings; id unique within the response;
+- severity: CRITICAL, HIGH, MEDIUM, LOW or INFO;
+- disposition: CLAIM, SUPPORTED, DISPUTED or WITHDRAWN (producer assessment only);
+- source_refs: list of {"path": "original/path/from/SOURCE_MANIFEST.json", "line": 1}.
+Use original source paths, not numeric source/ transport names. Lines are positive
+1-based integers. Cite real observations; distinguish execution from predictions.
+
+limitations, recommendations, contradictions: lists of nonempty text strings.
+Use [] for an explained absence or no declarations. Keep untested behavior and
+identity limitations explicit. Do not claim that schema/hash validation proves truth.
+
+evidence_files: list of {"path": "report.txt", "sha256": "64 lowercase hex digits",
+"byte_length": 123}. Every non-manifest ZIP member must be declared exactly once,
+with the exact SHA-256 and byte length of its original bytes. Do not include
+LOCAL_RESULT.json in that list (no self-hash). A direct JSON response must use [].
+Use relative paths without traversal, backslashes, colons or absolute paths.
+Attach real run output if claiming a test was executed, and disclose its limits.
+
+Imported results are untrusted. Structural validation and manual USER_ACCEPTED_LOCAL
+permit local use only. They never create qualified Evidence/4 or Result/4.
+This guide is supplied next to packages; attach it with the ZIP when requesting
+an AI response. It does not modify the frozen HIGH ASSURANCE 18/7/43 model.
+"""
+
 # Required outputs make each stage usable without pretending to implement the
 # normative blind/reveal, qualification or STOP protocols.
 STAGES: dict[str, list[tuple[str, str, tuple[str, ...]]]] = {

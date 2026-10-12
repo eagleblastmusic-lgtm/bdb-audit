@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="4" time="3.888" timestamp="2026-10-12T22:20:06.448006+02:00" hostname="DESKTOP-99K5D30"><testcase classname="tests.product.test_local_product" name="test_tui_real_file_import_and_explicit_accept" time="1.269" /><testcase classname="tests.product.test_local_product" name="test_tui_exit_does_not_create_or_accept_campaign" time="0.001" /><testcase classname="tests.product.test_local_product" name="test_wrong_raw_digest_and_qualified_import_refuse_without_mutation" time="1.172" /><testcase classname="tests.product.test_local_product" name="test_real_remote_fetch_path_with_local_bare_remote" time="0.540"><failure message="bdb_audit.core.errors.ValidationError: GIT_SOURCE_VERIFICATION_FAILED: and the repository exists.">repo = WindowsPath('C:/Projekty/Audyty/BDB Audit/.product-test-tmp/5d2f3bd48f9e493294b607b45bc83eeb/test_real_remote_fetch_path_with_local_bare_remote-1da9928ede184042ae536a3ab6b2edcf/repository')
+tmp_path = WindowsPath('C:/Projekty/Audyty/BDB Audit/.product-test-tmp/5d2f3bd48f9e493294b607b45bc83eeb/test_real_remote_fetch_path_with_local_bare_remote-1da9928ede184042ae536a3ab6b2edcf')
+
+    def test_real_remote_fetch_path_with_local_bare_remote(repo, tmp_path):
+        # Real git fetch and objects, no network/authority simulation. Public GitHub
+        # itself is separately exercised in retained live smoke evidence.
+        from bdb_audit.local_product.workflow import capture_source
+        commit = subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"]).decode().strip()
+&gt;       source, raw = capture_source(str(repo), commit, "github")
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\product\test_local_product.py:363: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\bdb_audit\local_product\workflow.py:52: in capture_source
+    with context as (repository, identity):
+         ^^^^^^^
+C:\Python314\Lib\contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src\bdb_audit\source\git_resolver.py:175: in fetched_remote_repository
+    _run_git(repo, ["fetch", "--no-tags", "--depth=1", "origin", fetch_target], timeout=90)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+repo = WindowsPath('C:/Users/Skarabeusz/AppData/Local/Temp/bdb_source_git_867f2f9628cb47e68c9bfa71eb9e94d2/repo.git')
+args = ['fetch', '--no-tags', '--depth=1', 'origin', '142cb19cf67f81a86519af0c141383ce8c8375e1']
+
+    def _run_git(repo: Path | None, args: list[str], *, timeout: int = 30) -&gt; str:
+        cmd = ["git"]
+        if repo is not None:
+            cmd += ["-C", str(repo)]
+        cmd += args
+        try:
+            proc = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=timeout,
+                env=_git_env(),
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise ValidationError("GIT_SOURCE_UNAVAILABLE", type(exc).__name__) from exc
+        if proc.returncode != 0:
+            detail = (proc.stderr or proc.stdout or "git command failed").strip().splitlines()[-1]
+&gt;           raise ValidationError("GIT_SOURCE_VERIFICATION_FAILED", detail[:400])
+E           bdb_audit.core.errors.ValidationError: GIT_SOURCE_VERIFICATION_FAILED: and the repository exists.
+
+src\bdb_audit\source\git_resolver.py:81: ValidationError</failure></testcase></testsuite></testsuites>

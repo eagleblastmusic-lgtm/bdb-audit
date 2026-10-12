@@ -11,8 +11,11 @@ from dataclasses import dataclass
 import os
 from pathlib import Path
 import re
+import shutil
+import stat
 import subprocess
 import tempfile
+import uuid
 from typing import Iterator
 from urllib.parse import parse_qsl, urlsplit
 
@@ -129,10 +132,36 @@ def _select_remote_ref(repo_url: str, ref: str) -> str:
 
 
 @contextmanager
+def _fetch_directory() -> Iterator[Path]:
+    if os.name != "nt":
+        with tempfile.TemporaryDirectory(prefix="bdb_source_git_") as posix_directory:
+            yield Path(posix_directory)
+        return
+    # Python 3.13+ gives mode=0700 a Windows ACL that restricted user tokens
+    # cannot read. This disposable Git cache is not an installation boundary;
+    # inherit the user's temp ACL, just as the existing local tool runner does.
+    parent = Path(tempfile.gettempdir()).resolve()
+    directory = parent / ("bdb_source_git_" + uuid.uuid4().hex)
+    directory.mkdir()
+    try:
+        yield directory
+    finally:
+        if directory.resolve().parent != parent or directory.is_symlink() or directory.is_junction():
+            raise ValidationError("GIT_TEMP_CLEANUP_PATH_CHANGED")
+        def writable_retry(function, path, exception):
+            candidate = Path(path).resolve()
+            if not candidate.is_relative_to(directory.resolve()):
+                raise ValidationError("GIT_TEMP_CLEANUP_PATH_CHANGED")
+            os.chmod(candidate, stat.S_IWRITE)
+            function(path)
+        shutil.rmtree(directory, onexc=writable_retry)
+
+
+@contextmanager
 def fetched_remote_repository(repo_url: str, ref: str = "main", explicit_sha: str | None = None) -> Iterator[tuple[Path, VerifiedGitIdentity]]:
     safe_url = validate_repository_location(repo_url)
-    with tempfile.TemporaryDirectory(prefix="bdb_source_git_") as td:
-        repo = Path(td) / "repo.git"
+    with _fetch_directory() as td:
+        repo = td / "repo.git"
         _run_git(None, ["init", "--bare", str(repo)])
         _run_git(repo, ["remote", "add", "origin", safe_url])
         if explicit_sha:

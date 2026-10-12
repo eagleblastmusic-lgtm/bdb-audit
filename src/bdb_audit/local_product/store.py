@@ -97,10 +97,15 @@ class LocalStore:
         previous = EMPTY_HEAD
         events: list[dict[str, Any]] = []
         for seq, digest, prev, raw in con.execute("SELECT seq,event_hash,previous_hash,body FROM local_events ORDER BY seq"):
+            if (not isinstance(raw, bytes) or not isinstance(prev, str) or len(prev) != 64
+                    or any(c not in "0123456789abcdef" for c in prev)):
+                raise ValidationError("LOCAL_HISTORY_INTEGRITY_FAILED")
             if seq != len(events) + 1 or prev != previous or digest != _hash(prev, raw):
                 raise ValidationError("LOCAL_HISTORY_INTEGRITY_FAILED")
             body = parse(raw)
-            if (canonical_bytes(body) != raw or body.get("seq") != seq
+            if (not isinstance(body, dict) or set(body) != {"seq", "mode", "profile", "kind", "payload"}
+                    or not isinstance(body["kind"], str) or not isinstance(body["payload"], dict)
+                    or canonical_bytes(body) != raw or body.get("seq") != seq
                     or body.get("mode") != MODE or body.get("profile") != PROFILE):
                 raise ValidationError("LOCAL_HISTORY_MODE_OR_BYTES_MISMATCH")
             self._read_refs(body)

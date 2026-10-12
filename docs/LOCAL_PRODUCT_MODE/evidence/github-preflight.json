@@ -1,0 +1,20 @@
+{
+  "mode": "LOCAL_PRODUCT",
+  "notice": "LOCAL PRODUCT MODE: manual acceptance permits use in this local audit only. Producer identities and AI claims are unverified. No PKI, independent qualification, qualified Evidence/4, Result/4 or HIGH ASSURANCE completion is established.",
+  "snapshot_bytes": 691,
+  "source": {
+    "commit": "7fd1a60b01f91b314f59955a4e4d4e80d8edf11d",
+    "location": "https://github.com/octocat/Hello-World.git",
+    "manifest_sha256": "752ba9485a3ad4712f476377e9a4d895c0a8199b7e70f5f944ca8984357e1b80",
+    "object_format": "sha1",
+    "paths": [
+      "README"
+    ],
+    "requested_ref": "master",
+    "scope": "ALL_REGULAR_FILES",
+    "snapshot_sha256": "10739e8d98b613c7c2caf22c0f900a6b0db26eec3774b0994b57a97bbb5beff8",
+    "target_type": "github",
+    "tree": "b4eecafa9be2f2006ce1b709d6857b07069b4608"
+  },
+  "status": "READY_LOCAL"
+}

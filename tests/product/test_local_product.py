@@ -321,3 +321,98 @@ def test_reports_keep_claims_separate_and_export_exact_evidence(local, tmp_path)
     with pytest.raises(ValidationError, match="LOCAL_REPORT_PROTECTED_PATH"):
         export_report(local, local.store.root / "vault" / "new-report")
     assert local.head == head
+
+
+def test_tui_real_file_import_and_explicit_accept(local, tmp_path):
+    from bdb_audit.local_product.ui import run_local_ui
+    path = tmp_path / "fixture.json"
+    path.write_bytes(canonical_bytes(response(local)))
+    inputs = iter(["2", str(local.store.root), "5", str(path), "6", "1", "AKCEPTUJ LOCAL", "0"])
+    output = []
+    assert run_local_ui(lambda _: next(inputs), output.append) == 0
+    restarted = LocalWorkflow(local.store.root)
+    assert restarted.results[restarted.accepted["E1-A"]]["state"] == "USER_ACCEPTED_LOCAL"
+    assert any("VALIDATED_STRUCTURE" in text for text in output)
+
+
+def test_tui_exit_does_not_create_or_accept_campaign():
+    from bdb_audit.local_product.ui import run_local_ui
+    output = []
+    assert run_local_ui(lambda _: "0", output.append) == 0
+    assert any("bez certyfikatów" in line for line in output)
+
+
+def test_wrong_raw_digest_and_qualified_import_refuse_without_mutation(local, tmp_path, capsys):
+    file = tmp_path / "local.json"
+    file.write_bytes(canonical_bytes(response(local)))
+    head, raw_db = local.head, local.store.path.read_bytes()
+    with pytest.raises(ValidationError, match="LOCAL_RAW_SHA256_MISMATCH"):
+        local.import_result(file, "0" * 64)
+    assert local.head == head and local.store.path.read_bytes() == raw_db
+    assert run_cli(["product", "import", "--store", str(local.store.path), "--zip", str(file), "--json"]) == 2
+    data = parse(capsys.readouterr().err.encode())
+    assert data["external_ingestion"] == "BLOCKED"
+    assert local.store.path.read_bytes() == raw_db
+
+
+def test_real_remote_fetch_path_with_local_bare_remote(repo, tmp_path):
+    # Real git fetch and objects, no network/authority simulation. Public GitHub
+    # itself is separately exercised in retained live smoke evidence.
+    from bdb_audit.local_product.workflow import capture_source
+    commit = subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"]).decode().strip()
+    source, raw = capture_source(str(repo), commit, "github")
+    assert source["commit"] == commit and source["target_type"] == "github"
+    assert "MANIFEST.json" in read_bytes(raw)
+
+
+def test_package_publication_crash_and_resume_restore_exact_bytes(local, monkeypatch):
+    def crash(path, raw):
+        raise RuntimeError("explicit test crash before package publication")
+    with monkeypatch.context() as patch:
+        patch.setattr("bdb_audit.local_product.workflow._publish_exact", crash)
+        with pytest.raises(RuntimeError):
+            local.prepare()
+    restarted = LocalWorkflow(local.store.root)
+    head = restarted.head
+    assert len(restarted.packages) == 5 and not (local.store.root / "packages").exists()
+    restarted.prepare()
+    assert restarted.head == head
+    for task, package in restarted.packages.items():
+        assert (local.store.root / "packages" / (task + ".zip")).read_bytes() == restarted.store.vault.read_bytes(package["raw"]["raw_digest"])
+
+
+def test_crash_after_raw_before_event_never_accepts_orphan(local, tmp_path, monkeypatch):
+    body = response(local)
+    file = tmp_path / "response.json"
+    file.write_bytes(canonical_bytes(body))
+    head = local.head
+    def crash(kind, payload, expected_head):
+        raise RuntimeError("explicit test crash after raw publication before SQLite append")
+    with monkeypatch.context() as patch:
+        patch.setattr(local.store, "append", crash)
+        with pytest.raises(RuntimeError):
+            local.import_result(file)
+    restarted = LocalWorkflow(local.store.root)
+    assert restarted.head == head and not restarted.results
+    assert restarted.import_result(file)["status"] == "IMPORTED_UNTRUSTED"
+
+
+def test_real_concurrent_import_has_one_journal_event(local, tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+    file = tmp_path / "response.json"
+    file.write_bytes(canonical_bytes(response(local)))
+    writers = [LocalWorkflow(local.store.root), LocalWorkflow(local.store.root)]
+    ready = Barrier(2)
+    def import_one(writer):
+        ready.wait(timeout=5)
+        try:
+            return writer.import_result(file)["status"]
+        except ValidationError as exc:
+            return exc.code
+    with ThreadPoolExecutor(2) as pool:
+        statuses = list(pool.map(import_one, writers))
+    assert statuses.count("IMPORTED_UNTRUSTED") == 1
+    assert all(status in {"IMPORTED_UNTRUSTED", "LOCAL_CAS_CONFLICT"} for status in statuses)
+    restarted = LocalWorkflow(local.store.root)
+    assert len(restarted.results) == 1 and not restarted.accepted

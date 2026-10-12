@@ -131,15 +131,32 @@ class RawArtifactVault:
             if path.read_bytes() != raw:
                 raise ValidationError("RAW_VAULT_METADATA_CONFLICT")
             return
-        tmp = path.with_suffix(".json.tmp")
+        fd, temp_name = tempfile.mkstemp(prefix=".bdb-vault-meta-", dir=str(path.parent))
+        tmp = Path(temp_name)
         try:
             # Keep the descriptor writable while flushing.  On Windows,
             # os.fsync() on a read-only descriptor can fail with EBADF.
-            with tmp.open("wb") as stream:
+            with os.fdopen(fd, "wb", closefd=True) as stream:
                 stream.write(raw)
                 stream.flush()
                 os.fsync(stream.fileno())
-            os.replace(tmp, path)
+            # A shared .json.tmp collided between concurrent imports on Windows.
+            # Publish create-only, then verify the winner's exact metadata; never
+            # overwrite a conflicting media-type declaration in a race.
+            try:
+                os.link(tmp, path)
+            except FileExistsError:
+                pass
+            except OSError:
+                if os.name != "nt":
+                    raise
+                try:
+                    # Windows rename refuses an existing destination.
+                    os.rename(tmp, path)
+                except FileExistsError:
+                    pass
+            if path.read_bytes() != raw:
+                raise ValidationError("RAW_VAULT_METADATA_CONFLICT")
             self._sync_dir(path.parent)
         except OSError as exc:
             raise ValidationError("RAW_VAULT_WRITE_FAILED", type(exc).__name__) from exc

@@ -775,9 +775,10 @@ class InteractiveAuditUI:
             output_func("5. Audit History")
             output_func("6. Advanced")
             output_func("7. Exit")
+            output_func("8. LOCAL PRODUCT MODE (without certificates)")
 
             try:
-                choice = input_func("Select action [1-7]: ").strip()
+                choice = input_func("Select action [1-8]: ").strip()
             except (EOFError, KeyboardInterrupt):
                 output_func("\nExiting UI.")
                 return 0
@@ -815,12 +816,16 @@ class InteractiveAuditUI:
             elif choice == "6":
                 self.run_advanced_menu_loop(input_func, output_func)
 
+            elif choice == "8":
+                from .local_product.ui import run_local_ui
+                run_local_ui(input_func, output_func)
+
             elif choice == "7" or choice.lower() in ("q", "quit", "exit"):
                 output_func("Exiting UI.")
                 return 0
 
             else:
-                output_func(f"Invalid option '{choice}'. Please select 1-7.")
+                output_func(f"Invalid option '{choice}'. Please select 1-8.")
 
     # =========================================================================
     # CORE DOMAIN HANDLERS (EXACT V2.0.2 INTERFACE PRESERVED)

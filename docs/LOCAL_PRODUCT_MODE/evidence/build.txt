@@ -1,0 +1,6 @@
+{
+  "artifact": "C:\\Projekty\\Audyty\\BDB Audit\\dist\\BDB_AUDIT_LOCAL_PRODUCT.py",
+  "sha256": "996902e159b9a086a204724cd93851cd3cc8e2d24cbed84e9763c6dd369fa24d",
+  "bytes": 1620067,
+  "deterministic_repeat": "PASS"
+}

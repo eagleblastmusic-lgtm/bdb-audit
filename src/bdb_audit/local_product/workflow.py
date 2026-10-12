@@ -4,6 +4,7 @@ from __future__ import annotations
 from contextlib import nullcontext
 from dataclasses import asdict
 from pathlib import Path
+import re
 import shutil
 import subprocess
 from typing import Any
@@ -18,7 +19,7 @@ from ..workflow.packaging import _deterministic_zip, _publish_exact
 from ..runner.supervisor import ToolSupervisor
 from ..runner.specs import ToolRunSpec
 from ..runner.verification import verify_run_evidence
-from .profile import MODE, PROFILE, PROFILE_SHA256, RESPONSE, STAGES, NOTICE, task_definition
+from .profile import MODE, PROFILE, PROFILE_SHA256, RESPONSE, STAGES, NOTICE, RESPONSE_GUIDE, task_definition
 from .responses import decode, issues, read_file
 from .store import LocalStore, sha
 
@@ -45,7 +46,8 @@ def capture_source(location: str, ref: str, target: str = "local", paths: list[s
     location = validate_repository_location(location)
     if target not in {"local", "github"}:
         raise ValidationError("LOCAL_SOURCE_TYPE_INVALID")
-    context = (fetched_remote_repository(location, ref) if target == "github"
+    explicit_sha = ref if re.fullmatch(r"(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})", ref) else None
+    context = (fetched_remote_repository(location, ref, explicit_sha) if target == "github"
                else nullcontext((Path(location).resolve(), resolve_local_repository(location, ref))))
     with context as (repository, identity):
         selected = paths or _git_paths(repository, identity.commit_object_id)
@@ -70,7 +72,10 @@ def preflight(location: str, ref: str, target: str = "local", paths: list[str] |
 class LocalWorkflow:
     def __init__(self, root: str | Path):
         self.store = LocalStore(root)
-        self._reload()
+        try:
+            self._reload()
+        except (KeyError, TypeError, IndexError) as exc:
+            raise ValidationError("LOCAL_HISTORY_FORMAT_INVALID", type(exc).__name__) from exc
 
     @classmethod
     def start(cls, root: str | Path, location: str, ref: str, target: str = "local",
@@ -302,20 +307,27 @@ class LocalWorkflow:
             if task not in self.packages:
                 metadata, raw = self._package_bytes(task)
                 self._append("PACKAGE_PREPARED", {**metadata, "raw": self.store.put(raw)})
-            package = self.packages[task]
+        # Publication is a recoverable projection. A crash after journal commit
+        # can be repaired from exact retained bytes, including earlier phases.
+        _publish_exact(self.store.root / "packages" / "RESPONSE_FORMAT.md", RESPONSE_GUIDE.encode("utf-8"))
+        for task, package in self.packages.items():
             path = self.store.root / "packages" / (task + ".zip")
             _publish_exact(path, self.store.vault.read_bytes(package["raw"]["raw_digest"]))
         return self.status()
 
-    def inspect(self, path: str | Path) -> dict[str, Any]:
+    def inspect(self, path: str | Path, expected_sha256: str | None = None) -> dict[str, Any]:
         raw = read_file(path)
+        if expected_sha256 is not None and sha(raw) != expected_sha256:
+            raise ValidationError("LOCAL_RAW_SHA256_MISMATCH")
         response, members = decode(raw)
         return {"mode": MODE, "status": "INSPECTED_UNTRUSTED", "raw_sha256": sha(raw),
                 "byte_length": len(raw), "issues": self._response_issues(response, members),
                 "response": response, "notice": NOTICE}
 
-    def import_result(self, path: str | Path) -> dict[str, Any]:
+    def import_result(self, path: str | Path, expected_sha256: str | None = None) -> dict[str, Any]:
         raw = read_file(path)
+        if expected_sha256 is not None and sha(raw) != expected_sha256:
+            raise ValidationError("LOCAL_RAW_SHA256_MISMATCH")
         rid = "local-result-" + sha(raw)
         if rid not in self.results:
             if self.stage == "COMPLETE":

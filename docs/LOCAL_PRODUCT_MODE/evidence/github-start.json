@@ -1,0 +1,71 @@
+{
+  "abandoned_checks": [],
+  "available_tasks": [
+    "E1-A",
+    "E1-B",
+    "E1-C",
+    "E1-D",
+    "E1-E"
+  ],
+  "campaign_directory": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\github-local-first",
+  "campaign_id": "local-9dedf870790540ccb0fdd9e9d878ae3e",
+  "completed_stages": [],
+  "history_events": 6,
+  "history_head": "f17c97e8e0b404c8bf9b6c2f5ea464770143924a1b578a7563ab9a5fbbfc2e99",
+  "local_checks": [],
+  "missing_results": [
+    "E1-A",
+    "E1-B",
+    "E1-C",
+    "E1-D",
+    "E1-E"
+  ],
+  "mode": "LOCAL_PRODUCT",
+  "notice": "LOCAL PRODUCT MODE: manual acceptance permits use in this local audit only. Producer identities and AI claims are unverified. No PKI, independent qualification, qualified Evidence/4, Result/4 or HIGH ASSURANCE completion is established.",
+  "packages": [
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\github-local-first\\packages\\E1-A.zip",
+      "raw_sha256": "fe604597a82879d96eabd09ad5efa2b159fd3004e5551ac744940494ba6c1d8d",
+      "task_id": "E1-A"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\github-local-first\\packages\\E1-B.zip",
+      "raw_sha256": "ef7ae31c611256a8d0cc20a107fa871d16759dd83653c0451f7a3ce18409e343",
+      "task_id": "E1-B"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\github-local-first\\packages\\E1-C.zip",
+      "raw_sha256": "372e1bcc98985986d26eec04804b4536df6cd871af1d211a4e72fd2303bac306",
+      "task_id": "E1-C"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\github-local-first\\packages\\E1-D.zip",
+      "raw_sha256": "b1aaaffcf34d6b912b10d308ca1cd32904bad49cc241f1ed58a433d31d8938d5",
+      "task_id": "E1-D"
+    },
+    {
+      "path": "C:\\Projekty\\Audyty\\BDB Audit\\.product-smoke\\github-local-first\\packages\\E1-E.zip",
+      "raw_sha256": "b19a506152e962eea0eab1e2d242d78baf4adc8b281c3d00b5940b16d8539c04",
+      "task_id": "E1-E"
+    }
+  ],
+  "pending_checks": [],
+  "profile": "BDB_LOCAL_WORKFLOW_1",
+  "results": [],
+  "source": {
+    "commit": "7fd1a60b01f91b314f59955a4e4d4e80d8edf11d",
+    "location": "https://github.com/octocat/Hello-World.git",
+    "manifest_sha256": "752ba9485a3ad4712f476377e9a4d895c0a8199b7e70f5f944ca8984357e1b80",
+    "object_format": "sha1",
+    "paths": [
+      "README"
+    ],
+    "requested_ref": "7fd1a60b01f91b314f59955a4e4d4e80d8edf11d",
+    "scope": "ALL_REGULAR_FILES",
+    "snapshot_sha256": "10739e8d98b613c7c2caf22c0f900a6b0db26eec3774b0994b57a97bbb5beff8",
+    "target_type": "github",
+    "tree": "b4eecafa9be2f2006ce1b709d6857b07069b4608"
+  },
+  "stage": "E1",
+  "status": "NEEDS_REAL_RESULTS"
+}
