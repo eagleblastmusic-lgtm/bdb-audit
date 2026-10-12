@@ -1,0 +1,22 @@
+{
+  "Q1": "OPEN",
+  "Q2": "NOT_RUN",
+  "RQ": "NOT_RUN",
+  "code_files_byte_equal_to_commit": 270,
+  "frozen_norm_and_history_unchanged": true,
+  "implementation_commit": "11a818c67b5e444361adf489691f47ce42dcdb5d",
+  "manifest_entries_readback": 425,
+  "matrix": {
+    "accepted": 13,
+    "denied": 59,
+    "operation_state_cases": 72,
+    "pytest_PASS": 1
+  },
+  "production_import": "BLOCKED",
+  "regression": {
+    "ERROR": 0,
+    "FAIL": 0,
+    "PASS": 494
+  },
+  "status": "COMMITTED_CURRENT_CODE_AND_EVIDENCE_READBACK_PASS_NOT_QUALIFICATION"
+}
