@@ -224,3 +224,65 @@ def test_fast_control_output_is_bounded(local):
     result = local.run_check("E1-E", [sys.executable, "-c", "print('x' * 100000)"], timeout=10, max_output=1024)
     assert result["result"]["supervisor_status"] == "OUTPUT_LIMIT"
     assert result["result"]["stdout_bytes"] + result["result"]["stderr_bytes"] <= 1024
+
+
+def test_all_stages_and_frozen_e5_challenge_inputs(local, tmp_path):
+    for stage in ("E1", "E2", "E3", "E4", "E5", "E6"):
+        assert local.stage == stage
+        while local.status()["missing_results"]:
+            local.prepare()
+            tasks = [task for task in local._available_tasks() if task not in local.accepted]
+            assert tasks
+            for task in tasks:
+                accept_fixture(local, tmp_path, task)
+            if stage == "E5" and tasks[0].startswith("E5-A-"):
+                local.prepare()
+                assert "E5-B1" in local.packages
+                body = response(local, "E5-A-INTERACTION", limitations=["new explicit test revision"])
+                rid = imported(local, tmp_path, body, "frozen-revision.json")
+                local.validate(rid)
+                before = local.head
+                with pytest.raises(ValidationError, match="LOCAL_CHALLENGE_INPUT_FROZEN"):
+                    local.accept(rid, "user", confirm=True, replaces=local.accepted["E5-A-INTERACTION"])
+                assert local.head == before
+                archive = read_bytes(local.store.vault.read_bytes(local.packages["E5-B1"]["raw"]["raw_digest"]))
+                assert sum(r["response"]["task_id"].startswith("E5-A-") for r in parse(archive["PRIOR_RESULTS.json"])) == 3
+        local.advance()
+        local = LocalWorkflow(local.store.root)
+    assert local.status()["status"] == "LOCAL_COMPLETED"
+    assert local.completed == ["E1", "E2", "E3", "E4", "E5", "E6"]
+    assert len(local.accepted) == 19
+    head = local.head
+    with pytest.raises(ValidationError, match="LOCAL_CAMPAIGN_ALREADY_COMPLETED"):
+        local.advance()
+    assert local.head == head
+
+
+def test_crash_after_run_before_journal_can_recover(local, monkeypatch):
+    local.prepare()
+    original = local.recover_check
+    def simulate_crash(run_id):
+        raise RuntimeError("explicit test crash after receipt publication")
+    monkeypatch.setattr(local, "recover_check", simulate_crash)
+    with pytest.raises(RuntimeError):
+        local.run_check("E1-A", [sys.executable, "-c", "print('actual check')"])
+    restarted = LocalWorkflow(local.store.root)
+    run_id = next(iter(restarted.pending_runs))
+    assert restarted.recover_check(run_id)["result"]["supervisor_status"] == "SUCCESS"
+    assert not LocalWorkflow(local.store.root).pending_runs
+
+
+def test_missing_control_receipt_requires_explicit_abandonment(local, monkeypatch):
+    local.prepare()
+    def interrupt(self, spec):
+        raise RuntimeError("explicit test interruption before execution")
+    monkeypatch.setattr("bdb_audit.local_product.workflow.ToolSupervisor.run", interrupt)
+    with pytest.raises(RuntimeError):
+        local.run_check("E1-A", [sys.executable, "-c", "print('not run')"])
+    restarted = LocalWorkflow(local.store.root)
+    run_id = next(iter(restarted.pending_runs))
+    with pytest.raises(ValidationError, match="TOOL_RUN_EVIDENCE_INCOMPLETE"):
+        restarted.recover_check(run_id)
+    restarted.abandon_check(run_id, "Actual execution has no complete receipt; not a passed check")
+    assert len(LocalWorkflow(local.store.root).abandoned_runs) == 1
+    assert not restarted.runs

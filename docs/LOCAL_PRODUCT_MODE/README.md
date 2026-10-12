@@ -62,3 +62,38 @@ Po przerwaniu między wykonaniem a zapisem historii można związać kompletny r
 ```
 
 Brak kompletnych materiałów kontroli pozostaje jawnym stanem oczekującym.
+
+## Workflow E1–E6
+
+Każdy etap generuje własne zadania, wymagane pola odpowiedzi, dokładne źródło i
+przyjęty korpus wcześniejszych wyników. W kolejnych paczkach znajdują się także
+załączniki wcześniejszych odpowiedzi, opisane mapą transportu i SHA-256.
+
+| Etap | Wymagane zadania | Znaczenie lokalne |
+|---|---|---|
+| E1 | A–E (5) | Odkrywanie powierzchni, inwariantów i ryzyk |
+| E2 | CONVERGENCE, ADJUDICATION (2) | Porównanie twierdzeń, spory i wsparcie dowodowe |
+| E3 | X, Y, Z (3) | Luki bezpieczeństwa, stanu/parserów i współbieżności |
+| E4 | MODEL, RESILIENCE, CAUSAL (3) | Pogłębienie scenariuszy, awarii i przyczyn |
+| E5 | A-INTERACTION, A-MUTATION, A-CALIBRATION, B1, B2 (5) | Ataki i krytyczna ocena; kalibracja wyłącznie lokalna |
+| E6 | FOLLOWUP (1) | Ograniczone działania następcze, ryzyka i granice wniosków |
+
+E5-B jest dostępne po ręcznej akceptacji wszystkich E5-A. Utworzenie paczek E5-B
+zamraża ich wejścia; nie można potem podmienić przyjętego E5-A. Analogicznie nie
+można poprawiać przyjętych zadań wcześniejszego etapu po przejściu dalej. Nowy audyt
+jest właściwym miejscem ponownego zbadania zmienionego źródła.
+
+Po zaspokojeniu listy `missing_results` użyj `advance`. Po E6 status
+`LOCAL_COMPLETED` oznacza komplet dostarczonych i ręcznie przyjętych odpowiedzi,
+nie poprawność aplikacji, niezależność audytorów ani normatywne zaliczenie NF02.
+Żadne odpowiedzi nie powstają automatycznie. Materiały testowe mają deklarację
+`TEST_FIXTURE`; odpowiedzi ludzi i rzeczywiste kontrole mają odrębne deklaracje
+`HUMAN` / `LOCAL_CONTROL`. `EXTERNAL_AI` również pozostaje deklarowaną tożsamością.
+
+Nieukończoną kontrolę bez pełnego receipt można jawnie porzucić, zachowując powód:
+
+```powershell
+& $python -m bdb_audit product local abandon-check --campaign 'C:\audyty\moj-local' --run-id 'local-run-<id>' --reason 'Brak kompletnego dowodu wykonania; kontrolę trzeba powtórzyć'
+```
+
+Porzucenie nie tworzy PASS i pozostaje w historii oraz raporcie.

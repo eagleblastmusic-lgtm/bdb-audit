@@ -113,6 +113,7 @@ class LocalWorkflow:
         self.accepted: dict[str, str] = {}
         self.runs: list[dict[str, Any]] = []
         self.pending_runs: dict[str, dict[str, Any]] = {}
+        self.abandoned_runs: list[dict[str, Any]] = []
         for event in events[1:]:
             self._replay(event)
         self.events = events
@@ -138,6 +139,17 @@ class LocalWorkflow:
         definition = task_definition(self.stage, task)
         prior = [{"result_id": rid, "raw_sha256": self.results[rid]["raw"]["raw_digest"],
                   "response": self.results[rid]["response"]} for rid in self._prior_ids(task)]
+        prior_artifacts: dict[str, bytes] = {}
+        for item in prior:
+            attachments = self.results[item["result_id"]]["members"]
+            item["attachment_transport"] = []
+            for index, (name, content) in enumerate(sorted(attachments.items()), 1):
+                if name == "LOCAL_RESULT.json":
+                    continue
+                transport = f"prior/{item['raw_sha256']}/{index:04d}.bin"
+                prior_artifacts[transport] = content
+                item["attachment_transport"].append({"original_path": name, "transport_path": transport,
+                                                     "sha256": sha(content), "byte_length": len(content)})
         prompt = (NOTICE + "\n\n" + definition["instruction"] + "\n\n"
                   "Inspect the exact source transport and PRIOR_RESULTS.json. Cite source paths and lines. "
                   "Separate observations from predictions. Do not claim execution without actual run evidence. "
@@ -163,7 +175,10 @@ class LocalWorkflow:
         members = {"MANIFEST.json": canonical_bytes(manifest) + b"\n", "PROMPT.md": prompt.encode("utf-8"),
                    "RESPONSE_TEMPLATE.json": canonical_bytes(template) + b"\n", "PRIOR_RESULTS.json": canonical_bytes(prior) + b"\n",
                    "SOURCE_MANIFEST.json": self.source_members["MANIFEST.json"],
+                   **prior_artifacts,
                    **{k: v for k, v in self.source_members.items() if k != "MANIFEST.json"}}
+        if len(members) > PACKAGE_LIMITS.members or sum(len(v) for v in members.values()) > PACKAGE_LIMITS.expanded_bytes:
+            raise ValidationError("LOCAL_PACKAGE_RESOURCE_LIMIT", "Bound prior evidence size; retain large runs separately in vault")
         return {"task_id": task, "stage_id": self.stage, "context": context,
                 "required_outputs": definition["required_outputs"]}, _deterministic_zip(members)
 
@@ -232,6 +247,10 @@ class LocalWorkflow:
             self._verify_check(data, start)
             self.pending_runs.pop(data["run_id"])
             self.runs.append(data)
+        elif kind == "CHECK_ABANDONED":
+            if data["run_id"] not in self.pending_runs or not data.get("reason"):
+                raise ValidationError("LOCAL_CHECK_ABANDONMENT_INVALID")
+            self.abandoned_runs.append({**self.pending_runs.pop(data["run_id"]), "reason": data["reason"]})
         else:
             # Stage progression and local tool receipts are added separately;
             # unknown events must never be interpreted as qualified records.
@@ -275,7 +294,8 @@ class LocalWorkflow:
                 "results": [{"result_id": k, "task_id": v["response"].get("task_id"), "state": v["state"],
                              "issues": v.get("issues", []), "superseded_by": v.get("superseded_by")}
                             for k, v in self.results.items()],
-                "local_checks": self.runs, "pending_checks": list(self.pending_runs.values()), "notice": NOTICE}
+                "local_checks": self.runs, "pending_checks": list(self.pending_runs.values()),
+                "abandoned_checks": self.abandoned_runs, "notice": NOTICE}
 
     def prepare(self) -> dict[str, Any]:
         for task in self._available_tasks():
@@ -353,8 +373,6 @@ class LocalWorkflow:
                 "completion_meaning": "Required responses structurally checked and manually accepted locally; claims unverified"}
 
     def advance(self) -> dict[str, Any]:
-        if self.stage != "E1":
-            raise ValidationError("LOCAL_LATER_STAGES_NOT_YET_ENABLED")
         self._append("STAGE_COMPLETED", self._finish_payload())
         return self.prepare()
 
@@ -379,12 +397,14 @@ class LocalWorkflow:
         manifest = parse(self.store.vault.read_bytes(files["RUN_MANIFEST.json"]["raw_digest"]))
         receipt = parse(self.store.vault.read_bytes(files["RUN_RECEIPT.json"]["raw_digest"]))
         expected_hash = receipt.pop("receipt_digest")
-        expected_spec = ToolRunSpec(start["run_id"], str(self.store.root / "work" / start["run_id"]),
-                                    str(self.store.root / "checks" / start["run_id"]), tuple(start["argv"]),
-                                    start["timeout_seconds"], start["max_output_bytes"])
+        recorded_spec = start["spec"]
+        if (recorded_spec["run_id"] != start["run_id"] or recorded_spec["argv"] != start["argv"]
+                or recorded_spec["timeout_seconds"] != start["timeout_seconds"]
+                or recorded_spec["max_output_bytes"] != start["max_output_bytes"]):
+            raise ValidationError("LOCAL_CHECK_SPEC_MISMATCH")
         if (sha(canonical_bytes(receipt)) != expected_hash or receipt != data["result"]
                 or receipt["run_id"] != start["run_id"] or manifest["argv"] != start["argv"]
-                or receipt["spec_digest"] != expected_spec.digest
+                or receipt["spec_digest"] != sha(canonical_bytes(recorded_spec))
                 or manifest["spec_digest"] != receipt["spec_digest"]
                 or data["context"] != start["context"]):
             raise ValidationError("LOCAL_CHECK_RECEIPT_MISMATCH")
@@ -408,6 +428,12 @@ class LocalWorkflow:
         self._append("CHECK_FINISHED", data)
         return {"mode": MODE, "status": "LOCAL_CHECK_RECORDED", **data, "notice": NOTICE}
 
+    def abandon_check(self, run_id: str, reason: str) -> dict[str, Any]:
+        if run_id not in self.pending_runs or not reason.strip():
+            raise ValidationError("LOCAL_PENDING_CHECK_NOT_FOUND_OR_REASON_MISSING")
+        self._append("CHECK_ABANDONED", {"run_id": run_id, "reason": reason})
+        return self.status()
+
     def run_check(self, task: str, argv: list[str], timeout: int = 60, max_output: int = 4 * 1024 * 1024) -> dict[str, Any]:
         if task not in self._available_tasks() or task not in self.packages:
             raise ValidationError("LOCAL_CURRENT_TASK_PACKAGE_REQUIRED")
@@ -417,7 +443,7 @@ class LocalWorkflow:
         evidence = self.store.root / "checks" / run_id
         spec = ToolRunSpec(run_id, str(work), str(evidence), tuple(argv), timeout, max_output)
         self._append("CHECK_STARTED", {"run_id": run_id, "task_id": task, "context": self.packages[task]["context"],
-                                       "argv": argv, "timeout_seconds": timeout, "max_output_bytes": max_output})
+                                       "argv": argv, "timeout_seconds": timeout, "max_output_bytes": max_output, "spec": spec.as_dict()})
         work.mkdir(parents=True)
         try:
             for entry in self.source_manifest["entries"]:

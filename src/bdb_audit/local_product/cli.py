@@ -24,7 +24,7 @@ def parser() -> argparse.ArgumentParser:
         command.add_argument("--path", action="append", help="Explicit source file scope; repeat per file")
         if name == "start":
             command.add_argument("--campaign", required=True, help="New campaign directory (must not exist)")
-    for name in ("status", "resume", "prepare", "inspect", "import", "validate", "accept", "reject", "advance", "run-check", "recover-check"):
+    for name in ("status", "resume", "prepare", "inspect", "import", "validate", "accept", "reject", "advance", "run-check", "recover-check", "abandon-check"):
         command = sub.add_parser(name)
         command.add_argument("--campaign", required=True)
         if name in {"inspect", "import"}:
@@ -35,14 +35,14 @@ def parser() -> argparse.ArgumentParser:
             command.add_argument("--confirm-local", action="store_true", help="I reviewed this unverified result and accept local use")
             command.add_argument("--actor", default=getpass.getuser(), help="Local decision label, not certified identity")
             command.add_argument("--replace", help="Exact previous accepted result ID for this task")
-        if name == "reject":
+        if name in {"reject", "abandon-check"}:
             command.add_argument("--reason", required=True)
         if name == "run-check":
             command.add_argument("--task", required=True)
             command.add_argument("--timeout", type=int, default=60)
             command.add_argument("--max-output", type=int, default=4 * 1024 * 1024)
             command.add_argument("argv", nargs=argparse.REMAINDER, help="Explicit command after --; never read from an AI result")
-        if name == "recover-check":
+        if name in {"recover-check", "abandon-check"}:
             command.add_argument("--run-id", required=True)
     return root
 
@@ -75,6 +75,8 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
         return workflow.run_check(args.task, argv, args.timeout, args.max_output)
     if args.action == "recover-check":
         return workflow.recover_check(args.run_id)
+    if args.action == "abandon-check":
+        return workflow.abandon_check(args.run_id, args.reason)
     raise ValidationError("LOCAL_ACTION_NOT_IMPLEMENTED")
 
 
