@@ -1,5 +1,9 @@
 # BDB Audit — prowadzony audyt LOCAL
 
+Aktualizacja 2026-10-13: [import zbiorczy, prompty i polityka LOCAL](BATCH_WORKFLOW.md).
+STATUS.md i EVIDENCE_MANIFEST.json opisują wcześniejszy checkpoint.
+[Weryfikacja tej wersji](BATCH_WORKFLOW.md#weryfikacja-wersji) obejmuje LOCAL i standalone.
+
 Uruchom w PowerShell:
 
 ~~~powershell
@@ -36,16 +40,23 @@ korzystają z istniejących zależności projektu; nie dodano nowej zależności
    **1** otwiera folder paczek. **2** pozwala wybrać konkretną paczkę i następnie:
    zaznaczyć ZIP w Eksploratorze, otworzyć folder, skopiować ścieżkę lub wyeksportować
    kopię do istniejącego katalogu. Szczegóły podają oczekiwany/rzeczywisty SHA-256,
-   długości, raw verification i status wyniku.
-4. **3 — Dodaj wynik AI**: wybierz otrzymany JSON albo ZIP z głównym LOCAL_RESULT.json.
-   Używaj RESPONSE_TEMPLATE.json i RESPONSE_FORMAT.md z rzeczywistej paczki.
-   Preflight błędnego formatu, kontekstu, slotu, ścieżki lub załącznika odmawia importu
-   przed zmianą historii. Poprawny import zapisuje niezaufany materiał i walidację,
-   a następnie pokazuje producenta/model, zakres, outputs, findings, dowody i ograniczenia.
-5. Podgląd wymaga osobnego **AKCEPTUJ LOCAL**, **ODRZUC** z powodem albo Enter, aby
-   odłożyć decyzję. Możesz wyjść i wrócić: **4 — Wyniki i decyzje** oraz główne CTA
-   prowadzą do zachowanego podglądu. Zastąpienie zaakceptowanej rewizji wymaga dokładnego
-   ID poprzedniego wyniku; obowiązują istniejące blokady wcześniejszych etapów i E5-A.
+   długości, raw verification i status wyniku. Przy każdej paczce **P E1-A** pokazuje
+   zamrożony prompt ze stronicowaniem, a **K E1-A** kopiuje całość jednym działaniem.
+   Te same akcje są w szczegółach paczki. Działa to dla rzeczywistych ID zadań E1–E6.
+4. **7 — Polityka LOCAL**: jednorazowe **WLACZ AUTO LOCAL** upoważnia automatyczne
+   przyjmowanie poprawnych COMPLETE w tej kampanii. Domyślnie polityka jest wyłączona.
+   Nie potwierdza prawdziwości ustaleń ani tożsamości modelu; nie kończy etapu.
+5. **3 — Dodaj wynik AI** otwiera jedno natywne okno Windows: wybierz JSON i ZIP razem,
+   Ctrl/Shift lub Ctrl+A. **M** pozwala wkleić wiele ścieżek rozdzielonych |.
+   Przekazuj modelowi paczkę i skopiowany prompt. Szablon i pełny opis formatu są
+   wewnątrz nowych paczek. Wynik zapisz np. jako E1-A_RESULT.json lub E1-A_RESULT.zip;
+   ZIP nadal wymaga wewnętrznego LOCAL_RESULT.json. Starsze nazwy nadal działają.
+   Poprawne wyniki są walidowane i przyjmowane zgodnie z polityką; pojedyncze błędy
+   nie cofają pozostałych plików. **I** pokazuje trwałe podsumowanie, polskie błędy,
+   pełną odpowiedź oraz ponowienie błędnych lub nieprzetworzonych plików.
+   Bez autoakceptacji **4 — Wyniki i decyzje** nadal wymaga **AKCEPTUJ LOCAL** albo
+   **ODRZUC** z powodem; Enter odkłada decyzję. Zastąpienie przyjętej rewizji wymaga
+   jej dokładnego ID i świadomej decyzji. Import zbiorczy odrzuca takie konflikty.
 6. Gdy silnik potwierdzi wszystkie obowiązkowe wyniki i brak pending run, Enter
    proponuje przejście. Potwierdź osobno PRZEJDZ E2, PRZEJDZ E3 itd.
    Po E5-A przygotowanie paczek E5-B pojawia się jako następny krok.
@@ -72,7 +83,7 @@ Podmieniony plik pozostaje jawną niespójnością i nie jest nadpisywany.
 | Kilkanaście równorzędnych komend LOCAL w jednym menu | 4 działania produktowe + wyjście |
 | Osobno status, paczki, import, decyzja i następny etap | Jeden ekran kampanii i CTA wyliczane z trwałego stanu |
 | Użytkownik odnajduje ZIP-y na dysku | Rzeczywista lista bieżącego etapu, weryfikacja i natywne akcje Windows |
-| Import i późniejsza decyzja przez oddzielne komendy | Prowadzony import → walidacja → pełny podgląd → osobna decyzja |
+| Import i późniejsza decyzja przez oddzielne komendy | Import wielu plików → walidacja → podsumowanie; decyzja ręczna albo upoważniona polityka LOCAL |
 | Wznowienie przez wpisywanie katalogu za każdym razem | Zweryfikowane skróty ostatnich kampanii i otwarcie store z dysku |
 | Raport wymaga komendy i odnalezienia eksportu | Raporty w kampanii i menu głównym, Markdown/JSON/folder/nowy eksport |
 | Receipt/abandon stale dostępne jako główne operacje | Narzędzia kontekstowe, tylko dla istniejącej nieukończonej kontroli |
@@ -83,7 +94,7 @@ w dotychczasowym formalnym menu uruchamia ten sam nowy LOCAL TUI.
 ## Granice zaufania i rzeczywiste ograniczenia
 
 - LOCAL PRODUCT MODE pozostaje osobnym trwałym formatem. USER_ACCEPTED_LOCAL jest
-  zgodą użytkową, nie potwierdzeniem prawdziwości ustaleń ani uwierzytelnieniem audytora.
+  zgodą użytkową (MANUAL albo AUTO_POLICY), nie potwierdzeniem prawdziwości ustaleń ani uwierzytelnieniem audytora.
   HIGH ASSURANCE, NF02/Q1/Q2/RQ oraz model BDB_NF02_P0_LIMITED_1 (18/7/43) nie są zmienione.
 - Nie ma automatycznych wywołań modeli. Wyniki EXTERNAL_AI dostarcza użytkownik;
   deklaracja modelu pozostaje niezweryfikowana. Demonstracja używa rzeczywistych

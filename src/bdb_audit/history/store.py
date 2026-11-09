@@ -6,6 +6,7 @@ caller can supply named test-only crash hooks; hooks never exist as production
 authority or recovery state.
 """
 from dataclasses import dataclass
+from contextlib import closing
 import hashlib
 import json
 import sqlite3
@@ -77,7 +78,7 @@ class TransactionalHistoryStore:
         self._nf02 = None
         from pathlib import Path
         if Path(path).is_file():
-            with sqlite3.connect(self.path) as existing:
+            with closing(sqlite3.connect(self.path)) as existing:
                 table = existing.execute("SELECT name FROM sqlite_master WHERE name='immutable_objects'").fetchone()
                 row = existing.execute("SELECT schema_ref FROM immutable_objects LIMIT 1").fetchone() if table else None
                 if row and isinstance(row[0], bytes):
@@ -108,7 +109,7 @@ class TransactionalHistoryStore:
             raise TypeError("crash_hook must be callable")
         from pathlib import Path
         if Path(path).is_file():
-            with sqlite3.connect(store.path) as existing:
+            with closing(sqlite3.connect(store.path)) as existing:
                 table = existing.execute("SELECT name FROM sqlite_master WHERE name='immutable_objects'").fetchone()
                 row = existing.execute("SELECT schema_ref FROM immutable_objects LIMIT 1").fetchone() if table else None
                 if row and not isinstance(row[0], bytes):
@@ -130,14 +131,14 @@ class TransactionalHistoryStore:
             raise TypeError("crash_hook must be callable")
         with runtime.lease(store.path):
             if Path(path).is_file():
-                with sqlite3.connect(store.path) as existing:
+                with closing(sqlite3.connect(store.path)) as existing:
                     table = existing.execute("SELECT name FROM sqlite_master WHERE name='commits'").fetchone()
                     row = existing.execute("SELECT body FROM commits ORDER BY seq LIMIT 1").fetchone() if table else None
                     if row and json.loads(row[0]).get("model_id") != "BDB_NF02_P0_LIMITED_1":
                         raise ValidationError("P0_NEW_CAMPAIGN_REQUIRED")
             store._initialize()
             if store.head():
-                with store._connect() as con:
+                with closing(store._connect()) as con:
                     runtime.history(con, store.head())
         return store
 

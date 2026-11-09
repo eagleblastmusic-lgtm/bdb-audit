@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from dataclasses import replace
 import json
 from pathlib import Path
+import sqlite3
 
 import pytest
 
@@ -308,6 +309,32 @@ def setup_p0(corpus, tmp_path, monkeypatch):
 
 def accept(intake, request, cert=COORDINATOR):
     return intake.accept(request, test_signature(request.signing_bytes(), cert))
+
+
+def test_p0_reopening_closes_all_read_connections(setup_p0, monkeypatch):
+    store, intake, _, request, *_ = setup_p0
+    assert accept(intake, request).head.commit_seq == 1
+    before = Path(store.path).read_bytes()
+    connect = sqlite3.connect
+    connections = []  # Simulated authority, actual SQLite; no GC cleanup credit.
+
+    def track(*args, **kwargs):
+        connection = connect(*args, **kwargs)
+        connections.append(connection)
+        return connection
+
+    monkeypatch.setattr(sqlite3, "connect", track)
+    try:
+        reopened = TransactionalHistoryStore.open_p0(store.path)
+        assert reopened.head().commit_seq == 1
+        assert connections
+        for connection in connections:
+            with pytest.raises(sqlite3.ProgrammingError, match="closed"):
+                connection.execute("SELECT 1")
+        assert Path(store.path).read_bytes() == before
+    finally:
+        for connection in connections:
+            connection.close()
 
 
 def assigned(setup_p0):

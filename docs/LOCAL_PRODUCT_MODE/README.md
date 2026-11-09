@@ -3,6 +3,7 @@
 Bieżący interfejs prowadzonego audytu, instrukcja i dowody AC-01–AC-12:
 [GUIDED_UX](../GUIDED_UX/README.md). Menu LOCAL ma teraz cztery działania;
 status, paczki, import/decyzje i przejścia są dostępne na ekranie kampanii.
+Rozszerzenie z 2026-10-13: [import zbiorczy, prompty przy paczkach i autoakceptacja LOCAL](../GUIDED_UX/BATCH_WORKFLOW.md).
 Pozostała część tego dokumentu zachowuje opis istniejącego silnika i wcześniejszego checkpointu.
 
 Osobny workflow użytkowy bez certyfikatów i Q1/Q2/RQ. Jego historia nie jest
@@ -43,8 +44,9 @@ Można wskazać pełny commit zamiast nazwy gałęzi. Odczyt publicznego GitHub 
 kampanii zostały rzeczywiście sprawdzone; wejście `github-start.json` wskazuje exact
 commit, tree, snapshot i utworzone paczki. Prywatnego repozytorium nie testowano.
 Repozytorium prywatne korzysta z istniejącego dostępu Git; nie umieszczaj tokenu w URL.
-Audyt obejmuje commit, nie niezapisane pliki worktree. Domyślnie wybiera wszystkie
-pliki regularne; większe repozytorium wymaga jawnego zakresu `--path` (powtarzanego).
+Audyt obejmuje zapisany commit. Dla lokalnego Git wskaż katalog główny repozytorium.
+Domyślnie audyt obejmuje wszystkie pliki regularne. Węższy zakres wybierz powtarzanym
+`--path`, podając ścieżki względem katalogu głównego.
 Brak obsługi symlinków, submodułów i niepobranych obiektów LFS jest jawną odmową.
 
 Paczki znajdują się w `CAMPAIGN\packages`. Zawierają prompt, mapę źródeł i
@@ -84,19 +86,24 @@ exit code, stdout, stderr i ograniczenia runnera. Niezerowy kod jest dowodem wyn
 kontroli, nie dowodem udanego testu. Runner nie izoluje sieci ani całego systemu
 plików hosta; uruchamiaj tylko źródło/komendy, których wykonanie dopuszczasz.
 Limit wyjścia obejmuje łączny zapis stdout/stderr; nadmiar zostaje oznaczony i obcięty.
-Po przerwaniu między wykonaniem a zapisem historii można związać kompletny receipt:
+Po przerwaniu między utrwaleniem dowodu przez runner a zakończeniem kontroli można
+wznowić ją z dokładnych bajtów wskazanych przez dziennik kampanii.
 
 ```powershell
 & $python -m bdb_audit product local recover-check --campaign 'C:\audyty\moj-local' --run-id 'local-run-<id>'
 ```
 
-Brak kompletnych materiałów kontroli pozostaje jawnym stanem oczekującym.
+Kontrola przerwana przed utrwaleniem dowodu pozostaje w stanie oczekującym.
+W takim przypadku użyj `abandon-check` z powodem i uruchom kontrolę ponownie.
 
 ## Workflow E1–E6
 
 Każdy etap generuje własne zadania, wymagane pola odpowiedzi, dokładne źródło i
-przyjęty korpus wcześniejszych wyników. W kolejnych paczkach znajdują się także
-załączniki wcześniejszych odpowiedzi, opisane mapą transportu i SHA-256.
+przyjęty korpus wcześniejszych wyników. Jeśli załączniki mieszczą się w budżecie
+paczki, ZIP zawiera ich bajty i mapę transportu. Przy większym korpusie manifest
+oznacza `RETAINED_IN_VAULT`, a `PRIOR_RESULTS.json` zachowuje pełne odpowiedzi i
+tożsamości załączników. Oryginalne wyniki można odczytać z vault kampanii. Dziennik
+zapisuje ukończenie etapu i przygotowanie następnych paczek w jednej transakcji.
 
 | Etap | Wymagane zadania | Znaczenie lokalne |
 |---|---|---|
@@ -141,7 +148,10 @@ nieweryfikowane twierdzenia, ograniczenia oraz działania naprawcze. Różne sev
 lub disposition przy tym samym identyfikatorze finding są oznaczane jako potencjalna
 rozbieżność wymagająca oceny; algorytm nie rozstrzyga prawdy. Ustalenia i oceny AI są
 interpretacjami; fakty dotyczą tylko zarejestrowanych lokalnych decyzji i wykonań.
-Eksport nie nadpisuje wcześniejszego raportu ani chronionych plików kampanii.
+Każdy eksport trafia do nowego katalogu. Interfejs weryfikuje oba pliki przez
+odtworzenie raportu dla zapisanego w manifeście punktu historii. Nowy Markdown
+wyświetla treść odpowiedzi jako tekst. Starsze, zgodne z historią pliki Markdown
+otwierają się w edytorze tekstu.
 
 ## Rzeczywista demonstracja i ograniczenia
 

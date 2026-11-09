@@ -92,15 +92,20 @@ class LocalStore:
         if meta != {"mode": MODE, "profile": PROFILE, "profile_sha256": PROFILE_SHA256}:
             raise ValidationError("LOCAL_PERMANENT_MODE_MISMATCH")
 
-    def _events(self, con: sqlite3.Connection) -> list[dict[str, Any]]:
+    def _events(self, con: sqlite3.Connection, *, after: tuple[int, str] = (0, EMPTY_HEAD)) -> list[dict[str, Any]]:
         self._check_mode(con)
-        previous = EMPTY_HEAD
+        offset, previous = after
+        if offset:
+            anchor = con.execute("SELECT event_hash FROM local_events WHERE seq=?", (offset,)).fetchone()
+            if anchor != (previous,):
+                raise ValidationError("LOCAL_HISTORY_INTEGRITY_FAILED")
         events: list[dict[str, Any]] = []
-        for seq, digest, prev, raw in con.execute("SELECT seq,event_hash,previous_hash,body FROM local_events ORDER BY seq"):
+        for seq, digest, prev, raw in con.execute(
+                "SELECT seq,event_hash,previous_hash,body FROM local_events WHERE seq>? ORDER BY seq", (offset,)):
             if (not isinstance(raw, bytes) or not isinstance(prev, str) or len(prev) != 64
                     or any(c not in "0123456789abcdef" for c in prev)):
                 raise ValidationError("LOCAL_HISTORY_INTEGRITY_FAILED")
-            if seq != len(events) + 1 or prev != previous or digest != _hash(prev, raw):
+            if seq != offset + len(events) + 1 or prev != previous or digest != _hash(prev, raw):
                 raise ValidationError("LOCAL_HISTORY_INTEGRITY_FAILED")
             body = parse(raw)
             if (not isinstance(body, dict) or set(body) != {"seq", "mode", "profile", "kind", "payload"}
@@ -111,7 +116,7 @@ class LocalStore:
             self._read_refs(body)
             events.append({**body, "event_hash": digest})
             previous = digest
-        if not events or events[0]["kind"] != "CAMPAIGN_CREATED":
+        if not offset and (not events or events[0]["kind"] != "CAMPAIGN_CREATED"):
             raise ValidationError("LOCAL_GENESIS_MISSING")
         return events
 
@@ -127,24 +132,44 @@ class LocalStore:
             for child in value:
                 self._read_refs(child)
 
-    def events(self) -> list[dict[str, Any]]:
+    def events(self, *, after: tuple[int, str] = (0, EMPTY_HEAD)) -> list[dict[str, Any]]:
         with self.connect() as con:
-            return self._events(con)
+            return self._events(con, after=after)
 
     def append(self, kind: str, payload: dict[str, Any], expected_head: str) -> str:
+        return self.append_many([(kind, payload)], expected_head)
+
+    def append_many(self, entries: list[tuple[str, dict[str, Any]]], expected_head: str, *,
+                    verified_seq: int | None = None) -> str:
+        """Commit one file's import/validation/decision/summary as a single CAS.
+
+        Vault publication precedes this transaction. A rollback may leave an
+        unreferenced raw blob, never a partially accepted history fact.
+        """
         with self.connect() as con:
             con.execute("BEGIN IMMEDIATE")
-            events = self._events(con)
-            actual = events[-1]["event_hash"]
-            if actual != expected_head:
+            if verified_seq is None:
+                events = self._events(con)
+                last_seq, actual = events[-1]["seq"], events[-1]["event_hash"]
+            else:
+                # A batch already verified and replayed this prefix. Bind its
+                # decisions to the immutable journal tip under the write lock.
+                self._check_mode(con)
+                tip = con.execute("SELECT seq,event_hash FROM local_events ORDER BY seq DESC LIMIT 1").fetchone()
+                if tip is None:
+                    raise ValidationError("LOCAL_GENESIS_MISSING")
+                last_seq, actual = tip
+            if actual != expected_head or (verified_seq is not None and last_seq != verified_seq):
                 raise ValidationError("LOCAL_CAS_CONFLICT", "Reload status and retry the action")
-            body = canonical_bytes({"seq": len(events) + 1, "mode": MODE, "profile": PROFILE,
-                                    "kind": kind, "payload": payload})
-            self._read_refs(payload)
-            digest = _hash(actual, body)
-            con.execute("INSERT INTO local_events VALUES (?,?,?,?)", (len(events) + 1, digest, actual, body))
+            for seq, (kind, payload) in enumerate(entries, last_seq + 1):
+                body = canonical_bytes({"seq": seq, "mode": MODE, "profile": PROFILE,
+                                        "kind": kind, "payload": payload})
+                self._read_refs(payload)
+                digest = _hash(actual, body)
+                con.execute("INSERT INTO local_events VALUES (?,?,?,?)", (seq, digest, actual, body))
+                actual = digest
             con.commit()
-            return digest
+            return actual
 
     def put(self, raw: bytes) -> dict[str, Any]:
         # A single media type prevents conflicting metadata for identical bytes

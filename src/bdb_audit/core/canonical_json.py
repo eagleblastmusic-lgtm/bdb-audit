@@ -101,6 +101,8 @@ def _pairs(pairs):
 def _int(token):
     if token == "-0":
         raise ValidationError("CJSON_NEGATIVE_ZERO")
+    if len(token.lstrip("-")) > 16:
+        raise ValidationError("CJSON_INTEGER_RANGE")
     return integer(int(token))
 
 

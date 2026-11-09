@@ -6,6 +6,8 @@ from pathlib import Path
 import pytest
 
 from bdb_audit.core.errors import ValidationError
+from bdb_audit.history.store import TransactionalHistoryStore
+from bdb_audit.workflow.read_models import current_accepted_cut
 from bdb_audit.qualification.real_target_harness import (
     run_v21_reference_corpus,
     score_reference_controls,
@@ -28,7 +30,11 @@ def test_ru13b_executor_visible_corpus_has_no_expected_labels() -> None:
     assert [item.target_id for item in truth] == [item.target_id for item in cases]
 
 
-def test_ru13b_real_public_boundary_corpus_qualifies_clean_defective_blocked(tmp_path: Path) -> None:
+def test_ru13b_real_public_boundary_corpus_qualifies_clean_defective_blocked(tmp_path: Path, monkeypatch) -> None:
+    def refuse_git(*args, **kwargs):
+        raise AssertionError("A non-Git qualification recipe must not resolve a Git source")
+    monkeypatch.setattr("bdb_audit.source.git_resolver.resolve_local_repository", refuse_git)
+    monkeypatch.setattr("bdb_audit.source.git_resolver.resolve_remote_repository", refuse_git)
     result = run_v21_reference_corpus(tmp_path / "qualification")
     assert result["status"] == "QUALIFIED"
     assert result["observed_results"] == {
@@ -42,6 +48,12 @@ def test_ru13b_real_public_boundary_corpus_qualifies_clean_defective_blocked(tmp
     assert result["metrics"]["is_methodology_qualified"] is True
     assert result["metrics"]["anti_bypass_total"] == 2
     assert result["metrics"]["anti_bypass_passed"] == 2
+
+    clean = v21_reference_cases()[0]
+    store = TransactionalHistoryStore(tmp_path / "qualification" / clean.case_id / "campaign.sqlite")
+    source = store.accepted_records("source_identity", current_accepted_cut(store))[0]["body"]
+    assert source["authority_mode"] == "AUTHORIZED_SNAPSHOT"
+    assert "git_commit_object_id" not in source and "git_tree_object_id" not in source
 
     verified = verify_v21_reference_result(result)
     assert verified["status"] == "PASS"

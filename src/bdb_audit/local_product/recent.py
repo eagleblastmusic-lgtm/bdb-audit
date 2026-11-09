@@ -27,12 +27,18 @@ class RecentCampaigns:
             raw = stream.read(1024 * 1024 + 1)
         if len(raw) > 1024 * 1024:
             raise ValidationError("LOCAL_RECENT_INDEX_TOO_LARGE")
-        data = json.loads(raw)
+        try:
+            data = json.loads(raw)
+        except (ValueError, RecursionError) as exc:
+            raise ValidationError("LOCAL_RECENT_INDEX_INVALID") from exc
         if not isinstance(data, dict) or data.get("format") != "BDB_LOCAL_SHORTCUTS_1":
             raise ValidationError("LOCAL_RECENT_INDEX_INVALID")
         entries = data.get("campaigns")
         if not isinstance(entries, list) or any(not isinstance(e, dict) or not isinstance(e.get("path"), str)
-                                               or not isinstance(e.get("last_opened"), (int, float)) for e in entries):
+                                               or not isinstance(e.get("last_opened"), (int, float))
+                                               or not isinstance(e.get("reports", []), list)
+                                               or any(not isinstance(value, str) for value in e.get("reports", []))
+                                               for e in entries):
             raise ValidationError("LOCAL_RECENT_INDEX_INVALID")
         return entries
 

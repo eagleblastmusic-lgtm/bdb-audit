@@ -37,13 +37,14 @@ def safe_path(root: Path, path: Path, *, missing_ok: bool = False) -> Path:
     return path
 
 
-def verified_bytes(root: Path, path: Path, identity: dict[str, Any]) -> bytes:
+def verified_bytes(root: Path, path: Path, identity: dict[str, Any], *,
+                   max_bytes: int = 128 * 1024 * 1024) -> bytes:
     path = safe_path(root, path)
     if not path.is_file():
         raise ValidationError("LOCAL_ARTIFACT_NOT_FILE", str(path))
     length = identity.get("byte_length")
     digest = identity.get("raw_digest")
-    if (type(length) is not int or not 0 <= length <= 100 * 1024 * 1024
+    if (type(length) is not int or not 0 <= length <= max_bytes
             or not isinstance(digest, str) or not re.fullmatch("[0-9a-f]{64}", digest)):
         raise ValidationError("LOCAL_ARTIFACT_IDENTITY_INVALID", str(path))
     with path.open("rb") as stream:
@@ -147,12 +148,16 @@ class WindowsActions:
         elif code:
             raise OSError(f"Eksplorator zakończył wywołanie kodem {code}; {path}")
 
-    def clipboard(self, path: Path) -> bool:
+    def choose_results(self, *, interactive: bool) -> list[Path] | None:
+        from .file_dialog import choose_files
+        return choose_files(interactive=interactive)
+
+    def clipboard(self, path: Path | str) -> bool:
         executable = Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32" / "clip.exe"
         if os.name != "nt" or not executable.is_file():
             return False
         try:
-            subprocess.run([str(executable)], input=str(path).encode("utf-16le"),
+            subprocess.run([str(executable)], input=b"\xff\xfe" + str(path).encode("utf-16le"),
                            shell=False, check=True, timeout=5, capture_output=True)
         except (OSError, subprocess.SubprocessError):
             return False
@@ -166,10 +171,13 @@ class WindowsActions:
         except OSError as exc:
             if getattr(exc, "winerror", None) != 1155:
                 raise
-            editor = Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32" / "notepad.exe"
-            if not editor.is_file():
-                raise
-            subprocess.Popen([str(editor), str(path)], shell=False)
+            self.plain_document(path)
+
+    def plain_document(self, path: Path) -> None:
+        editor = Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32" / "notepad.exe"
+        if os.name != "nt" or not editor.is_file():
+            raise OSError("Otwieranie dokumentu jako tekst jest niedostępne")
+        subprocess.Popen([str(editor), str(path)], shell=False)
 
 
 def export_copy(root: Path, source: Path, identity: dict[str, Any], destination: Path) -> Path:

@@ -4,26 +4,35 @@ from __future__ import annotations
 from collections import defaultdict
 import html
 from pathlib import Path
+import string
+import unicodedata
 from typing import Any
 
 from ..core.canonical_json import canonical_bytes
 from ..core.errors import ValidationError
 from ..report.models import ReportItem, ReportModel
 from ..report.render_markdown import render_markdown
-from .profile import MODE, NOTICE
+from .profile import LEGACY_NOTICE, MODE, NOTICE
 from .store import sha
 from .workflow import LocalWorkflow
 
 SEVERITY_ORDER = {value: index for index, value in enumerate(("CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"))}
 
 
-def build_report(workflow: LocalWorkflow) -> dict[str, Any]:
-    # Never export a stale view while a different process appends decisions.
-    workflow = LocalWorkflow(workflow.store.root)
+REPORT_JSON_LIMIT = 256 * 1024 * 1024
+REPORT_RENDER_VERSION = 2
+
+
+def build_report(workflow: LocalWorkflow, *, history_head: str | None = None,
+                 legacy_acceptance: bool = False) -> dict[str, Any]:
+    # Export the current view, or verify a specific immutable history cut.
+    if history_head is None or workflow.head != history_head:
+        workflow = LocalWorkflow(workflow.store.root, history_head=history_head)
+    notice = LEGACY_NOTICE if legacy_acceptance else NOTICE
     facts: list[ReportItem] = [ReportItem("FACT", "local_source_snapshot", None, 1, workflow.source)]
     interpretations: list[ReportItem] = []
     proposals: list[ReportItem] = []
-    unknowns: list[ReportItem] = [ReportItem("UNKNOWN", "local_assurance_limits", None, None, {"notice": NOTICE})]
+    unknowns: list[ReportItem] = [ReportItem("UNKNOWN", "local_assurance_limits", None, None, {"notice": notice})]
     findings: list[dict[str, Any]] = []
     responses: list[dict[str, Any]] = []
     contradictions: list[dict[str, Any]] = []
@@ -38,10 +47,18 @@ def build_report(workflow: LocalWorkflow) -> dict[str, Any]:
         producer = response["producer"]
         contains_fixtures |= producer["kind"] == "TEST_FIXTURE"
         declared_models.append({"task_id": task, "declared_producer": producer, "identity_verified": False})
-        responses.append({"task_id": task, "result_id": rid, "state": "USER_ACCEPTED_LOCAL",
-                          "raw": result["raw"], "response": response, "actor_label": result["actor_label"]})
-        facts.append(ReportItem("FACT", "local_manual_acceptance", ref, result["accepted_seq"], {
-            "task_id": task, "actor_label": result["actor_label"], "meaning": "Permission to use locally; not attestation of truth or identity"}))
+        entry = {"task_id": task, "result_id": rid, "state": "USER_ACCEPTED_LOCAL",
+                 "raw": result["raw"], "response": response, "actor_label": result["actor_label"]}
+        fact = {"task_id": task, "actor_label": result["actor_label"],
+                "meaning": "Permission to use locally; not attestation of truth or identity"}
+        record_kind = "local_manual_acceptance"
+        if not legacy_acceptance:
+            entry.update(acceptance_mechanism=result["acceptance_mechanism"], policy_event_hash=result["policy_event_hash"])
+            fact.update(mechanism=result["acceptance_mechanism"], policy_event_hash=result["policy_event_hash"])
+            if result["acceptance_mechanism"] == "AUTO_POLICY":
+                record_kind = "local_policy_acceptance"
+        responses.append(entry)
+        facts.append(ReportItem("FACT", record_kind, ref, result["accepted_seq"], fact))
         interpretations.append(ReportItem("INTERPRETATION", "local_declared_stage_outputs", ref, None, {
             "task_id": task, "outputs": response["outputs"], "producer": producer, "truth_verified": False}))
         for finding in response["findings"]:
@@ -87,7 +104,7 @@ def build_report(workflow: LocalWorkflow) -> dict[str, Any]:
                 collect(child)
     collect(workflow.events)
     status = workflow.status()
-    return {"format": "BDB_LOCAL_AUDIT_REPORT_1", "mode": MODE, "notice": NOTICE,
+    return {"format": "BDB_LOCAL_AUDIT_REPORT_1", "mode": MODE, "notice": notice,
             "status": status["status"], "campaign_id": workflow.campaign_id,
             "input_history_head": workflow.head, "source": workflow.source,
             "stage_progress": {"current": workflow.stage, "completed": workflow.completed,
@@ -99,15 +116,23 @@ def build_report(workflow: LocalWorkflow) -> dict[str, Any]:
             "abandoned_checks": workflow.abandoned_runs, "evidence_events": evidence,
             "raw_evidence": [{**raw_refs[key], "relative_blob_path": f"vault/sha256/{key[:2]}/{key[2:]}"} for key in sorted(raw_refs)],
             "unverified_claims": "All producer identities, stage assessments and findings; execution receipts establish only captured local execution",
-            "limitations": [NOTICE, "Unsigned local journal cannot resist complete rewriting by an administrator of this host",
+            "limitations": [notice, "Unsigned local journal cannot resist complete rewriting by an administrator of this host",
                             "Source scope is fixed; no submodules, symlinks or unresolved LFS content",
                             "Local subprocesses do not enforce host filesystem or network isolation"],
             "derived_report_model": model.as_dict()}
 
 
-def markdown(report: dict[str, Any]) -> str:
+def markdown(report: dict[str, Any], *, render_version: int = REPORT_RENDER_VERSION) -> str:
     def esc(text: Any) -> str:
-        return html.escape(str(text)).replace("`", "&#96;")
+        if render_version == 1:
+            return html.escape(str(text)).replace("`", "&#96;")
+        # Character references are rendered as text by Markdown. Encode
+        # punctuation before it can introduce links, headings or HTML.
+        return "".join(html.escape(ch) if ch in "&<>\"'" else
+                       f"&#{ord(ch)};" if ch in string.punctuation else
+                       f"\\u{ord(ch):04x}" if unicodedata.category(ch)[0] == "C"
+                       or ch in "\u2028\u2029" else ch for ch in str(text))
+
     rows = ["# BDB Audit — LOCAL PRODUCT MODE", "", report["notice"], "",
             "Status użytkowego workflow: **" + report["status"] + "**. Nie jest to kwalifikacja NF02.", "",
             f"Kampania: {esc(report['campaign_id'])}", f"Repozytorium: {esc(report['source']['location'])}",
@@ -157,6 +182,11 @@ def markdown(report: dict[str, Any]) -> str:
     return "\n".join(rows) + "\n"
 
 
+def report_bytes(report: dict[str, Any], render_version: int) -> dict[str, bytes]:
+    return {"REPORT.json": canonical_bytes(report, max_bytes=REPORT_JSON_LIMIT - 1) + b"\n",
+            "REPORT.md": markdown(report, render_version=render_version).encode("utf-8")}
+
+
 def export_report(workflow: LocalWorkflow, output: str | Path) -> dict[str, Any]:
     report = build_report(workflow)
     root = Path(output).resolve()
@@ -165,16 +195,18 @@ def export_report(workflow: LocalWorkflow, output: str | Path) -> dict[str, Any]
         raise ValidationError("LOCAL_REPORT_PROTECTED_PATH")
     if root.exists():
         raise ValidationError("LOCAL_REPORT_OUTPUT_EXISTS", "Use a new export directory to preserve prior evidence")
-    json_raw = canonical_bytes(report) + b"\n"
-    md_raw = markdown(report).encode("utf-8")
-    root.mkdir(parents=True)
-    (root / "REPORT.json").write_bytes(json_raw)
-    (root / "REPORT.md").write_bytes(md_raw)
+    artifacts = report_bytes(report, REPORT_RENDER_VERSION)
     manifest = {"format": "BDB_LOCAL_REPORT_EVIDENCE_1", "mode": MODE,
                 "campaign_id": report["campaign_id"], "history_head": report["input_history_head"],
-                "reports": [{"path": "REPORT.json", "sha256": sha(json_raw), "byte_length": len(json_raw)},
-                            {"path": "REPORT.md", "sha256": sha(md_raw), "byte_length": len(md_raw)}],
+                "render_version": REPORT_RENDER_VERSION,
+                "reports": [{"path": name, "sha256": sha(raw), "byte_length": len(raw)} for name, raw in artifacts.items()],
                 "raw_evidence": report["raw_evidence"], "campaign_directory": str(workflow.store.root)}
-    (root / "EVIDENCE_MANIFEST.json").write_bytes(canonical_bytes(manifest) + b"\n")
+    manifest_raw = canonical_bytes(manifest, max_bytes=REPORT_JSON_LIMIT - 1) + b"\n"
+    root.mkdir(parents=True)
+    for name, raw in artifacts.items():
+        with (root / name).open("xb") as stream:
+            stream.write(raw)
+    with (root / "EVIDENCE_MANIFEST.json").open("xb") as stream:
+        stream.write(manifest_raw)
     return {"mode": MODE, "status": "EXPORTED_LOCAL", "workflow_status": report["status"],
             "output": str(root), "reports": manifest["reports"], "notice": NOTICE}

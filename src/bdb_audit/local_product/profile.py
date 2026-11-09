@@ -5,18 +5,17 @@ from typing import Any
 
 from ..core.canonical_json import canonical_bytes
 from ..orchestration.native_ensemble import E1_LANE_STRATEGIES
+from .contract import MODE, RESPONSE, response_guide
 import hashlib
 
-MODE = "LOCAL_PRODUCT"
 PROFILE = "BDB_LOCAL_WORKFLOW_1"
-RESPONSE = "BDB_LOCAL_RESPONSE_1"
-NOTICE = (
+LEGACY_NOTICE = (
     "LOCAL PRODUCT MODE: manual acceptance permits use in this local audit only. "
     "Producer identities and AI claims are unverified. No PKI, independent qualification, "
     "qualified Evidence/4, Result/4 or HIGH ASSURANCE completion is established."
 )
 
-RESPONSE_GUIDE = """# LOCAL response format — informational user guide
+LEGACY_RESPONSE_GUIDE = """# LOCAL response format — informational user guide
 
 Use the exact RESPONSE_TEMPLATE.json from the assigned package. Keep format,
 mode, campaign_id, stage_id, task_id, source_commit, source_tree and
@@ -62,6 +61,13 @@ permit local use only. They never create qualified Evidence/4 or Result/4.
 This guide is supplied next to packages; attach it with the ZIP when requesting
 an AI response. It does not modify the frozen HIGH ASSURANCE 18/7/43 model.
 """
+
+NOTICE = (
+    "LOCAL PRODUCT MODE: manual or explicitly authorized policy acceptance permits local use only. "
+    "AI claims and producer identities remain unverified. Structural validation is not truth verification. "
+    "No PKI, independent qualification, qualified Evidence/4, Result/4 or HIGH ASSURANCE completion is established."
+)
+RESPONSE_GUIDE = response_guide()
 
 # Required outputs make each stage usable without pretending to implement the
 # normative blind/reveal, qualification or STOP protocols.

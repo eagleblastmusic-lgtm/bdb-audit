@@ -7,7 +7,9 @@ import json
 from pathlib import Path
 import shlex
 import sqlite3
-from typing import Any, Callable
+import sys
+import shutil
+from typing import Any, Callable, Sequence
 import unicodedata
 
 from ..core.errors import ValidationError
@@ -18,23 +20,82 @@ from .recent import RecentCampaigns
 from .workflow import LocalWorkflow
 
 
+def parse_manual_paths(value: str) -> list[str]:
+    # | cannot occur in a Windows filename; spaces and Unicode remain intact.
+    return [part.strip().strip('"') for part in value.split("|") if part.strip().strip('"')]
+
+
+def prompt_pages(text: str, lines: int = 24) -> list[str]:
+    content = text.splitlines(keepends=True)
+    return ["".join(content[i:i + lines]) for i in range(0, len(content), lines)] or [""]
+
+
+def one_line(value: object) -> str:
+    return "".join(f"\\u{ord(ch):04x}" if unicodedata.category(ch).startswith("C") or ch in "\u2028\u2029"
+                   else ch for ch in str(value))
+
+
+def render_import_summary(batch: dict[str, Any], *, details: bool = False) -> str:
+    labels = {"ACCEPTED": "OK — przyjęty lokalnie przez politykę AUTO",
+              "VALIDATED": "OK — VALIDATED_STRUCTURE; czeka na decyzję",
+              "INCOMPLETE": "NIEKOMPLETNY — zachowano obserwacje; zadanie nieukończone",
+              "DUPLICATE": "DUPLIKAT — bez zastąpienia wyniku",
+              "REJECTED": "BŁĄD — odrzucony", "CONFLICT": "KONFLIKT — zachowano poprzedni wynik"}
+    lines = ["", "IMPORT WYNIKÓW — " + batch.get("stage_id", "LOCAL") + " | " + batch["status"]]
+    for number, row in enumerate(batch["items"], 1):
+        task = str(row.get("task_id") or "?")
+        if len(task) > 120:
+            task = task[:120] + "…"
+        lines.append(f"{number}. {one_line(Path(row['file']).name)} | {one_line(task)} | {labels[row['outcome']]}")
+        if row["issues"]:
+            lines.append("  " + "; ".join(one_line(d["message"] + (": " + d["field"] if d.get("field") else ""))
+                                           for d in row["diagnostics"]))
+        if details:
+            for diagnostic in row["diagnostics"]:
+                lines.append("  " + one_line(diagnostic["code"] + ": " + diagnostic["message"]))
+                for finding in diagnostic.get("findings", []):
+                    lines.append(f"  Ustalenie {one_line(finding['id'])} — wykryto: {one_line(finding['detected'])}")
+                if diagnostic.get("allowed"):
+                    lines.append("  Dozwolone wartości: " + ", ".join(map(one_line, diagnostic["allowed"])))
+                if diagnostic.get("finding_ids"):
+                    lines.append("  Ustalenia: " + ", ".join(map(one_line, diagnostic["finding_ids"])))
+                if diagnostic.get("additional_findings_in_raw"):
+                    lines.append(f"  Dalsze ustalenia: {diagnostic['additional_findings_in_raw']} — pełna odpowiedź w podglądzie W.")
+    lines.extend([f"Zaimportowano: {batch['imported']} | Przyjęto AUTO: {batch['accepted']} | "
+                  f"Odrzucono: {batch['rejected']} | Duplikaty: {batch['duplicates']}",
+                  "LOCAL: sprawdzono formalny kontrakt; prawdziwość ustaleń i tożsamość modelu pozostają niezweryfikowane."])
+    if batch.get("remaining_files"):
+        lines.append("Przerwany import — nieprzetworzone pliki: " + ", ".join(map(one_line, batch["remaining_files"])))
+    return "\n".join(lines)
+
+
 def render_campaign(view: dict[str, Any]) -> str:
     status = view["status"]
     source = status["source"]
     next_step = view["next"]
     progress = " ── ".join((" [● " if p["state"] == "BIEŻĄCY" else "[✓ " if p["state"] == "UKOŃCZONY" else "[○ ")
                            + p["stage"] + "]" for p in view["progress"])
-    lines = ["", "═" * 76, f"BDB Audit / Moje audyty / {view['name']}                 LOCAL",
-             "═" * 76, "Repozytorium: " + source["location"], "Ref: " + source["requested_ref"],
+    lines = ["", "═" * 76, f"BDB Audit / Moje audyty / {one_line(view['name'])}                 LOCAL",
+             "═" * 76, "Repozytorium: " + one_line(source["location"]), "Ref: " + one_line(source["requested_ref"]),
              "Exact commit: " + source["commit"], f"Audyt: {view['stage']} z E6 | {status['status']}", progress,
+             "Autoakceptacja LOCAL: " + ("WŁĄCZONA dla tej kampanii" if status["acceptance_policy"]["enabled"] else "WYŁĄCZONA — ręczna decyzja"),
              "", "PACZKI BIEŻĄCEGO ETAPU — " + view["stage"]]
     for number, row in enumerate(view["packages"], 1):
         lines.extend([f"  {number}. {row['task_id']} | {row['title']}",
                       f"     [{row['state']}] [WYNIK: {row['result_state']}]",
                       "     ZIP SHA-256: " + row.get("expected_sha256", "brak utrwalonej paczki")
-                      + (" | raw OK" if row["raw_verified"] else " | brak potwierdzenia raw")])
+                      + (" | raw OK" if row["raw_verified"] else " | brak potwierdzenia raw"),
+                      f"     Prompt {row['task_id']}: [P {row['task_id']}] Pokaż  [K {row['task_id']}] Kopiuj"
+                      if row["prompt_available"] else "     Prompt będzie dostępny po przygotowaniu paczki",
+                      f"     Zwróć: {row['suggested_result_json']} lub {row['suggested_result_zip']}"])
         if row.get("error"):
-            lines.append("     Problem: " + row["error"])
+            lines.append("     Problem: " + one_line(row["error"]))
+        if row.get("last_import_error"):
+            lines.append("     Ostatni import: " + one_line(row["last_import_error"]))
+    if status["batch_imports"]:
+        batch = status["batch_imports"][-1]
+        lines.append(f"Ostatni import {batch['stage_id']}: {batch['processed']}/{batch['selected']} plików | "
+                     f"przyjęto AUTO {batch['accepted']} | odrzucono {batch['rejected']} | {batch['status']} [I Szczegóły]")
     if status["missing_results"]:
         lines.append("Brakujące obowiązkowe wyniki: " + ", ".join(status["missing_results"]))
     if view["workflow_stage"] == "COMPLETE":
@@ -47,6 +108,7 @@ def render_campaign(view: dict[str, Any]) -> str:
                   "[Enter] " + next_step["label"], "", "1 Otwórz folder paczek   2 Wybierz paczkę / szczegóły / Eksplorator",
                   "3 Dodaj wynik AI         4 Wyniki i decyzje",
                   "5 Raporty                6 Stan i narzędzia   0 Menu główne",
+                  "7 Polityka LOCAL         I Podsumowanie importu   M Wklej ścieżki wyników",
                   "LOCAL: USER_ACCEPTED_LOCAL jest decyzją użytkową; NF02/Q1/Q2/RQ pozostają zablokowane."])
     return "\n".join(lines)
 
@@ -54,7 +116,7 @@ def render_campaign(view: dict[str, Any]) -> str:
 def run_local_ui(input_func: Callable[[str], str] = input,
                  output_func: Callable[[str], None] = print, *,
                  index_path: str | Path | None = None, actions: WindowsActions | None = None,
-                 actor: str | None = None) -> int:
+                 actor: str | None = None, no_gui: bool = False) -> int:
     recent = RecentCampaigns(index_path)
     controller: CampaignController | None = None
     actor = actor if actor is not None else getpass.getuser()
@@ -62,7 +124,7 @@ def run_local_ui(input_func: Callable[[str], str] = input,
     def output(value: str) -> None:
         # Untrusted claims and source names must not control the terminal.
         output_func("".join(ch if ch in "\n\t" or not unicodedata.category(ch).startswith("C")
-                            else f"\\u{ord(ch):04x}" for ch in value))
+                            and ch not in "\u2028\u2029" else f"\\u{ord(ch):04x}" for ch in value))
 
     def show(value: object) -> None:
         output(json.dumps(value, ensure_ascii=False, indent=2))
@@ -85,11 +147,11 @@ def run_local_ui(input_func: Callable[[str], str] = input,
             entries = []
         output("\nMOJE AUDYTY — stores są źródłem prawdy; indeks zawiera jedynie skróty.")
         for number, entry in enumerate(entries, 1):
-            output(f"{number}. {entry['name']} | {entry.get('stage', '?')} | {entry['state']}")
+            output(f"{number}. {one_line(entry['name'])} | {entry.get('stage', '?')} | {entry['state']}")
             if "source" in entry:
                 source = entry["source"]
                 active = datetime.fromtimestamp(entry["last_activity"]).astimezone().isoformat(timespec="seconds")
-                output(f"   {source['location']} | ref {source['requested_ref']} | commit {source['commit']}")
+                output(f"   {one_line(source['location'])} | ref {one_line(source['requested_ref'])} | commit {source['commit']}")
                 output(f"   Aktywność store: {active} | zdarzenia: {entry['history_events']}")
             else:
                 output("   " + entry.get("error", "Brak store"))
@@ -121,6 +183,33 @@ def run_local_ui(input_func: Callable[[str], str] = input,
             return value
         raise ValidationError("LOCAL_PACKAGE_SELECTION_INVALID")
 
+    def display_prompt(selected: CampaignController, task: str) -> None:
+        prompt = selected.prompt(task)
+        pages = prompt_pages(prompt["text"], max(6, min(32, shutil.get_terminal_size((80, 32)).lines - 8)))
+        page = 0
+        while True:
+            output(f"\nPROMPT {task} — strona {page + 1}/{len(pages)} | SHA-256 {prompt['prompt_sha256']}")
+            output(pages[page])
+            choice = answer("N następna / P poprzednia / A całość / K kopiuj pełny prompt / 0 Wstecz: ").lower()
+            if choice == "0":
+                return
+            if choice in {"n", ""}:
+                page = min(page + 1, len(pages) - 1)
+            elif choice == "p":
+                page = max(0, page - 1)
+            elif choice == "a":
+                output(prompt["text"])
+            elif choice == "k":
+                copy_prompt(selected, task)
+
+    def copy_prompt(selected: CampaignController, task: str) -> None:
+        prompt = selected.copy_prompt(task)
+        if prompt["copied"]:
+            output(f"Skopiowano pełny prompt {task} ({len(prompt['text'])} znaków).")
+        else:
+            output("Schowek niedostępny. Pełny prompt do skopiowania:")
+            output(prompt["text"])
+
     def packages(selected: CampaignController) -> None:
         task = choose_task(selected)
         if task is None:
@@ -128,7 +217,8 @@ def run_local_ui(input_func: Callable[[str], str] = input,
         while True:
             row = next(r for r in selected.view()["packages"] if r["task_id"] == task)
             show(row)
-            output("1 Pokaż w Eksploratorze   2 Otwórz folder   3 Kopiuj ścieżkę   4 Eksportuj kopię   0 Wstecz")
+            output("1 Pokaż w Eksploratorze   2 Otwórz folder   3 Kopiuj ścieżkę   4 Eksportuj kopię")
+            output("5 Pokaż prompt           6 Kopiuj pełny prompt   0 Wstecz")
             choice = answer("Paczka: ")
             if choice == "0":
                 return
@@ -142,6 +232,10 @@ def run_local_ui(input_func: Callable[[str], str] = input,
                     output(("Skopiowano ścieżkę: " if data["copied"] else "Schowek niedostępny. Ścieżka do skopiowania: ") + data["path"])
                 elif choice == "4":
                     output("Kopia zweryfikowana SHA-256: " + str(selected.export_package(task, answer("Istniejący katalog docelowy: "))))
+                elif choice == "5":
+                    display_prompt(selected, task)
+                elif choice == "6":
+                    copy_prompt(selected, task)
                 else:
                     output("Nieznany wybór.")
             except (ValidationError, OSError, ValueError) as exc:
@@ -157,7 +251,7 @@ def run_local_ui(input_func: Callable[[str], str] = input,
                 return
             for number, rid in enumerate(results, 1):
                 info = workflow.result_info(rid)
-                output(f"{number}. {info['response'].get('task_id')} | {info['status']} | {rid}")
+                output(f"{number}. {one_line(info['response'].get('task_id'))} | {info['status']} | {rid}")
             value = answer("Numer wyniku / result_id (0 Wstecz): ")
             if value == "0":
                 return
@@ -174,6 +268,9 @@ def run_local_ui(input_func: Callable[[str], str] = input,
         if info["status"] != "VALIDATED_STRUCTURE":
             output("Ten wynik nie oczekuje na akceptację. Błędy/odrzucenie wymagają nowego, poprawionego pliku.")
             return
+        if info["response"]["completion"] != "COMPLETE":
+            output("Wynik niekompletny — zachowano obserwacje. Popraw odpowiedź i dodaj nowy plik; etap pozostaje otwarty.")
+            return
         output("Zatwierdź lokalnie: pozwalasz użyć treści, bez potwierdzenia prawdziwości i tożsamości audytora.")
         decision = answer("Wpisz AKCEPTUJ LOCAL, ODRZUC albo Enter (decyzja później): ")
         if decision == "AKCEPTUJ LOCAL":
@@ -188,14 +285,73 @@ def run_local_ui(input_func: Callable[[str], str] = input,
         elif decision:
             output("Brak decyzji: wymagane dokładne AKCEPTUJ LOCAL lub ODRZUC.")
 
-    def add_result(selected: CampaignController) -> None:
-        output("Dodaj otrzymany wynik. Import jest niezaufany; błędy preflight nie zmieniają kampanii.")
-        file = answer("Plik odpowiedzi ZIP lub JSON (Enter Wstecz): ")
-        if not file:
+    def add_result(selected: CampaignController, *, manual: bool = False) -> None:
+        output("Wybierz JSON i ZIP razem — Ctrl/Shift lub Ctrl+A. Każdy plik przechodzi pełną walidację LOCAL.")
+        files: Sequence[str | Path] | None = None
+        try:
+            if not manual:
+                files = selected.actions.choose_results(interactive=not no_gui and input_func is input and sys.stdin.isatty())
+        except OSError as exc:
+            output(str(exc) + ". Dostępne ręczne wskazanie plików.")
+        if files is None:
+            value = input_func("Ścieżki JSON/ZIP (oddziel |; można wkleić cudzysłowy; Enter Wstecz): ").strip()
+            files = parse_manual_paths(value)
+        if not files:
+            output("Anulowano wybór. Stan kampanii bez zmian.")
             return
-        imported = selected.import_result(file)
-        output("Walidacja struktury: " + imported["status"] + ". Import nie oznacza akceptacji.")
-        review(selected, imported["result_id"])
+        output(f"Importowanie {len(files)} plików; po zakończeniu zobaczysz zbiorczy wynik.")
+        batch = selected.import_results(list(files))
+        output(render_import_summary(batch))
+        output("I — szczegóły błędów / pełny JSON / ponów; 4 — Wyniki i decyzje. Widok audytu odświeżony.")
+        if len(files) == len(batch["items"]) == 1 and batch["items"][0]["outcome"] == "VALIDATED":
+            review(selected, batch["items"][0]["result_id"])
+
+    def import_summary(selected: CampaignController) -> None:
+        batches = selected.workflow().batch_summaries()
+        if not batches:
+            output("Brak zapisanych importów zbiorczych.")
+            return
+        batch = batches[-1]
+        while True:
+            output(render_import_summary(batch, details=True))
+            choice = answer("J JSON / W pełna odpowiedź / R ponów / S rozpatrz konflikt / H historia partii / 0 Audyt: ").lower()
+            if choice in {"0", ""}:
+                return
+            if choice == "h":
+                history = list(reversed(selected.workflow().batch_summaries()))
+                for position, row in enumerate(history, 1):
+                    output(f"{position}. {row['stage_id']} | {row['status']} | {row['processed']}/{row['selected']} | {row['batch_id']}")
+                number_text = answer("Numer partii (0 Wstecz): ")
+                if number_text.isdigit() and 1 <= int(number_text) <= len(history):
+                    batch = history[int(number_text) - 1]
+            elif choice == "j":
+                show(batch)
+            elif choice == "w":
+                number = answer("Numer pliku z podsumowania (od 1): ")
+                if number.isdigit():
+                    show(selected.workflow().batch_item_info(batch["batch_id"], int(number) - 1))
+            elif choice == "s":
+                number = answer("Numer konfliktującego pliku (od 1; Enter Wstecz): ")
+                if number.isdigit():
+                    output("Oddzielny ręczny podgląd zachowanych bajtów. Poprzedni wynik pozostaje przyjęty; polityka AUTO nie rozstrzyga konfliktu.")
+                    if answer("Wpisz ROZPATRZ REWIZJE, aby przygotować ten wynik do ręcznej decyzji: ") == "ROZPATRZ REWIZJE":
+                        staged = selected.workflow().review_batch_conflict(batch["batch_id"], int(number) - 1)
+                        review(selected, staged["result_id"])
+            elif choice == "r":
+                retry = [r["file"] for r in batch["items"] if r["outcome"] in {"REJECTED", "CONFLICT"}] + batch["remaining_files"]
+                if retry:
+                    batch = selected.import_results(retry)
+                else:
+                    output("Brak plików wymagających ponowienia.")
+
+    def policy(selected: CampaignController) -> None:
+        workflow = selected.workflow()
+        output("Autoakceptacja przyjmuje wyłącznie poprawne COMPLETE do użytku LOCAL. Nie potwierdza prawdziwości ani HIGH ASSURANCE.")
+        output("Polityka jest zapamiętana dla kampanii; nie kończy etapów i nie zastępuje konfliktujących wyników.")
+        token = "WYLACZ AUTO LOCAL" if workflow.acceptance_policy["enabled"] else "WLACZ AUTO LOCAL"
+        if answer("Wpisz " + token + ", aby zmienić politykę; Enter bez zmiany: ") == token:
+            selected.set_acceptance_policy(not workflow.acceptance_policy["enabled"], actor, workflow.head)
+            output("Zapisano politykę kampanii w historii LOCAL.")
 
     def reports(selected: CampaignController) -> None:
         while True:
@@ -249,7 +405,7 @@ def run_local_ui(input_func: Callable[[str], str] = input,
             output("5 Inspekcja raw dowodu             6 Eksport raportu i manifestu   0 Wstecz")
             if workflow.pending_runs:
                 show(list(workflow.pending_runs.values()))
-                output("R Odzyskaj receipt   A Porzuć nieukończoną kontrolę (z powodem)")
+                output("R Odzyskaj receipt utrwalony w historii   A Porzuć nieukończoną kontrolę (z powodem)")
             choice = answer("Narzędzie: ").lower()
             if choice == "0":
                 return
@@ -279,7 +435,7 @@ def run_local_ui(input_func: Callable[[str], str] = input,
                 if run_id not in workflow.pending_runs:
                     raise ValidationError("LOCAL_PENDING_CHECK_NOT_FOUND")
                 show(workflow.pending_runs[run_id])
-                if choice == "r" and answer("Wpisz ODZYSKAJ, aby związać istniejący kompletny receipt: ") == "ODZYSKAJ":
+                if choice == "r" and answer("Wpisz ODZYSKAJ, aby odczytać dowód zapisany w historii: ") == "ODZYSKAJ":
                     show(workflow.recover_check(run_id))
                 elif choice == "a":
                     reason = answer("Powód porzucenia (nie ustanawia PASS): ")
@@ -288,7 +444,7 @@ def run_local_ui(input_func: Callable[[str], str] = input,
             else:
                 output("Nieznany wybór lub brak rzeczywistego pending run.")
 
-    output("LOCAL PRODUCT MODE — bez certyfikatów; ręcznie przyjmowane, niezweryfikowane wyniki.")
+    output("LOCAL PRODUCT MODE — bez certyfikatów; lokalne przyjęcie nie weryfikuje prawdziwości ustaleń.")
     output(NOTICE)
     while True:
         try:
@@ -299,12 +455,12 @@ def run_local_ui(input_func: Callable[[str], str] = input,
                 if choice in {"0", "q", "exit"}:
                     return 0
                 if choice == "1":
-                    source = answer("Repozytorium (lokalna ścieżka lub URL GitHub): ")
+                    source = answer("Repozytorium (katalog główny lokalnego Git lub URL GitHub): ")
                     target = "github" if source.startswith(("https://", "http://", "git@", "ssh://")) else "local"
                     ref = answer("Ref/commit [main dla GitHub, HEAD lokalnie]: ") or ("main" if target == "github" else "HEAD")
-                    scope = answer("Wybrane pliki względne (oddziel |; Enter: wszystkie regularne): ")
+                    scope = parse_manual_paths(input_func("Wybrane pliki względne (oddziel |; Enter: wszystkie regularne): "))
                     campaign = answer("Nowy katalog kampanii (nie może istnieć): ")
-                    workflow = LocalWorkflow.start(campaign, source, ref, target, scope.split("|") if scope else None)
+                    workflow = LocalWorkflow.start(campaign, source, ref, target, scope or None)
                     controller = CampaignController(workflow.store.root, actions=actions, recent=recent)
                     remember(controller)
                     show(controller.prepare())
@@ -333,16 +489,30 @@ def run_local_ui(input_func: Callable[[str], str] = input,
                 raise
             output(render_campaign(view))
             choice = answer("Działanie [Enter: następny krok]: ").lower()
+            if choice.startswith(("p ", "k ")):
+                task = choice[2:].strip().upper()
+                if choice.startswith("p "):
+                    display_prompt(controller, task)
+                else:
+                    copy_prompt(controller, task)
+                continue
             if choice == "0":
                 controller = None
                 continue
-            action = view["next"]["action"] if not choice else {"1": "folder", "2": "packages", "3": "import", "4": "review", "5": "report", "6": "tools"}.get(choice)
+            action = view["next"]["action"] if not choice else {"1": "folder", "2": "packages", "3": "import", "4": "review", "5": "report", "6": "tools",
+                                                               "7": "policy", "i": "import_summary", "m": "manual_import"}.get(choice)
             if action == "folder":
                 output("Przekazano Eksploratorowi folder: " + str(controller.open_package_folder()))
             elif action == "packages":
                 packages(controller)
             elif action == "import":
                 add_result(controller)
+            elif action == "manual_import":
+                add_result(controller, manual=True)
+            elif action == "policy":
+                policy(controller)
+            elif action == "import_summary":
+                import_summary(controller)
             elif action == "review":
                 review(controller, view["next"].get("result_id") if not choice else None)
             elif action == "prepare":
@@ -381,6 +551,6 @@ def run_local_ui(input_func: Callable[[str], str] = input,
         except (ValidationError, OSError, sqlite3.Error, ValueError) as exc:
             output("ODMOWA: " + str(exc))
             if controller:
-                output("Kampania: " + str(controller.root) + ". Stan zostanie odczytany ponownie; nic nie zostało automatycznie przyjęte.")
+                output("Kampania: " + str(controller.root) + ". Stan zostanie odczytany ponownie. Zakończone transakcje zachowano; sprawdź I — podsumowanie importu.")
             else:
                 output("Sprawdź Git/ref, zakres i uprawnienia, a następnie ponów wybór.")

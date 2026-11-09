@@ -433,3 +433,81 @@ def test_malformed_report_refuses_without_crash_or_open(local, defect):
         controller.open_report(root, "markdown")
     assert not controller.actions.calls and snapshot(local) == before
     assert controller.reports()[0]["verified"] is False
+
+
+@pytest.mark.parametrize("reports", [None, "REPORT.md", {"path": "REPORT.md"}, [{"path": "REPORT.md"}], [1]])
+def test_malformed_report_shortcuts_do_not_prevent_opening_campaign(local, tmp_path, reports):
+    index = tmp_path / "recent.json"
+    raw = canonical_bytes({"format": "BDB_LOCAL_SHORTCUTS_1", "campaigns": [
+        {"path": str(local.store.root), "last_opened": 1, "reports": reports}]})
+    index.write_bytes(raw)
+    before = snapshot(local)
+    text = tui(tmp_path, ["2", "O", str(local.store.root), "0", "0"])
+    assert "Indeks skrótów niedostępny" in text
+    assert "LOCAL_RECENT_INDEX_INVALID" in text and "ODMOWA:" not in text
+    assert index.read_bytes() == raw and snapshot(local) == before
+
+
+def test_deeply_nested_shortcut_index_does_not_prevent_opening_campaign(local, tmp_path):
+    index = tmp_path / "recent.json"
+    raw = b'{"format":"BDB_LOCAL_SHORTCUTS_1","campaigns":[],"extra":' + b"[" * 20000 + b"0" + b"]" * 20000 + b"}"
+    index.write_bytes(raw)
+    before = snapshot(local)
+    text = tui(tmp_path, ["2", "O", str(local.store.root), "0", "0"])
+    assert "LOCAL_RECENT_INDEX_INVALID" in text and "ODMOWA:" not in text
+    assert index.read_bytes() == raw and snapshot(local) == before
+
+
+@pytest.mark.parametrize("scope", ["app.py | second module.py", '"app.py" | "second module.py"'])
+def test_new_campaign_wizard_handles_spaced_and_quoted_file_scope(repo, tmp_path, scope):
+    (repo / "second module.py").write_text("# explicit source scope fixture\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(repo), "add", "second module.py"], check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(repo), "-c", "user.name=LOCAL test", "-c",
+                    "user.email=local-test@example.invalid", "commit", "-qm", "Add selected source fixture"],
+                   check=True, capture_output=True)
+    campaign = tmp_path / "selected campaign"
+    text = tui(tmp_path, ["1", str(repo), "", scope, str(campaign), "0", "0"])
+    assert "ODMOWA:" not in text
+    workflow = LocalWorkflow(campaign)
+    assert workflow.source["paths"] == ["app.py", "second module.py"]
+    assert workflow.source["scope"] == "SELECTED_FILES"
+    assert set(workflow.packages) == {task for task, _, _ in STAGES["E1"]}
+
+
+def test_report_checks_historical_truth_and_rejects_rehashed_changes(local, tmp_path):
+    controller = CampaignController(local.store.root, actions=RecordedActions())
+    root = Path(controller.export_report()["output"])
+    historical = controller.verify_report(root)
+    path = tmp_path / "later.json"
+    path.write_bytes(canonical_bytes(response(local)))
+    local.import_result(path)
+    assert controller.verify_report(root) == historical
+    assert historical["history_head"] != local.head
+    manifest_path = root / "EVIDENCE_MANIFEST.json"
+    manifest = parse(manifest_path.read_bytes())
+    for entry in manifest["reports"]:
+        path = root / entry["path"]
+        old = b"NEEDS_REAL_RESULTS"
+        raw = path.read_bytes().replace(old, b"X" * len(old))
+        path.write_bytes(raw)
+        entry.update(sha256=sha(raw), byte_length=len(raw))
+    manifest_path.write_bytes(canonical_bytes(manifest))
+    with pytest.raises(ValidationError, match="LOCAL_REPORT_HISTORY_MISMATCH"):
+        controller.open_report(root, "markdown")
+    assert not controller.actions.calls
+
+
+def test_model_markdown_is_exported_as_literal_text(local, tmp_path):
+    dangerous = "Test\n\n## False PASS\n\n![image](https://example.invalid/image.png)"
+    path = tmp_path / "model.json"
+    path.write_bytes(canonical_bytes(response(local, recommendations=[dangerous])))
+    rid = local.import_result(path)["result_id"]
+    local.validate(rid)
+    local.accept(rid, "tester", confirm=True)
+    controller = CampaignController(local.store.root)
+    root = Path(controller.export_report()["output"])
+    md = (root / "REPORT.md").read_text(encoding="utf-8")
+    assert "\n## False PASS\n" not in md
+    assert "![image](" not in md.split("## Szczegółowa projekcja historii")[0]
+    assert "&#35;&#35; False PASS" in md
+    assert controller.verify_report(root)["verified"]

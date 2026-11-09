@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from copy import deepcopy
 from pathlib import Path
+import os
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -13,7 +15,7 @@ from bdb_audit.cli import run_cli
 from bdb_audit.core.canonical_json import canonical_bytes, parse
 from bdb_audit.core.errors import ValidationError
 from bdb_audit.history.store import TransactionalHistoryStore
-from bdb_audit.local_product.store import LocalStore
+from bdb_audit.local_product.store import LocalStore, sha
 from bdb_audit.local_product.workflow import LocalWorkflow
 from bdb_audit.assurance.zip_safety import read_bytes
 from bdb_audit.workflow.packaging import _deterministic_zip
@@ -416,3 +418,79 @@ def test_real_concurrent_import_has_one_journal_event(local, tmp_path):
     assert all(status in {"IMPORTED_UNTRUSTED", "LOCAL_CAS_CONFLICT"} for status in statuses)
     restarted = LocalWorkflow(local.store.root)
     assert len(restarted.results) == 1 and not restarted.accepted
+
+
+def test_launcher_does_not_import_from_the_callers_directory(tmp_path):
+    shell = shutil.which("pwsh") or shutil.which("powershell")
+    if os.name != "nt" or shell is None:
+        pytest.skip("Windows PowerShell launcher required")
+    marker = "CWD_IMPORT_EXECUTED"
+    (tmp_path / "bdb_audit.py").write_text(f"print({marker!r})", encoding="utf-8")
+    launcher = Path(__file__).resolve().parents[2] / "Run-Local-Audit.ps1"
+    result = subprocess.run([shell, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(launcher),
+                             "-NoGui", "-Index", str(tmp_path / "index.json")],
+                            cwd=tmp_path, input="0\n", text=True, capture_output=True, timeout=60)
+    assert result.returncode == 0, result.stderr
+    assert "LOCAL PRODUCT MODE" in result.stdout and marker not in result.stdout
+
+
+def test_nested_git_location_is_refused_and_explicit_path_from_root_is_exact(repo, tmp_path):
+    folder = repo / "nested"
+    folder.mkdir()
+    (folder / "app.py").write_bytes(b"# nested file\n")
+    for args in (("add", "nested/app.py"),
+                 ("-c", "user.name=LOCAL test", "-c", "user.email=local-test@example.invalid", "commit", "-qm", "nested")):
+        subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True)
+    bad = tmp_path / "bad-campaign"
+    with pytest.raises(ValidationError, match="LOCAL_SOURCE_REPOSITORY_ROOT_REQUIRED"):
+        LocalWorkflow.start(bad, str(folder), "HEAD")
+    assert not bad.exists()
+    good = LocalWorkflow.start(tmp_path / "scoped", str(repo), "HEAD", paths=["nested/app.py"])
+    assert good.source["paths"] == ["nested/app.py"]
+    entry = good.source_manifest["entries"][0]
+    assert good.source_members[entry["transport_path"]] == b"# nested file\n"
+
+
+@pytest.mark.parametrize("tamper_before_capture", [False, True])
+def test_check_recovery_uses_supervisor_evidence_anchored_in_journal(local, monkeypatch, tamper_before_capture):
+    from bdb_audit.runner.supervisor import ToolSupervisor
+
+    local.prepare()
+    run = ToolSupervisor.run
+    def fake_receipt(evidence):
+        path = evidence / "RUN_RECEIPT.json"
+        receipt = parse(path.read_bytes())
+        receipt.pop("receipt_digest")
+        receipt.update(supervisor_status="SUCCESS", target_exit_code=0)
+        receipt["receipt_digest"] = sha(canonical_bytes(receipt))
+        path.write_bytes(canonical_bytes(receipt))
+
+    def tamper_then_return(supervisor, spec):
+        result = run(supervisor, spec)
+        fake_receipt(Path(spec.evidence_dir))
+        return result
+
+    def crash_after_capture(run_id):
+        raise RuntimeError("crash after evidence capture")
+
+    if tamper_before_capture:
+        monkeypatch.setattr(ToolSupervisor, "run", tamper_then_return)
+        with pytest.raises(ValidationError, match="LOCAL_CHECK_RECEIPT_MISMATCH"):
+            local.run_check("E1-A", [sys.executable, "-c", "raise SystemExit(19)"])
+    else:
+        monkeypatch.setattr(local, "recover_check", crash_after_capture)
+        with pytest.raises(RuntimeError, match="crash after evidence capture"):
+            local.run_check("E1-A", [sys.executable, "-c", "raise SystemExit(19)"])
+
+    reopened = LocalWorkflow(local.store.root)
+    run_id = next(iter(reopened.pending_runs))
+    if tamper_before_capture:
+        with pytest.raises(ValidationError, match="TOOL_RUN_EVIDENCE_INCOMPLETE"):
+            reopened.recover_check(run_id)
+        assert not reopened.runs
+    else:
+        fake_receipt(local.store.root / "checks" / run_id)
+        data = reopened.recover_check(run_id)
+        assert data["result"]["supervisor_status"] == "TARGET_NONZERO"
+        assert data["result"]["target_exit_code"] == 19
+        assert LocalWorkflow(local.store.root).runs == reopened.runs

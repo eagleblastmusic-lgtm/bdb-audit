@@ -236,6 +236,7 @@ import hashlib
 import importlib
 import io
 import json
+import os
 import platform
 from pathlib import Path, PurePosixPath
 import sys
@@ -372,6 +373,25 @@ def _verify_extracted_tree(target_dir: Path) -> bool:
         return False
 
 
+def _publish_runtime_file(path: Path, data: bytes) -> None:
+    if path.is_file() and path.read_bytes() == data:
+        return
+    fd, name = tempfile.mkstemp(prefix=".bdb-unpack-", dir=path.parent)
+    temporary = Path(name)
+    try:
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(data)
+        try:
+            os.replace(temporary, path)
+        except OSError:
+            # Another process can publish and open the same verified file
+            # while this process is preparing it, including native modules.
+            if not path.is_file() or path.read_bytes() != data:
+                raise
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
 def unpack_payload(target_dir: Path | None = None) -> Path:
     """Verify and extract to a content-addressed runtime directory."""
     if target_dir is None:
@@ -397,11 +417,11 @@ def unpack_payload(target_dir: Path | None = None) -> Path:
             data = zf.read(name)
             if len(data) != entry["size"] or hashlib.sha256(data).hexdigest() != entry["sha256"]:
                 raise PayloadIntegrityError(f"Integrity check failed during unpack for {{name}}")
-            out_file.write_bytes(data)
+            _publish_runtime_file(out_file, data)
 
     if not _verify_extracted_tree(target_dir):
         raise PayloadIntegrityError("Extracted runtime tree failed post-write verification")
-    marker_file.write_text(PAYLOAD_MANIFEST_DIGEST, encoding="utf-8")
+    _publish_runtime_file(marker_file, PAYLOAD_MANIFEST_DIGEST.encode("utf-8"))
     return target_dir
 
 

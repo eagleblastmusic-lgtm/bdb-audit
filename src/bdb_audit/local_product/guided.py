@@ -11,8 +11,9 @@ from ..core.canonical_json import parse
 from ..core.errors import ValidationError
 from .artifacts import WindowsActions, export_copy, package_probe, safe_path, verified_bytes
 from .profile import MODE, STAGES, task_definition
+from .contract import result_filename
 from .recent import RecentCampaigns
-from .report import export_report
+from .report import REPORT_JSON_LIMIT, REPORT_RENDER_VERSION, build_report, export_report, report_bytes
 from .workflow import LocalWorkflow
 
 RESULT_LABELS = {"IMPORTED_UNTRUSTED": "IMPORTOWANY_NIEZAUFANY", "VALIDATED_STRUCTURE": "WYMAGA_DECYZJI",
@@ -37,11 +38,16 @@ class CampaignController:
         status = workflow.status()
         stage = workflow.stage if workflow.stage != "COMPLETE" else workflow.completed[-1]
         paths = {p["task_id"]: Path(p["path"]) for p in status["packages"]}
+        attempts = {item.get("task_id"): item for batch in workflow.batch_summaries() if batch["stage_id"] == stage
+                    for item in batch["items"]}
         rows = []
         for task, title, _ in STAGES[stage]:
             package = workflow.packages.get(task)
             row: dict[str, Any] = {"task_id": task, "title": title, "stage": stage,
-                                   "available": task in status["available_tasks"], "result_ids": []}
+                                   "available": task in status["available_tasks"], "result_ids": [],
+                                   "prompt_available": package is not None,
+                                   "suggested_result_json": result_filename(task),
+                                   "suggested_result_zip": result_filename(task, "zip")}
             if package is not None:
                 row.update(package_probe(self.root / "packages", paths[task], package["raw"]))
             else:
@@ -55,11 +61,20 @@ class CampaignController:
             accepted = workflow.accepted.get(task)
             selected = pending[-1] if pending else results[-1] if results else None
             row["result_state"] = RESULT_LABELS[selected[1]["state"]] if selected else "BRAK"
+            if selected and selected[1]["state"] == "VALIDATED_STRUCTURE" and selected[1]["response"].get("completion") != "COMPLETE":
+                row["result_state"] = "NIEKOMPLETNY — " + str(selected[1]["response"].get("completion"))
             row["accepted_result"] = accepted
-            row["review_result"] = pending[-1][0] if pending else None
+            complete_pending = [(rid, r) for rid, r in pending if r["response"].get("completion") == "COMPLETE"]
+            row["review_result"] = complete_pending[-1][0] if complete_pending else None
             row["complete"] = accepted is not None
-            if accepted and not pending:
+            if accepted and not complete_pending:
                 row["result_state"] = "ZAAKCEPTOWANY_LOKALNIE"
+            attempt = attempts.get(task)
+            row["last_import_error"] = None
+            if attempt and attempt["outcome"] in {"REJECTED", "CONFLICT"}:
+                row["last_import_error"] = "; ".join(d["message"] for d in attempt["diagnostics"])
+                if not accepted and not complete_pending:
+                    row["result_state"] = "ODRZUCONY"
             rows.append(row)
         progress = [{"stage": name, "state": "UKOŃCZONY" if name in workflow.completed
                      else "BIEŻĄCY" if name == workflow.stage else "OCZEKUJE"} for name in STAGES]
@@ -95,7 +110,7 @@ class CampaignController:
                         "Paczki są gotowe. Przekaż je audytorom. Brakujące wyniki: " + ", ".join(status["missing_results"]))
         following = list(STAGES)[list(STAGES).index(workflow.stage) + 1:] or ["COMPLETE"]
         label = "Zakończ E6 i utwórz raport" if following[0] == "COMPLETE" else "Przejdź do " + following[0]
-        return step("advance", label, "Wszystkie obowiązkowe wyniki zostały ręcznie przyjęte lokalnie. Przejście wymaga osobnego potwierdzenia.")
+        return step("advance", label, "Wszystkie obowiązkowe wyniki zostały przyjęte lokalnie. Przejście wymaga osobnego potwierdzenia.")
 
     def _package(self, task: str) -> tuple[LocalWorkflow, Path, dict[str, Any]]:
         workflow = self.workflow()
@@ -134,6 +149,20 @@ class CampaignController:
     def export_package(self, task: str, destination: str | Path) -> Path:
         _, path, identity = self._package(task)
         return export_copy(self.root, path, identity, Path(destination))
+
+    def prompt(self, task: str) -> dict[str, Any]:
+        workflow, _, _ = self._package(task)
+        return workflow.prompt(task)
+
+    def copy_prompt(self, task: str) -> dict[str, Any]:
+        prompt = self.prompt(task)
+        return {**prompt, "copied": self.actions.clipboard(prompt["text"])}
+
+    def import_results(self, files: list[str | Path]) -> dict[str, Any]:
+        return self.workflow().import_results(files)
+
+    def set_acceptance_policy(self, enabled: bool, actor: str, expected_head: str) -> dict[str, Any]:
+        return self.workflow(expected_head).set_acceptance_policy(enabled, actor)
 
     def prepare(self) -> dict[str, Any]:
         workflow = self.workflow()
@@ -189,30 +218,44 @@ class CampaignController:
         return exported
 
     def verify_report(self, root: str | Path, workflow: LocalWorkflow | None = None) -> dict[str, Any]:
-        workflow = workflow if workflow is not None else self.workflow()
+        summary, _, _ = self._verified_report(root, workflow if workflow is not None else self.workflow())
+        return summary
+
+    def _verified_report(self, root: str | Path, workflow: LocalWorkflow) -> tuple[dict[str, Any], bytes, int]:
         path = Path(root).absolute()
-        safe_path(path, path / "EVIDENCE_MANIFEST.json")
-        manifest = parse((path / "EVIDENCE_MANIFEST.json").read_bytes())
+        manifest_path = safe_path(path, path / "EVIDENCE_MANIFEST.json")
+        with manifest_path.open("rb") as stream:
+            manifest = parse(stream.read(REPORT_JSON_LIMIT + 1), max_bytes=REPORT_JSON_LIMIT)
         if (not isinstance(manifest, dict) or manifest.get("format") != "BDB_LOCAL_REPORT_EVIDENCE_1"
                 or manifest.get("mode") != MODE or manifest.get("campaign_id") != workflow.campaign_id
                 or not isinstance(manifest.get("history_head"), str)
                 or manifest.get("history_head") not in {e["event_hash"] for e in workflow.events}):
             raise ValidationError("LOCAL_REPORT_CONTEXT_MISMATCH", str(path))
+        version = manifest.get("render_version", 1)
         entries = manifest.get("reports", [])
-        if (not isinstance(entries, list) or len(entries) != 2
+        if (type(version) is not int or version not in (1, REPORT_RENDER_VERSION)
+                or not isinstance(entries, list) or len(entries) != 2
                 or any(not isinstance(e, dict) or e.get("path") not in ("REPORT.md", "REPORT.json") for e in entries)
                 or {e["path"] for e in entries} != {"REPORT.md", "REPORT.json"}):
             raise ValidationError("LOCAL_REPORT_MANIFEST_INVALID", str(path))
-        for entry in entries:
-            verified_bytes(path, path / entry["path"], {"raw_digest": entry.get("sha256"), "byte_length": entry.get("byte_length")})
-        report = parse((path / "REPORT.json").read_bytes())
-        if (not isinstance(report, dict) or not isinstance(report.get("status"), str)
-                or not isinstance(report.get("accepted_responses"), list)
-                or report.get("format") != "BDB_LOCAL_AUDIT_REPORT_1" or report.get("mode") != MODE
-                or report.get("campaign_id") != workflow.campaign_id or report.get("input_history_head") != manifest["history_head"]):
-            raise ValidationError("LOCAL_REPORT_CONTEXT_MISMATCH", str(path))
-        return {"path": str(path), "verified": True, "history_head": manifest["history_head"],
-                "status": report["status"], "accepted_count": len(report["accepted_responses"])}
+        head = manifest["history_head"]
+        historical = workflow if workflow.head == head else LocalWorkflow(workflow.store.root, history_head=head)
+        report = build_report(historical, history_head=head)
+        expected = report_bytes(report, version)
+        artifacts = {
+            entry["path"]: verified_bytes(path, path / entry["path"], {
+                "raw_digest": entry.get("sha256"), "byte_length": entry.get("byte_length")},
+                max_bytes=REPORT_JSON_LIMIT if version == 1 else len(expected[entry["path"]]))
+            for entry in entries
+        }
+        if (version == 1 and artifacts != expected and
+                all(r["acceptance_mechanism"] == "MANUAL" for r in report["accepted_responses"])):
+            report = build_report(historical, history_head=head, legacy_acceptance=True)
+            expected = report_bytes(report, version)
+        if artifacts != expected or manifest.get("raw_evidence") != report["raw_evidence"]:
+            raise ValidationError("LOCAL_REPORT_HISTORY_MISMATCH", str(path))
+        return ({"path": str(path), "verified": True, "history_head": head, "status": report["status"],
+                 "accepted_count": len(report["accepted_responses"])}, artifacts["REPORT.json"], version)
 
     def reports(self, workflow: LocalWorkflow | None = None) -> list[dict[str, Any]]:
         roots: list[Path] = []
@@ -237,14 +280,17 @@ class CampaignController:
         return rows
 
     def open_report(self, root: str | Path, action: str) -> str:
-        self.verify_report(root)
+        _, json_raw, version = self._verified_report(root, self.workflow())
         path = Path(root).absolute()
         if action == "markdown":
-            self.actions.document(path / "REPORT.md")
+            if version == 1:
+                self.actions.plain_document(path / "REPORT.md")
+            else:
+                self.actions.document(path / "REPORT.md")
             return str(path / "REPORT.md")
         if action == "folder":
             self.actions.folder(path)
             return str(path)
         if action == "json":
-            return (path / "REPORT.json").read_text(encoding="utf-8")
+            return json_raw.decode("utf-8")
         raise ValidationError("LOCAL_REPORT_ACTION_INVALID")

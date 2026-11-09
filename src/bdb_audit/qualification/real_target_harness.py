@@ -50,9 +50,9 @@ def _prepare_target(workspace: Path, case: PublicBoundaryCase) -> Path:
     AuditOperationApi().create_campaign(
         store_path,
         seed=case.seed,
-        target_repo="https://qualification.invalid/reference-target",
-        commit_sha=case.target_sha,
     )
+    # This target is a frozen non-Git recipe. Its digest identifies the
+    # benchmark; it must not be presented as a verified Git commit or URL.
     if case.boundary == "CORRUPTED_HISTORY_STATUS":
         store = TransactionalHistoryStore(store_path)
         con = store._connect()

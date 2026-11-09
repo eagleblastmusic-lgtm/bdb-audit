@@ -18,6 +18,7 @@ def parser() -> argparse.ArgumentParser:
     sub = root.add_subparsers(dest="action", required=True)
     ui = sub.add_parser("ui", help="Guided local audit: campaigns, packages, review and reports")
     ui.add_argument("--index", help="Optional location of the campaign shortcut index (not workflow authority)")
+    ui.add_argument("--no-gui", action="store_true", help="Use manual paths; never show a native file dialog")
     for name in ("preflight", "start"):
         command = sub.add_parser(name)
         command.add_argument("--source", required=True)
@@ -26,12 +27,19 @@ def parser() -> argparse.ArgumentParser:
         command.add_argument("--path", action="append", help="Explicit source file scope; repeat per file")
         if name == "start":
             command.add_argument("--campaign", required=True, help="New campaign directory (must not exist)")
-    for name in ("status", "resume", "prepare", "inspect", "import", "validate", "accept", "reject", "advance", "run-check", "recover-check", "abandon-check", "report"):
+    for name in ("status", "resume", "prepare", "inspect", "import", "import-batch", "policy", "prompt", "validate", "accept", "reject", "advance", "run-check", "recover-check", "abandon-check", "report"):
         command = sub.add_parser(name)
         command.add_argument("--campaign", required=True)
         if name in {"inspect", "import"}:
             command.add_argument("--file", required=True)
             command.add_argument("--expected-sha256", help="Optional independently obtained raw file digest; checked before import mutation")
+        if name == "import-batch":
+            command.add_argument("--file", required=True, action="append", help="JSON or ZIP path; repeat for one batch")
+        if name == "policy":
+            command.add_argument("--auto-accept", required=True, choices=("on", "off"), help="Authorize/revoke local policy for this campaign")
+            command.add_argument("--actor", default=getpass.getuser(), help="Label of the person authorizing the policy")
+        if name == "prompt":
+            command.add_argument("--task", required=True, help="Task ID from the frozen campaign")
         if name in {"validate", "accept", "reject"}:
             command.add_argument("--result", required=True)
         if name == "accept":
@@ -69,6 +77,12 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
         return workflow.inspect(args.file, args.expected_sha256)
     if args.action == "import":
         return workflow.import_result(args.file, args.expected_sha256)
+    if args.action == "import-batch":
+        return workflow.import_results(args.file)
+    if args.action == "policy":
+        return workflow.set_acceptance_policy(args.auto_accept == "on", args.actor)
+    if args.action == "prompt":
+        return workflow.prompt(args.task)
     if args.action == "validate":
         return workflow.validate(args.result)
     if args.action == "accept":
@@ -98,9 +112,9 @@ def run_local(argv: Sequence[str]) -> int:
     try:
         if args.action == "ui":
             from .ui import run_local_ui
-            return run_local_ui(index_path=args.index)
+            return run_local_ui(index_path=args.index, no_gui=args.no_gui)
         data = execute(args)
-        code = 2 if data.get("status") in {"REJECTED", "LOCAL_CHECK_INCOMPLETE"} or data.get("issues") else 0
+        code = 2 if data.get("status") in {"REJECTED", "LOCAL_CHECK_INCOMPLETE"} or data.get("issues") or data.get("rejected", 0) else 0
     except (ValidationError, OSError, sqlite3.Error) as exc:
         data = {"mode": MODE, "status": "REFUSED", "error": getattr(exc, "code", "LOCAL_IO_ERROR"),
                 "detail": str(exc), "notice": NOTICE}
